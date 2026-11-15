@@ -1,0 +1,40 @@
+GARAJIM - INCELEME VE DUZELTME NOTLARI
+
+DERLEMEYI BOZAN
+- build-apk.yml: setup-java "cache: gradle" gradle dosyalari yokken hata verir -> kaldirildi.
+- build-apk.yml: imagemagick kurulum satirinda operator onceligi hatasi duzeltildi.
+- Eksik klasorler icin mkdir -p eklendi; drawable kopyalanir.
+
+NATIVE (ANDROID)
+- Bildirim simgesi renkli uygulama ikonuydu (beyaz kare gorunur) -> ic_stat_garajim.xml.
+- Bildirim her gun genel metin gonderiyordu -> artik yalnizca gercekten yaklasan/geciken kalem varsa,
+  icinde plaka ve uyari metniyle gonderilir (JS: setReminders).
+- Alarm hep "yarin 09:00" kuruyordu -> bugun 09:00 gecmediyse bugun.
+- Uygulama guncellenince alarmlar silinirdi -> MY_PACKAGE_REPLACED ile yeniden kurulur.
+- Uc yerde tekrarlanan alarm kodu tek fonksiyona indirildi.
+- Widget km degeri binlik ayracla.
+
+SURUS (ACIK DUNYA)
+- Panel kuculunce Baslat/Bitir butonlari da gizleniyordu -> butonlar artik her zaman gorunur.
+- Sag kontrol butonlari panelin ustundeki gostergeleri kapatabiliyordu -> panelin ustune tasindi.
+- Sekme degistirip donunce calisan surus icin "yarim kalan surus" sorusu cikip oturumu bozuyordu.
+- Kamera dugmesi "serbest" moda hic ulasamiyordu (heading'den sonra takip moduna geri atiyordu).
+- Arka plana gecip donunce gecen sure siliniyordu (lastTick sifirlama).
+- GPS sinyali zayifken (>50 m) mesafe/maks hiz yaziliyordu; titreme esigi dogrulukla buyur.
+- 150 m'den kotu konum isaretciyi ucuruyordu.
+- 30 sn'den uzun veri boslugunda duz cizgiyle sahte mesafe ekleniyordu -> eklenmez, "kayit boslugu" notu.
+- Sekmeden cikinca GPS izleme kapanmiyordu (pil) -> sef surus yoksa kapanir.
+- Rota 2000 nokta ustunde sondan kesiliyordu; localStorage dolunca kayit kayboluyordu -> duzgun azaltma + eski kayit atma.
+- Birim: "km/s" yanlisti (km/sa); mph seciliyken mesafe km kaliyordu.
+- Isaretci yandan motosiklet ikonunu dondurdugu icin ters donuyordu -> ustten gorunumlu simge.
+- Ozet/onizleme dugmeleri metin aramasiyla degistiriliyordu -> id ile; favori onizlemede kalici.
+- Gecmisten silince arac kaydindaki ozet kalıyordu; arac plakasi HTML olarak basiliyordu (kacis eklendi).
+- Arac km'sine otomatik eklemede gecersiz sayi korumasi + toast'ta gosterilir.
+- Opsiyonel arka plan konum (Capacitor BackgroundGeolocation) destegi: ekran kapaliyken kayit.
+
+DIGER
+- GPX dosyasi ve takvim (.ics) dosyasinda \\n kacis hatasi: dosyalar gecersizdi; .ics basligindaki "n" harfleri bosluga donuyordu.
+- APK'da dosya indirme calismaz: GPX paylasim menusuyle, takvim Google Takvim ile acilir.
+- YZ asistan: foto base64'u localStorage'i dolduruyordu; API anahtari URL'de gidiyordu (header'a alindi);
+  sohbet asistan mesajiyla baslarsa Gemini hata veriyordu; kisa yol dugmesinde kesme isareti dugmeyi bozuyordu.
+- Widget verisi yalnizca kayitta gidiyordu -> acilista ve gecikmeli de gonderilir.
