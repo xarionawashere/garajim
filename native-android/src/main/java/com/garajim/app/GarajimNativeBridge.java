@@ -17,23 +17,22 @@ public class GarajimNativeBridge {
     private final Activity activity;
     public GarajimNativeBridge(Activity activity) { this.activity = activity; this.context = activity.getApplicationContext(); }
 
+    /** Tüm araçların özeti (JSON dizisi: id, name, plate, km, cons, svc). Widget seçili aracı gösterir. */
     @JavascriptInterface
     public void syncWidget(String json) {
         try {
             JSONArray vehicles = new JSONArray(json == null ? "[]" : json);
-            JSONObject first = vehicles.length() > 0 ? vehicles.getJSONObject(0) : new JSONObject();
-            String title = first.optString("name", first.optString("brand", "Aracınız"));
-            String plate = first.optString("plate", "Araç ekleyin");
-            String km = first.has("km") ? first.optString("km", "") : first.optString("mileage", "");
-            try { if (!km.isEmpty()) km = String.format(java.util.Locale.forLanguageTag("tr-TR"), "%,d", (long) Double.parseDouble(km)); } catch (Exception ignoredFmt) { }
             context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit()
-                .putString("title", title).putString("plate", plate).putString("km", km)
-                .putInt("count", vehicles.length()).apply();
-            Intent update = new Intent(context, GarajimWidgetProvider.class).setAction(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            int[] ids = android.appwidget.AppWidgetManager.getInstance(context).getAppWidgetIds(new android.content.ComponentName(context, GarajimWidgetProvider.class));
-            update.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-            context.sendBroadcast(update);
+                .putString("vehicles_json", vehicles.toString()).putInt("count", vehicles.length()).apply();
+            GarajimWidgetProvider.refresh(context);
         } catch (Exception ignored) { }
+    }
+
+    /** Uygulamadan "widget'ta bu aracı göster". */
+    @JavascriptInterface
+    public void setWidgetVehicle(String id) {
+        context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit().putString("sel_id", id == null ? "" : id).apply();
+        GarajimWidgetProvider.refresh(context);
     }
 
     @JavascriptInterface
@@ -51,7 +50,18 @@ public class GarajimNativeBridge {
             for (int i = 0; i < arr.length() && i < 20; i++) safe.put(arr.getString(i));
             context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit()
                 .putString("reminder_lines", safe.toString()).apply();
+            GarajimWidgetProvider.refresh(context);
         } catch (Exception ignored) { }
+    }
+
+    /** Widget düğmesinden gelen eylemi bir kez döndürür ("" = yok). */
+    @JavascriptInterface
+    public String consumeAction() {
+        String a = MainActivity.pendingAction, v = MainActivity.pendingVehicle;
+        MainActivity.pendingAction = null;
+        MainActivity.pendingVehicle = null;
+        if (a == null) return "";
+        return (v == null || v.isEmpty()) ? a : a + "|" + v;
     }
 
     @JavascriptInterface
