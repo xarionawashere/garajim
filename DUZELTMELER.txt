@@ -38,3 +38,45 @@ DIGER
 - YZ asistan: foto base64'u localStorage'i dolduruyordu; API anahtari URL'de gidiyordu (header'a alindi);
   sohbet asistan mesajiyla baslarsa Gemini hata veriyordu; kisa yol dugmesinde kesme isareti dugmeyi bozuyordu.
 - Widget verisi yalnizca kayitta gidiyordu -> acilista ve gecikmeli de gonderilir.
+
+WIDGET HIZLI TUSLARI (YENI)
+- Widget 4x2: ilk aracin adi, plakasi, km'si + en acil uyari satiri (dokununca bildirim paneli).
+- Dort tus: Yakit, KM, Bakim, Surus. Tusa basinca uygulama dogrudan ilgili ekranda acilir
+  (yakit/km/bakim penceresi, Acik Dunya sekmesi). PIN kilidi varsa kilit acilinca calisir.
+- Widget ilk araci gosterir; tuslar da o araca islem yapar. Arac yoksa arac ekleme ekrani acilir.
+
+SURUM 1.1 - YENI OZELLIKLER
+- Park yerim: Acik Dunya ekraninda P tusu + widget'ta Park tusu. Konumu kaydeder, haritada P isareti,
+  mesafe ve yon, yuruyerek yon tarifi (Haritalar).
+- Yakit tuketimi (L/100 km): dolu depodan dolu depoya yontemiyle; kismi dolumlar toplanir; yakit kartinda
+  son depo/ortalama/degisim; widget'ta ortalama; %20 artista asistan uyarisi. Yakit formunda "Depoyu doldurdum".
+- Internetsiz calisma: Tailwind, Font Awesome, Chart.js, jsPDF, Leaflet, Tesseract (Turkce+Ingilizce OCR) ve
+  Inter fontu uygulamanin icine gomulur (build-web.js). 
+- Acik Surus cevrimdisi: GPS zaten internetsiz calisir; gezilen harita kareleri otomatik saklanir
+  (en fazla ~4000 kare); Ayarlar > "Gorunen harita alanini cevrimdisi kaydet" (en fazla 150 kare).
+- APK'da harici baglantilar (Haritalar, Google Takvim) sistem uygulamasinda acilir.
+
+GITHUB'A YUKLENECEK DOSYALAR (yeni/degisen)
+index.html, package.json, build-web.js, tailwind.config.js, tw-input.css, .github/workflows/build-apk.yml,
+native-android/ klasoru (Java + res), icon.png, icon-foreground.png, capacitor.config.json
+(node_modules ve www klasorlerini YUKLEME; derleme sirasinda olusur.)
+
+SURUM 1.2
+- Yedek / PDF / CSV / GPX: APK'da indirme calismadigi icin Android paylasim menusu kullanilir
+  (Drive, WhatsApp, Dosyalar...). Eklentiler: @capacitor/filesystem, @capacitor/share. Tarayicida indirme surer.
+  Paylasim iptal edilirse "son yedek" tarihi guncellenmez.
+- 100 km maliyeti: yakit karti artik Yakit maliyeti (TL/100 km) ve Tum masraflar (TL/100 km) gosterir.
+  Tutari eksik kayitlarda ve 200 km'den kisa araliklarda deger uydurulmaz.
+- Widget: "Bakima X km kaldi" satiri + renkli ilerleme cubugu (yesil / sari / kirmizi, gecmis bakimda "km gecti").
+- Surus istatistikleri (grafik simgesi): Hafta / Ay / Yil sekmeleri, toplam mesafe-sure-ort hiz, cubuk grafik,
+  rekorlar (en uzun surus, en yuksek hiz, en uzun sure). mph destegi.
+
+SURUM 1.3
+- Kadrandan KM okuma: KM guncelle, arac formu, servis ve yakit formlarinda "Kadran" dugmesi. Fotograf cek/sec ->
+  gri tonlama + kontrast (normal ve ters) -> rakam-only OCR (Tesseract, cevrimdisi) -> adaylar listelenir.
+  Mevcut km'ye gore siralanir, kucukse kirmizi uyari; bastaki/sondaki yanlis rakam duzeltme onerisi. Otomatik KAYDETMEZ.
+- Rota planlayici kaldirildi: "Rota Kaydet" penceresi, harita, geocoding/OSRM kodu ve detaydaki "Son Rotalar".
+  (Eski v.trips verisi silinmez, sadece gizli kalir.) Kucuk "Rota" dugmesi -> "Surus" (Acik Dunya, o arac secili).
+- Surus paylasim karti: ozet ekraninda "Kart" -> rota + mesafe/sure/ort/maks 1080x1350 PNG, paylasim menusu.
+- Widget arac secimi: birden cok arac varsa baslikta "⇄ 1/3" dugmesi ile degistirilir; uygulama icinde
+  arac detayinda "Widget'ta bu araci goster". Yakit/KM/Bakim/Surus/Park tuslari secili araca islem yapar.
