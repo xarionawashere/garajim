@@ -181,6 +181,42 @@
   .tab-btn.active { color: var(--accent) !important; }
   .post-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
   .post-card img.post-img { width: 100%; max-height: 320px; object-fit: cover; }
+
+  /* ===== PREMIUM KATMAN (tema değişkenleriyle uyumlu) ===== */
+  body { font-feature-settings: 'cv11','ss01'; letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; }
+  body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(120% 50% at 50% -8%, rgba(var(--accent-rgb),.17), transparent 62%), radial-gradient(80% 40% at 100% 100%, rgba(var(--accent-rgb),.07), transparent 70%); }
+  html.light body::before { opacity: .5; }
+  h1, h2, h3 { letter-spacing: -0.025em; }
+  ::selection { background: rgba(var(--accent-rgb),.35); }
+  body header.sticky { backdrop-filter: blur(22px) saturate(1.5); -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    border-bottom: 1px solid transparent; border-image: linear-gradient(90deg, transparent, rgba(var(--accent-rgb),.38), transparent) 1; }
+  body .rounded-2xl.bg-white\/5, body .rounded-3xl.bg-white\/5 { background-image: linear-gradient(150deg, rgba(255,255,255,.075), rgba(255,255,255,.012) 60%);
+    border-radius: 22px; box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 14px 34px -18px rgba(0,0,0,.85); }
+  body .card-premium { position: relative; overflow: hidden; border-radius: 24px;
+    background: radial-gradient(140% 100% at 0% 0%, rgba(var(--accent-rgb),.11), transparent 55%), linear-gradient(150deg, rgba(255,255,255,.075), rgba(255,255,255,.015));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 40px -20px rgba(0,0,0,.9); }
+  body .card-premium::before { content: ''; position: absolute; left: 14%; right: 14%; top: 0; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb),.75), transparent); }
+  html.light body .rounded-2xl.bg-white\/5, html.light body .rounded-3xl.bg-white\/5, html.light body .card-premium {
+    background-image: linear-gradient(150deg, #ffffff, rgba(255,255,255,.55)); box-shadow: 0 10px 28px -16px rgba(15,23,42,.28), inset 0 1px 0 #fff; }
+  body .btn-red { box-shadow: 0 10px 26px -10px rgba(var(--accent-rgb),.85), inset 0 1px 0 rgba(255,255,255,.28); }
+  body button { transition: transform .12s ease, background-color .15s ease, filter .15s ease; }
+  body button:active:not(:disabled) { transform: scale(.97); }
+  body input, body select, body textarea { border-radius: 14px; transition: border-color .15s, box-shadow .15s; }
+  body input:focus, body select:focus, body textarea:focus { outline: none; border-color: rgba(var(--accent-rgb),.65) !important; box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.16); }
+  body .status-ok, body .status-warn, body .status-danger { border-radius: 9999px; font-weight: 700; letter-spacing: .01em; }
+  body #bottomNav { background: linear-gradient(180deg, rgba(var(--accent-rgb),.05), var(--header-bg)); backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    border-top: 1px solid var(--border); box-shadow: 0 -18px 40px -22px rgba(0,0,0,.9); }
+  body #bottomNav .tab-btn { transition: color .2s, background .2s; border-radius: 16px; }
+  body #bottomNav .tab-btn.active { background: linear-gradient(180deg, rgba(var(--accent-rgb),.17), rgba(var(--accent-rgb),.04)); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),.3); }
+  body #bottomNav .tab-btn.active i { filter: drop-shadow(0 0 10px rgba(var(--accent-rgb),.65)); }
+  body #bottomNav .tab-btn.active span { font-weight: 700; }
+  body .modal-bg { backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); }
+  body .rounded-t-3xl.slide-up { border-top: 1px solid rgba(255,255,255,.14); box-shadow: 0 -24px 60px -24px rgba(0,0,0,.9); }
+  body .rounded-t-3xl.slide-up::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.2); margin: -8px auto 14px; }
+  html.light body .rounded-t-3xl.slide-up::before { background: rgba(0,0,0,.18); }
+  body .progress-bar { box-shadow: 0 0 14px -3px currentColor; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -2601,9 +2637,24 @@
   }
 
   // ---------- EXPORT / IMPORT ----------
+  // Yedek v2: araçlar + kayıtlı sürüşler + park yeri + sürüş ayarları (eski yedekler de açılır)
+  function backupBundle() {
+    return { app: 'garajim', version: 2, exportedAt: new Date().toISOString(), vehicles, rides: getAllRides(), parking: parkGet(), rideSettings: rideSettings() };
+  }
   async function exportData() {
-    const via = await saveFileToast('garajim-yedek-' + todayStr() + '.json', 'application/json', JSON.stringify(vehicles, null, 2), 'Yedek');
+    const via = await saveFileToast('garajim-yedek-' + todayStr() + '.json', 'application/json', JSON.stringify(backupBundle(), null, 2), 'Yedek');
     if (via !== 'cancel') { localStorage.setItem('garaj_last_backup', todayStr()); updateBackupInfo(); }
+  }
+  // Sürüşleri kimliğe göre birleştir: mevcut sürüşler asla silinmez
+  function mergeRides(incoming) {
+    const have = new Set(getAllRides().map(r => r.id));
+    let all = getAllRides().concat(incoming.filter(r => r && r.id && r.date && !have.has(r.id)));
+    all.sort((a, b) => new Date(b.date) - new Date(a.date));
+    all = all.slice(0, 150);
+    for (;;) {
+      try { localStorage.setItem('garaj_rides', JSON.stringify(all)); break; }
+      catch (e) { if (all.length <= 1) break; all = all.slice(0, Math.max(1, all.length - 5)); }
+    }
   }
   function importData(e) {
     const file = e.target.files[0];
@@ -2611,12 +2662,19 @@
     const r = new FileReader();
     r.onload = () => {
       try {
-        const data = JSON.parse(r.result);
+        const raw = JSON.parse(r.result);
+        const bundle = raw && !Array.isArray(raw) && raw.app === 'garajim' && Array.isArray(raw.vehicles);
+        const data = bundle ? raw.vehicles : raw;
         if (!Array.isArray(data) || data.length > 500) throw new Error('Dosya biçimi veya kayıt sayısı geçersiz');
         if (!data.every(v => v && typeof v === 'object' && !Array.isArray(v))) throw new Error('Her araç kaydı nesne olmalı');
-        if (!confirm(data.length + ' araç yüklenecek. Mevcut araç listenin yerine geçecek. Devam?')) return;
-        vehicles = data.map(v => ({...v, id: v.id || ('import-' + Math.random().toString(36).slice(2) + Date.now().toString(36))})); persist(); renderList();
-        toast('Geri yükleme tamam');
+        const rides = bundle && Array.isArray(raw.rides) ? raw.rides : [];
+        if (!confirm(data.length + ' araç' + (rides.length ? ' ve ' + rides.length + ' sürüş' : '') + ' yüklenecek. Araç listen yenisiyle değişir; cihazdaki kayıtlı sürüşlerin korunur. Devam?')) return;
+        vehicles = data.map(v => ({...v, id: v.id || ('import-' + Math.random().toString(36).slice(2) + Date.now().toString(36))}));
+        if (rides.length) mergeRides(rides);
+        if (bundle && raw.parking && typeof raw.parking.lat === 'number' && !parkGet()) { try { localStorage.setItem(PARK_KEY, JSON.stringify(raw.parking)); } catch (x) {} }
+        if (bundle && raw.rideSettings && !localStorage.getItem('garaj_ride_settings')) { try { localStorage.setItem('garaj_ride_settings', JSON.stringify(raw.rideSettings)); } catch (x) {} }
+        persist(); renderList();
+        toast('Geri yükleme tamam' + (rides.length ? ' · ' + rides.length + ' sürüş' : ''));
       } catch { alert('Geçersiz dosya'); }
     };
     r.readAsText(file);
@@ -3748,7 +3806,7 @@
     let msg = 'Sürüş kaydedildi · ' + rideDistTxt(s.dist);
     try {
       if (!s.vehicleId && ride.vehicleId) s.vehicleId = ride.vehicleId;
-      let keep = [s].concat(getAllRides()).slice(0, 40);
+      let keep = [s].concat(getAllRides()).slice(0, 150);    // eskiden 40'tan sonrası sessizce siliniyordu
       for (;;) {                                               // depolama doluysa en eski kayıtları at
         try { localStorage.setItem('garaj_rides', JSON.stringify(keep)); break; }
         catch (e) { if (keep.length <= 1) throw e; keep = keep.slice(0, Math.max(1, keep.length - 5)); }

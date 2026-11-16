@@ -80,3 +80,12 @@ SURUM 1.3
 - Surus paylasim karti: ozet ekraninda "Kart" -> rota + mesafe/sure/ort/maks 1080x1350 PNG, paylasim menusu.
 - Widget arac secimi: birden cok arac varsa baslikta "⇄ 1/3" dugmesi ile degistirilir; uygulama icinde
   arac detayinda "Widget'ta bu araci goster". Yakit/KM/Bakim/Surus/Park tuslari secili araca islem yapar.
+
+SURUM 1.4
+- Yedek v2: arac listesi + kayitli surusler (rotalariyla) + park yeri + surus ayarlari tek dosyada.
+  Geri yuklemede surusler kimlige gore BIRLESIR (cihazdaki surus silinmez, cift kayit olmaz).
+  Eski (yalniz arac) yedekler hala acilir ve surusleri silmez.
+- Kayitli surus siniri 40 -> 150 (40'tan sonrasi sessizce siliniyordu).
+- Premium tasarim katmani: ortam isigi arka plani, cam efektli kartlar ve ust bar, vurgu cizgili arac kartlari,
+  parlayan aktif sekme, yumusak dugme/odak efektleri, tutamacli alt pencereler. Tum temalarla (acik dahil) uyumlu.
+- APK imzasi: PKCS12 anahtar (CN=Anil DOMBAYCI). GitHub Secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
