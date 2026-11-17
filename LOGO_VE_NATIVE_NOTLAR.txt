@@ -1,16 +1,16 @@
-GARAJIM - LOGO, WIDGET VE BAKIM BILDIRIMLERI
+GARAJIM — LOGO, WIDGET VE BAKIM BILDIRIMLERI
 
-Logo dosyalari:
-- icon.png: Android uygulama simgesinin temel gorseli
-- icon-foreground.png: Android uyarlanabilir simge on plani
-- logo.png bu kaynak ZIP'inde bulunmuyor ve APK derleme akisi tarafindan kullanilmiyor.
+Logo / ikon dosyalari:
+- icon.png: Android uygulama simgesi icin temel gorsel.
+- icon-foreground.png: Android uyarlanabilir simge on plani.
+- Bu kaynak ZIP'inde ayri bir logo.png dosyasi yoktur; gercek olmayan dosya adina bagimli olunmamali.
 
-GitHub Actions is akisi bu simge dosyalarini Android mipmap kaynaklarina kopyalar ve uygulama simgesi olarak ayarlar. Uygulama icindeki baslik da Garajim yazisini korur.
+GitHub Actions is akisi ikon dosyalarini Android mipmap kaynaklarina kopyalar. Uygulama icindeki baslik Garajim metnini korur.
 
 Native ozellikler:
 - Android ana ekran widget'i icin kaynaklar
 - Arac verilerini native tarafa aktarma koprusu
 - Yerel bakim hatirlatmalari ve bildirim izni akisi
-- GitHub Actions ile APK derleme is akisi
+- GitHub Actions ile APK/AAB derleme is akisi
 
-Not: Bu paket kaynak kodudur, hazir derlenmis APK degildir. Widget ve bildirimlerin gercek cihazda calismasi ilk APK derlemesi sonrasi test edilmelidir.
+Not: Bu paket kaynak kodudur; hazir derlenmis APK/AAB degildir. Widget, bildirim ve arka plan GPS davranisi gercek Android cihazda test edilmelidir.

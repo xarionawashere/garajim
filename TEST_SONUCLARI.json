@@ -1,0 +1,408 @@
+{
+  "project_version": "1.2.0",
+  "suite_count": 3,
+  "total_executions": 75,
+  "passed_executions": 75,
+  "all_passed": true,
+  "suites": [
+    {
+      "timezone": "Default",
+      "passed": 25,
+      "total": 25,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "Güvenlik yardımcısı: escaped",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: imageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: svgImageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: oversizedImageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: imageAccepted",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: importTextSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: importImageSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: idSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: duplicateIdsUnique",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: corruptStorageSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Render güvenliği: araç seçici kullanıcı metnini kaçışlar",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Render güvenliği: sosyal fotoğraf yalnızca güvenli veri URI ile çizilir",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: sameDayZero",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: impossibleDateRejected",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: localDateLooksValid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: v3",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: rideIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: openWorldIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: settingsIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Otomatik yedek: createSuccess",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Otomatik yedek: storesFullBundle",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: vehicleRestored",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: unsafePhotoRemoved",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: rideRestored",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: pinRestored",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "timezone": "Pacific/Kiritimati (UTC+14)",
+      "passed": 25,
+      "total": 25,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "Güvenlik yardımcısı: escaped",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: imageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: svgImageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: oversizedImageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: imageAccepted",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: importTextSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: importImageSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: idSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: duplicateIdsUnique",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: corruptStorageSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Render güvenliği: araç seçici kullanıcı metnini kaçışlar",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Render güvenliği: sosyal fotoğraf yalnızca güvenli veri URI ile çizilir",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: sameDayZero",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: impossibleDateRejected",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: localDateLooksValid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: v3",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: rideIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: openWorldIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: settingsIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Otomatik yedek: createSuccess",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Otomatik yedek: storesFullBundle",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: vehicleRestored",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: unsafePhotoRemoved",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: rideRestored",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: pinRestored",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "timezone": "America/Los_Angeles",
+      "passed": 25,
+      "total": 25,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "Güvenlik yardımcısı: escaped",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: imageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: svgImageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: oversizedImageDenied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: imageAccepted",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: importTextSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: importImageSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: idSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: duplicateIdsUnique",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Güvenlik yardımcısı: corruptStorageSafe",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Render güvenliği: araç seçici kullanıcı metnini kaçışlar",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Render güvenliği: sosyal fotoğraf yalnızca güvenli veri URI ile çizilir",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: sameDayZero",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: impossibleDateRejected",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Tarih testi: localDateLooksValid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: v3",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: rideIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: openWorldIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedek paketi: settingsIncluded",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Otomatik yedek: createSuccess",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Otomatik yedek: storesFullBundle",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: vehicleRestored",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: unsafePhotoRemoved",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: rideRestored",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "Yedekten geri yükleme: pinRestored",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    }
+  ]
+}

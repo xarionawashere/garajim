@@ -7,9 +7,8 @@ DERLEMEYI BOZAN
 
 NATIVE (ANDROID)
 - Bildirim simgesi renkli uygulama ikonuydu (beyaz kare gorunur) -> ic_stat_garajim.xml.
-- Bildirim her gun genel metin gonderiyordu -> yalnizca gercekten yaklasan/geciken kalem gonderilir.
-- Alarm, uygulama acilmadan tarih uyarilari degismiyordu -> tarih/servis verisi native tarafa kaydedilir,
-  her gun alarm aninda yeniden hesaplanir; km uyarisinda son kaydedilen km kullanilir.
+- Bildirim her gun genel metin gonderiyordu -> artik yalnizca gercekten yaklasan/geciken kalem varsa,
+  icinde plaka ve uyari metniyle gonderilir (JS: setReminders).
 - Alarm hep "yarin 09:00" kuruyordu -> bugun 09:00 gecmediyse bugun.
 - Uygulama guncellenince alarmlar silinirdi -> MY_PACKAGE_REPLACED ile yeniden kurulur.
 - Uc yerde tekrarlanan alarm kodu tek fonksiyona indirildi.
@@ -101,3 +100,12 @@ SURUM 1.6
 - Acik Dunya hiz gostergesi kapatilinca hiz KAYBOLMAZ: ekrani kaplamayan 88 px cam efektli daire gosterge
   (hiz, birim, hiza gore dolan yay: >110 sari, >140 kirmizi, kayit noktasi). Dokununca buyuk gosterge acilir.
   Duraklat/Bitir butonlari her zaman acikta. Tercih hatirlanir.
+
+SON 10 ASAMALI DENETIM - 17.11.2026
+- Yerel takvim doğrulaması: UTC+14 saat diliminde geçerli tarihin yanlış reddedilmesi düzeltildi.
+- İçe aktarma/arayüz güvenliği: sosyal araç seçici alanları ve fotoğraf URI gösterimi kaçışlandı/sınırlandı.
+- Tesseract çekirdeği: WASM ve WASM dışı genel/SIMD/LSTM varyantlarının kopyalanması kapsandı.
+- GitHub Actions: Capacitor Android değişkenleri min 24 / compile 36 / target 36 olacak şekilde doğrulanıyor.
+- Kurulum kılavuzları: eski artifact/secret adları ile mevcut olmayan logo.png açıklaması yenilendi.
+- Test: npm test üzerinden 25 hedefli test; UTC+14 ve America/Los_Angeles varyasyonlarında da geçti.
+- Sınır: npm bağımlılıkları ağ/DNS nedeniyle kurulamadı; Android SDK/Gradle olmadığından gerçek APK/AAB derlemesi ve cihaz testi yapılmadı.

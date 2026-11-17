@@ -1,5 +1,5 @@
-// Garajım: tüm dış bağımlılıkları (Tailwind, FontAwesome, Chart.js, jsPDF, Leaflet, Tesseract, Inter)
-// www/vendor altına gömer ve index.html'i yerel yollara çevirir -> uygulama internetsiz açılır.
+// Garajım: UI/raporlama/OCR kütüphanelerini www/vendor altına gömer ve CDN referanslarını yerelleştirir.
+// Harita döşemeleri ve yapay zekâ API çağrıları internet bağlantısı gerektirmeye devam eder.
 const fs = require('fs'), path = require('path'), cp = require('child_process');
 const OUT = 'www', V = path.join(OUT, 'vendor');
 const nm = p => path.join('node_modules', p);
@@ -48,7 +48,26 @@ fs.writeFileSync(path.join(FD, 'inter.css'), fontCss);
 const T = path.join(V, 'tesseract');
 copy(nm('tesseract.js/dist/tesseract.min.js'), path.join(V, 'tesseract.min.js'));
 copy(nm('tesseract.js/dist/worker.min.js'), path.join(T, 'worker.min.js'));
-for (const f of ['tesseract-core-lstm.wasm.js', 'tesseract-core-simd-lstm.wasm.js']) copy(nm('tesseract.js-core/' + f), path.join(T, 'core', f));
+// Tesseract.js v5 must be able to choose the generic/SIMD and LSTM/non-LSTM cores.
+// Each .wasm.js loader also needs its sibling .wasm binary for fully local OCR.
+copyDir(nm('tesseract.js-core'), path.join(T, 'core'), f => /^tesseract-core(?:-simd)?(?:-lstm)?(?:\.wasm)?(?:\.js)?$/.test(f));
+const requiredCoreFiles = [
+  'tesseract-core.wasm.js',
+  'tesseract-core-simd.wasm.js',
+  'tesseract-core-lstm.wasm.js',
+  'tesseract-core-simd-lstm.wasm.js',
+  'tesseract-core.wasm',
+  'tesseract-core-simd.wasm',
+  'tesseract-core-lstm.wasm',
+  'tesseract-core-simd-lstm.wasm',
+  'tesseract-core.js',
+  'tesseract-core-simd.js',
+  'tesseract-core-lstm.js',
+  'tesseract-core-simd-lstm.js'
+];
+for (const f of requiredCoreFiles) {
+  if (!fs.existsSync(path.join(T, 'core', f))) throw new Error('Eksik Tesseract çekirdek dosyası: ' + f);
+}
 for (const l of ['tur', 'eng']) copy(nm(`@tesseract.js-data/${l}/4.0.0_best_int/${l}.traineddata.gz`), path.join(T, 'lang', `${l}.traineddata.gz`));
 
 // --- Tailwind (CDN yerine derlenmiş CSS)

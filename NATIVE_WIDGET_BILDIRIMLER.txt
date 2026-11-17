@@ -1,11 +1,11 @@
 GARAJIM — Native Android widget ve bakım bildirimleri
 
-Bu sürüm, mevcut web arayüzünü korur ve Capacitor ile oluşturulan Android uygulamasına yerel ana ekran widget’ı ve günlük bakım hatırlatmaları ekler.
+Bu kaynak paketi Capacitor ile oluşturulan Android uygulamasına yerel ana ekran widget'ı ve günlük bakım hatırlatmaları ekler.
 
-Widget: Android ana ekranında boş alana basılı tut > Widget’lar > Garajım. İlk araç bilgileri uygulama açıldıktan ve veriler eşitlendikten sonra görünür. Widget’a dokunmak uygulamayı açar.
+Widget: Android ana ekranında boş alana basılı tut > Widget'lar > Garajım. İlk araç bilgileri uygulama açıldıktan ve veriler eşitlendikten sonra görünür. Widget'a dokunmak uygulamayı açar.
 
-Bildirimler: Uygulamadaki zil/bildirim izni akışını kullanın ve Android izin penceresinde bildirimlere izin verin. Android alarmı her gün yaklaşık 09.00’da son kaydedilen araç verisindeki bakım tarihlerini ve kilometre eşiğini yeniden hesaplar. Tarihli kalemlerde uygulamadaki hatırlatma gününü (varsayılan 30 gün), kilometre bakımında uygulamanın bakım uyarı eşiğini kullanır. Kilometre uyarıları son kaydedilen kilometreye dayanır; araç km’si uygulama yeniden açılıp kaydedilene kadar güncellenmez. Android’in pil tasarrufu üreticiye göre zamanlamayı geciktirebilir.
+Bildirimler: Uygulamadaki bildirim izni akışını kullanın ve Android izin penceresinde bildirimlere izin verin. Alarm yaklaşık 09.00 için kurulur. Bildirim, uygulama en son açıkken JavaScript'in Android'e eşitlediği yaklaşan/geciken uyarı satırlarını kullanır. Uygulama uzun süre kapalı kalırsa alarm anında güncel tarihler yeniden hesaplanmaz; uygulama açıldığında yeniden eşitlenir. Android üretici pil optimizasyonları alarmı geciktirebilir.
 
-APK: GitHub deposuna gönderildiğinde Actions > APK Olustur iş akışı çalışır. Çıktı, Garajim-APK adlı artifact olarak indirilir. Bu ZIP içinde hazır derlenmiş APK yoktur; APK GitHub Actions üzerinde oluşturulur.
+APK/AAB: GitHub Actions > “Android APK ve Google Play AAB Olustur”. İmza secrets yoksa yalnız Garajim-Debug-APK artifact'i üretilir. Dört imzalama secret'i ayarlıysa Garajim-Play-AAB artifact'i üretilir. Bu kaynak ZIP'inde hazır APK/AAB yoktur.
 
-Not: Bu kaynak değişiklikleri henüz gerçek bir Android cihazda test edilmiş değildir. İlk derleme ve cihaz testi sonrasında hata çıkarsa Actions derleme günlüğüyle düzeltme yapılmalıdır.
+Not: Kaynak değişiklikleri gerçek Android cihaz üzerinde doğrulanmış sayılmaz. İlk derlemeden sonra GPS izinleri, widget, yeniden başlatma, bildirim ve arka plan davranışını test edin.

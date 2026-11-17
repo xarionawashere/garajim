@@ -41,17 +41,6 @@ public class GarajimNativeBridge {
         context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit().putBoolean("reminders", true).apply();
     }
 
-    /** Alarmın uygulama kapalıyken de tarih ve km eşiklerini yeniden hesaplayabilmesi için veri. */
-    @JavascriptInterface
-    public void setReminderData(String json) {
-        try {
-            JSONObject data = new JSONObject(json == null ? "{}" : json);
-            if (data.optJSONArray("vehicles") == null) return;
-            context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit()
-                .putString("reminder_data", data.toString()).apply();
-        } catch (Exception ignored) { }
-    }
-
     /** Uygulamadan gelen yaklaşan/geciken kalemler (JSON dizisi: ["34ABC123: Muayene...", ...]) */
     @JavascriptInterface
     public void setReminders(String json) {
@@ -86,5 +75,26 @@ public class GarajimNativeBridge {
     @JavascriptInterface
     public boolean notificationsAllowed() {
         return Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /** Sürüş arka plana geçince silinemeyen bildirim + foreground service. */
+    @JavascriptInterface
+    public void startRideNotification(String title, String text) {
+        try {
+            if (Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                activity.runOnUiThread(() -> activity.requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 7405));
+            }
+            final String t = (title == null || title.isEmpty()) ? "Garajım · Açık Dünya" : title;
+            final String m = (text == null || text.isEmpty()) ? "Sürüş arka planda devam ediyor…" : text;
+            activity.runOnUiThread(() -> GarajimRideService.start(context, t, m));
+        } catch (Exception ignored) { }
+    }
+
+    /** Uygulamaya dönünce veya sürüş bitince bildirimi kapat. */
+    @JavascriptInterface
+    public void stopRideNotification() {
+        try {
+            activity.runOnUiThread(() -> GarajimRideService.stop(context));
+        } catch (Exception ignored) { }
     }
 }
