@@ -7,8 +7,9 @@ DERLEMEYI BOZAN
 
 NATIVE (ANDROID)
 - Bildirim simgesi renkli uygulama ikonuydu (beyaz kare gorunur) -> ic_stat_garajim.xml.
-- Bildirim her gun genel metin gonderiyordu -> artik yalnizca gercekten yaklasan/geciken kalem varsa,
-  icinde plaka ve uyari metniyle gonderilir (JS: setReminders).
+- Bildirim her gun genel metin gonderiyordu -> yalnizca gercekten yaklasan/geciken kalem gonderilir.
+- Alarm, uygulama acilmadan tarih uyarilari degismiyordu -> tarih/servis verisi native tarafa kaydedilir,
+  her gun alarm aninda yeniden hesaplanir; km uyarisinda son kaydedilen km kullanilir.
 - Alarm hep "yarin 09:00" kuruyordu -> bugun 09:00 gecmediyse bugun.
 - Uygulama guncellenince alarmlar silinirdi -> MY_PACKAGE_REPLACED ile yeniden kurulur.
 - Uc yerde tekrarlanan alarm kodu tek fonksiyona indirildi.
@@ -89,3 +90,14 @@ SURUM 1.4
 - Premium tasarim katmani: ortam isigi arka plani, cam efektli kartlar ve ust bar, vurgu cizgili arac kartlari,
   parlayan aktif sekme, yumusak dugme/odak efektleri, tutamacli alt pencereler. Tum temalarla (acik dahil) uyumlu.
 - APK imzasi: PKCS12 anahtar (CN=Anil DOMBAYCI). GitHub Secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+
+SURUM 1.5
+- Kayitli surusu (arac sayfasi veya gecmis) acinca buyuk rota haritasi + bilgiler (mesafe, sure, ort/maks hiz, skor).
+- Haritaya dokununca / "Oynat" ile motor, gidilen rota uzerinden animasyonlu surer (5-12 sn, mesafeye gore);
+  gidilen kisim cizilir, yon motorla doner, km sayaci akar; bitince "Tekrar". Kapatinca animasyon durur.
+- Arac sayfasindaki surus listesinde her surusun yaninda minik rota onizlemesi (en fazla 8 surus).
+
+SURUM 1.6
+- Acik Dunya hiz gostergesi kapatilinca hiz KAYBOLMAZ: ekrani kaplamayan 88 px cam efektli daire gosterge
+  (hiz, birim, hiza gore dolan yay: >110 sari, >140 kirmizi, kayit noktasi). Dokununca buyuk gosterge acilir.
+  Duraklat/Bitir butonlari her zaman acikta. Tercih hatirlanir.

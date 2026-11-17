@@ -13,7 +13,11 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import org.json.JSONArray;
+import org.json.JSONObject;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class GarajimReminderReceiver extends BroadcastReceiver {
     static final int REQ = 7401;
@@ -22,15 +26,96 @@ public class GarajimReminderReceiver extends BroadcastReceiver {
     @Override public void onReceive(Context context, Intent intent) {
         try {
             SharedPreferences p = context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE);
-            JSONArray lines = new JSONArray(p.getString("reminder_lines", "[]"));
+            JSONArray lines = buildCurrentReminderLines(context, p);
             boolean allowed = Build.VERSION.SDK_INT < 33
                 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
-            // Yalnızca gerçekten yaklaşan/geciken bir kalem varsa bildirim göster
+            // Kayıtlı araç verisinden bu anın tarih/km uyarılarını yeniden hesapla.
             if (allowed && lines.length() > 0) notifyUser(context, lines);
         } catch (Exception ignored) {
         } finally {
             schedule(context);   // bir sonraki güne kur
         }
+    }
+
+    /**
+     * Uygulama son açıldığından beri değişmiş olabilecek tarih hatırlatmalarını
+     * ve son kaydedilmiş kilometreye göre bakım uyarısını tekrar hesaplar.
+     * Eski sürümden gelen preference verileri için reminder_lines yedeği korunur.
+     */
+    private JSONArray buildCurrentReminderLines(Context context, SharedPreferences p) {
+        String raw = p.getString("reminder_data", null);
+        if (raw == null || raw.trim().isEmpty()) {
+            try { return new JSONArray(p.getString("reminder_lines", "[]")); }
+            catch (Exception e) { return new JSONArray(); }
+        }
+        try {
+            JSONObject root = new JSONObject(raw);
+            JSONArray vehicles = root.optJSONArray("vehicles");
+            JSONArray lines = new JSONArray();
+            if (vehicles == null) return lines;
+            int remindDays = Math.max(0, Math.min(365, root.optInt("remindDays", 30)));
+            String[] dateKeys = {"muayene", "trafikSigorta", "kasko", "kisLastigi", "yazLastigi", "dortMevsim"};
+            String[] labels = {"Muayene", "Trafik Sigortası", "Kasko", "Kış Lastiği", "Yaz Lastiği", "4 Mevsim Lastik"};
+            for (int i = 0; i < vehicles.length() && lines.length() < 20; i++) {
+                JSONObject v = vehicles.optJSONObject(i);
+                if (v == null) continue;
+                String plate = v.optString("plate", "Araç");
+                if (plate.trim().isEmpty()) plate = "Araç";
+
+                double km = v.optDouble("km", 0d);
+                double nextKm = v.optDouble("nextServiceKm", 0d);
+                if (km > 0d && nextKm > 0d) {
+                    double remaining = nextKm - km;
+                    double interval = v.optDouble("interval", 15000d);
+                    if (interval <= 0d) interval = 15000d;
+                    double warnThreshold = Math.min(1200d, Math.max(600d, Math.round(interval * 0.12d)));
+                    if (remaining <= 0d) {
+                        lines.put(plate + ": Bakım KM’si geçti (" + formatKm(Math.abs(remaining)) + " gecikme)");
+                    } else if (remaining <= warnThreshold) {
+                        lines.put(plate + ": Bakım KM’si yaklaşıyor — " + formatKm(remaining) + " kaldı");
+                    }
+                }
+
+                for (int j = 0; j < dateKeys.length && lines.length() < 20; j++) {
+                    String value = v.optString(dateKeys[j], "");
+                    if (value.trim().isEmpty()) continue;
+                    Integer days = daysUntil(value);
+                    if (days == null) continue;
+                    String alert = null;
+                    if (days < 0) alert = labels[j] + " süresi dolmuş";
+                    else if (days == 0) alert = labels[j] + " bugün bitiyor";
+                    else if (days <= remindDays) alert = labels[j] + " " + days + " gün";
+                    if (alert != null) lines.put(plate + ": " + alert);
+                }
+            }
+            p.edit().putString("reminder_lines", lines.toString()).apply();
+            GarajimWidgetProvider.refresh(context);
+            return lines;
+        } catch (Exception e) {
+            try { return new JSONArray(p.getString("reminder_lines", "[]")); }
+            catch (Exception ignored) { return new JSONArray(); }
+        }
+    }
+
+    private static Integer daysUntil(String value) {
+        try {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            format.setLenient(false);
+            Date due = format.parse(value);
+            if (due == null) return null;
+            Calendar target = Calendar.getInstance();
+            target.setTime(due);
+            target.set(Calendar.HOUR_OF_DAY, 0); target.set(Calendar.MINUTE, 0);
+            target.set(Calendar.SECOND, 0); target.set(Calendar.MILLISECOND, 0);
+            Calendar today = Calendar.getInstance();
+            today.set(Calendar.HOUR_OF_DAY, 0); today.set(Calendar.MINUTE, 0);
+            today.set(Calendar.SECOND, 0); today.set(Calendar.MILLISECOND, 0);
+            return (int) Math.round((target.getTimeInMillis() - today.getTimeInMillis()) / 86400000.0d);
+        } catch (Exception e) { return null; }
+    }
+
+    private static String formatKm(double value) {
+        return String.format(Locale.forLanguageTag("tr-TR"), "%,d km", Math.round(value));
     }
 
     private void notifyUser(Context context, JSONArray lines) throws Exception {

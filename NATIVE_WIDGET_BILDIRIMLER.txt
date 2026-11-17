@@ -4,7 +4,7 @@ Bu sürüm, mevcut web arayüzünü korur ve Capacitor ile oluşturulan Android 
 
 Widget: Android ana ekranında boş alana basılı tut > Widget’lar > Garajım. İlk araç bilgileri uygulama açıldıktan ve veriler eşitlendikten sonra görünür. Widget’a dokunmak uygulamayı açar.
 
-Bildirimler: Uygulamadaki zil/bildirim izni akışını kullanın ve Android izin penceresinde bildirimlere izin verin. Uygulama bakım tarihi kontrollerini her gün yaklaşık 09.00’da yapar; tarihli bakım/evrak kalemleri için uygulamadaki hatırlatma gününü (varsayılan 30 gün), kilometre bakımında ise uygulamanın bakım uyarı eşiğini kullanır. Android’in pil tasarrufu üreticiye göre zamanlamayı geciktirebilir.
+Bildirimler: Uygulamadaki zil/bildirim izni akışını kullanın ve Android izin penceresinde bildirimlere izin verin. Android alarmı her gün yaklaşık 09.00’da son kaydedilen araç verisindeki bakım tarihlerini ve kilometre eşiğini yeniden hesaplar. Tarihli kalemlerde uygulamadaki hatırlatma gününü (varsayılan 30 gün), kilometre bakımında uygulamanın bakım uyarı eşiğini kullanır. Kilometre uyarıları son kaydedilen kilometreye dayanır; araç km’si uygulama yeniden açılıp kaydedilene kadar güncellenmez. Android’in pil tasarrufu üreticiye göre zamanlamayı geciktirebilir.
 
 APK: GitHub deposuna gönderildiğinde Actions > APK Olustur iş akışı çalışır. Çıktı, Garajim-APK adlı artifact olarak indirilir. Bu ZIP içinde hazır derlenmiş APK yoktur; APK GitHub Actions üzerinde oluşturulur.
 

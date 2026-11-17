@@ -395,13 +395,27 @@
 
   <!-- Alt panel + sağ kontroller -->
   <div id="ridePanel" class="absolute left-0 right-0 bottom-0 z-[500] p-3 pointer-events-none">
-    <div class="flex flex-col items-end gap-2 mb-2 pointer-events-auto">
+    <div class="flex items-end justify-between mb-2">
+    <button id="rideMiniGauge" type="button" onclick="rideTogglePanel()" class="hidden pointer-events-auto relative w-[88px] h-[88px] rounded-full border border-white/15 backdrop-blur-xl shadow-2xl" style="background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.14),rgba(0,0,0,.78) 70%)" title="Göstergeyi aç">
+      <svg viewBox="0 0 88 88" class="absolute inset-0 -rotate-90" width="88" height="88">
+        <circle cx="44" cy="44" r="38" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="6"/>
+        <circle id="rideMiniArc" cx="44" cy="44" r="38" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8" style="transition:stroke-dashoffset .5s ease,stroke .3s"/>
+      </svg>
+      <span class="absolute inset-0 flex flex-col items-center justify-center">
+        <span id="rideMiniNum" class="text-[28px] font-extrabold leading-none text-white">—</span>
+        <span id="rideMiniUnit" class="text-[9px] text-slate-400 mt-0.5">km/sa</span>
+      </span>
+      <span id="rideMiniRec" class="hidden absolute top-1.5 right-2 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+    </button>
+    <div class="flex flex-col items-end gap-2 ml-auto pointer-events-auto">
       <button onclick="rideRecenter()" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl" title="Merkezle"><i class="fa-solid fa-location-crosshairs"></i></button>
       <button onclick="rideCycleCamera()" id="rideCamBtn" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl" title="Kamera"><i class="fa-solid fa-compass"></i></button>
       <button onclick="rideToggleMapStyle()" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl" title="Harita"><i class="fa-solid fa-layer-group"></i></button>
       <button onclick="parkOpen()" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl" title="Park yerim"><i class="fa-solid fa-square-parking"></i></button>
+      <button onclick="ridePinPrompt()" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl" title="İşaret ekle"><i class="fa-solid fa-map-pin"></i></button>
       <button onclick="rideZoom(1)" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl"><i class="fa-solid fa-plus"></i></button>
       <button onclick="rideZoom(-1)" class="w-11 h-11 rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-xl"><i class="fa-solid fa-minus"></i></button>
+    </div>
     </div>
     <div class="rounded-2xl border border-white/10 bg-black/75 backdrop-blur-xl overflow-hidden pointer-events-auto">
       <button type="button" onclick="rideTogglePanel()" class="w-full flex justify-center py-1.5"><span class="w-10 h-1 rounded-full bg-white/25"></span></button>
@@ -451,7 +465,8 @@
       <div class="rounded-2xl bg-white/5 border border-white/10 p-3"><p class="text-[10px] text-slate-500">Ort. hız</p><p class="text-xl font-bold" id="rideSumAvg">0</p></div>
       <div class="rounded-2xl bg-white/5 border border-white/10 p-3"><p class="text-[10px] text-slate-500">Maks. hız</p><p class="text-xl font-bold" id="rideSumMax">0</p></div>
     </div>
-    <div id="rideSumMap" class="h-40 rounded-2xl overflow-hidden border border-white/10 mb-3"></div>
+    <div id="rideSumMap" class="h-64 rounded-2xl overflow-hidden border border-white/10 mb-1"></div>
+    <p id="rideReplayInfo" class="text-[11px] text-slate-500 text-center mb-3">Haritaya dokun veya Oynat · 1x/2x/4x/Gerçek hız · rota hızla renklenir</p>
     <p id="rideSumNote" class="text-[11px] text-slate-500 mb-3"></p>
     <div class="grid grid-cols-4 gap-2 mb-3">
       <button type="button" onclick="rideShareCard()" class="seg text-[11px] py-2"><i class="fa-solid fa-share-nodes mr-1"></i>Kart</button>
@@ -492,6 +507,18 @@
       </div>
       <div class="flex items-center justify-between"><span>Gece / yağmur HUD</span>
         <button id="rideNightToggle" onclick="rideToggleNight()" class="seg">Kapalı</button>
+      </div>
+      <div class="flex items-center justify-between gap-2"><span>Hız limiti uyarısı</span>
+        <div class="flex items-center gap-1">
+          <input id="rideSpeedLimit" type="number" min="0" max="250" placeholder="kapalı" class="w-16 rounded-xl px-2 py-1.5 text-sm border border-white/10 bg-white/5 text-center" onchange="rideSetSpeedLimit(this.value)">
+          <span class="text-[10px] text-slate-500" id="rideLimitUnit">km/sa</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between"><span>Haftalık KM hedefi</span>
+        <div class="flex items-center gap-1">
+          <input id="rideWeekGoal" type="number" min="0" max="5000" placeholder="0" class="w-16 rounded-xl px-2 py-1.5 text-sm border border-white/10 bg-white/5 text-center" onchange="rideSetWeekGoal(this.value)">
+          <span class="text-[10px] text-slate-500">km</span>
+        </div>
       </div>
       <button onclick="rideSaveOfflineArea()" class="seg w-full py-2.5 text-xs"><i class="fa-solid fa-download mr-1"></i>Görünen harita alanını çevrimdışı kaydet</button>
       <p class="text-[11px] text-slate-500 leading-relaxed">Gezdiğin harita kareleri de otomatik saklanır; internet olmasa da GPS ve rota çalışır.</p>
@@ -1000,6 +1027,16 @@
       const N = window.GarajimNative;
       if (!N) return;
       if (typeof N.syncWidget === 'function') N.syncWidget(JSON.stringify(vehicles.map(v => ({ id: v.id, name: v.name || [v.brand, v.model].filter(Boolean).join(' ') || 'Aracınız', plate: v.plate || 'Plaka girilmedi', km: v.km || v.mileage || '', cons: (() => { const f = fuelStats(v); return f ? f.avg.toFixed(1) : ''; })(), svc: (() => { const p = serviceProgress(v); return p ? { remaining: Math.round(p.remaining), percent: Math.round(p.percent), state: p.overdue ? 'bad' : p.warning ? 'warn' : 'ok' } : null; })() }))));
+      // Native alarm tarih ve bakım eşiklerini kendi zamanında yeniden hesaplayabilsin.
+      if (typeof N.setReminderData === 'function') N.setReminderData(JSON.stringify({
+        remindDays: getRemindDays(),
+        vehicles: vehicles.map(v => ({
+          plate: v.plate || 'Araç', km: v.km || v.mileage || '',
+          nextServiceKm: v.nextServiceKm || '', interval: v.interval || 15000,
+          muayene: v.muayene || '', trafikSigorta: v.trafikSigorta || '', kasko: v.kasko || '',
+          kisLastigi: v.kisLastigi || '', yazLastigi: v.yazLastigi || '', dortMevsim: v.dortMevsim || ''
+        }))
+      }));
       if (typeof N.setReminders === 'function') N.setReminders(JSON.stringify(collectNotifications().map(n => n.title + ': ' + n.body)));
     } catch (e) {}
   }
@@ -1914,11 +1951,11 @@
           <button onclick="showTab('ride')" class="text-xs text-accent font-semibold">Sürüşe git</button>
         </div>
         ${(() => {
-          const rides = getVehicleRides(v.id).slice(0, 5);   // (idx = araca bağlı listedeki sıra)
+          const rides = getVehicleRides(v.id).slice(0, 8);   // (idx = araca bağlı listedeki sıra)
           if (!rides.length) return '<p class="text-xs text-slate-600 text-center py-3">Bu araca bağlı sürüş yok</p>';
           return `<div class="space-y-2">${rides.map((r, idx) => `
             <button type="button" onclick="openVehicleRidePreview('${v.id}', ${idx})" class="w-full bg-black/30 rounded-xl p-3 flex items-center gap-3 text-left">
-              <div class="w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center"><i class="fa-solid fa-motorcycle text-accent text-sm"></i></div>
+              <div class="w-14 h-10 rounded-lg bg-black/40 flex items-center justify-center overflow-hidden shrink-0">${rideThumb(r.pts)}</div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium">${rideDistTxt(r.dist)} · ${rideFmtTime(r.time)}</p>
                 <p class="text-[11px] text-slate-500">${new Date(r.date).toLocaleString('tr-TR')} · ort ${rideSpdTxt(r.avg)} · maks ${rideSpdTxt(r.max)}</p>
@@ -3409,10 +3446,8 @@
   function rideOpen() {
     const s = rideSettings();
     if (!ride.running && !ride.startedAt) ride.cam = s.cam || 'follow';
-    if (s.hud === false) {
-      document.getElementById('ridePanelBody').classList.add('hidden');
-      ride.panelCollapsed = true;
-    }
+    ride.panelCollapsed = s.hud === false;
+    rideApplyPanel();
     rideUpdateCamHint();
     rideRefreshVehicleSelect();
     rideApplyNight(!!s.night);
@@ -3428,6 +3463,7 @@
     ride.map.getContainer().classList.toggle('map-dark', !isLight());
     setTimeout(() => { try { ride.map.invalidateSize(); } catch (e) {} }, 180);
     parkRenderMarker();
+    ridePinsRender();
     rideRequestPermission();
     rideTryRecover();
   }
@@ -3575,9 +3611,10 @@
         return;
       }
       if (ride.running && !ride.paused && !poor) {
-        if (dt > 30) { ride.gap = true; ride.pts.push([cur.lat, cur.lng]); }       // kayıt boşluğu: aradaki mesafeyi uydurma
-        else if (d / dt * 3.6 < 200) { ride.dist += d; ride.pts.push([cur.lat, cur.lng]); }
-        if (ride.line) ride.line.setLatLngs(ride.pts);
+        const spd = (kmh != null && kmh >= 0 && kmh < 200) ? kmh : null;
+        if (dt > 30) { ride.gap = true; ride.pts.push([cur.lat, cur.lng, cur.t, spd]); }       // kayıt boşluğu: aradaki mesafeyi uydurma
+        else if (d / dt * 3.6 < 200) { ride.dist += d; ride.pts.push([cur.lat, cur.lng, cur.t, spd]); }
+        if (ride.line) ride.line.setLatLngs(ride.pts.map(p => [p[0], p[1]]));
       }
     }
     if (ride.running && !ride.paused && !poor && kmh != null && kmh >= 0 && kmh < 200) {
@@ -3629,6 +3666,29 @@
     const max = rideToDisplaySpeed(ride.maxSpeed);
     document.getElementById('rideAvg').textContent = (avg || 0).toFixed(1);
     document.getElementById('rideNow').textContent = now == null ? '—' : String(Math.round(now));
+    const mn = document.getElementById('rideMiniNum');
+    if (mn) {                                                   // küçük daire gösterge: hız + yay + kayıt noktası
+      mn.textContent = now == null ? '—' : String(Math.round(now));
+      document.getElementById('rideMiniUnit').textContent = unit;
+      const arc = document.getElementById('rideMiniArc'), v = Number(nowKmh) || 0;
+      arc.style.strokeDashoffset = (238.8 * (1 - Math.max(0, Math.min(1, v / 180)))).toFixed(1);
+      const lim = Number(rideSettings().speedLimit) || 0;
+      const overLimit = lim > 0 && now != null && now > lim;
+      arc.style.stroke = overLimit ? '#ef4444' : (v > 140 ? '#ef4444' : v > 110 ? '#f59e0b' : 'var(--accent)');
+      document.getElementById('rideMiniRec').classList.toggle('hidden', !(ride.running && !ride.paused));
+      const gauge = document.getElementById('rideMiniGauge');
+      if (gauge) {
+        if (overLimit) {
+          gauge.style.boxShadow = '0 0 0 3px #ef4444, 0 0 18px rgba(239,68,68,.55)';
+          if (ride.running && !ride.paused && (!ride._lastLimitVibe || Date.now() - ride._lastLimitVibe > 2500)) {
+            ride._lastLimitVibe = Date.now();
+            try { if (navigator.vibrate) navigator.vibrate([80, 40, 80]); } catch (e) {}
+          }
+        } else {
+          gauge.style.boxShadow = '';
+        }
+      }
+    }
     document.getElementById('rideDist').textContent = (mph ? ride.dist / 1609.344 : ride.dist / 1000).toFixed(2);
     document.getElementById('rideTime').textContent = rideFmtTime(ride.elapsed);
     document.getElementById('rideMax').textContent = String(Math.round(max || 0));
@@ -3678,6 +3738,7 @@
       rideWake(true);
       rideBGStart();
       txt.textContent = 'Duraklat';
+      rideRender(ride.lastSpeedKmh);
       icon.className = 'fa-solid fa-pause mr-2';
       document.getElementById('rideStopBtn').classList.remove('hidden');
       toast('Sürüş başladı');
@@ -3687,6 +3748,7 @@
       rideWake(false);
       rideBGStop();
       txt.textContent = 'Devam';
+      rideRender(ride.lastSpeedKmh);
       icon.className = 'fa-solid fa-play mr-2';
       toast('Duraklatıldı');
     } else {
@@ -3697,6 +3759,7 @@
       rideWake(true);
       rideBGStart();
       txt.textContent = 'Duraklat';
+      rideRender(ride.lastSpeedKmh);
       icon.className = 'fa-solid fa-pause mr-2';
     }
     ridePersistDraft();
@@ -3716,6 +3779,28 @@
     for (let i = 0; i < max; i++) out.push(pts[Math.floor(i * step)]);
     out.push(pts[pts.length - 1]);
     return out;
+  }
+  function ridePtLatLng(p) { return Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lng]; }
+  function ridePtSpd(p) { return Array.isArray(p) ? (p[3] != null ? p[3] : null) : (p.spd != null ? p.spd : null); }
+  function ridePtT(p) { return Array.isArray(p) ? (p[2] != null ? p[2] : null) : (p.t != null ? p.t : null); }
+  function rideSpeedColor(kmh) {
+    if (kmh == null || isNaN(kmh)) return rideAccent();
+    if (kmh < 30) return '#3b82f6';      // mavi yavaş
+    if (kmh < 60) return '#22c55e';      // yeşil
+    if (kmh < 90) return '#eab308';      // sarı
+    if (kmh < 120) return '#f97316';     // turuncu
+    return '#ef4444';                    // kırmızı hızlı
+  }
+  function rideAddSpeedColoredLine(map, pts) {
+    if (!pts || pts.length < 2) return null;
+    const layers = [];
+    for (let i = 1; i < pts.length; i++) {
+      const a = ridePtLatLng(pts[i - 1]), b = ridePtLatLng(pts[i]);
+      const sa = ridePtSpd(pts[i - 1]), sb = ridePtSpd(pts[i]);
+      const spd = (sa != null && sb != null) ? (sa + sb) / 2 : (sb != null ? sb : sa);
+      layers.push(L.polyline([a, b], { color: rideSpeedColor(spd), weight: 5, opacity: 0.95, lineJoin: 'round' }).addTo(map));
+    }
+    return layers;
   }
 
   function rideFinish() {
@@ -3786,15 +3871,135 @@
         ride.sumMap = L.map('rideSumMap', { zoomControl: false, attributionControl: false });
         addBaseTiles(ride.sumMap);
         if (s.pts && s.pts.length) {
-          const pl = L.polyline(s.pts, { color: rideAccent(), weight: 4 }).addTo(ride.sumMap);
+          const hasSpd = s.pts.some(p => ridePtSpd(p) != null);
+          let pl;
+          if (hasSpd) {
+            ride.sumLineLayers = rideAddSpeedColoredLine(ride.sumMap, s.pts);
+            pl = L.polyline(s.pts.map(ridePtLatLng), { color: 'transparent', weight: 1, opacity: 0 }).addTo(ride.sumMap);
+          } else {
+            pl = L.polyline(s.pts.map(ridePtLatLng), { color: rideAccent(), weight: 5, opacity: 0.9 }).addTo(ride.sumMap);
+          }
+          ride.sumLine = pl;
           ride.sumMap.invalidateSize();
-          ride.sumMap.fitBounds(pl.getBounds(), { padding: [16, 16] });
+          ride.sumMap.fitBounds(pl.getBounds(), { padding: [22, 22] });
+          if (s.pts.length > 1) {
+            const dot = (p, c) => L.circleMarker(ridePtLatLng(p), { radius: 7, color: '#fff', weight: 2, fillColor: c, fillOpacity: 1 }).addTo(ride.sumMap);
+            dot(s.pts[0], '#22c55e'); dot(s.pts[s.pts.length - 1], '#ef4444');
+            ride.sumMap.on('click', () => rideReplay());
+            ride.sumMap.getContainer().insertAdjacentHTML('beforeend',
+              '<div id="rideReplayCtrl" style="position:absolute;z-index:1000;right:10px;bottom:10px;display:flex;gap:6px;align-items:center">' +
+              '<button type="button" id="rideReplayBtn" style="padding:8px 12px;border-radius:12px;background:rgba(0,0,0,.72);color:#fff;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.18)"><i class="fa-solid fa-play" style="margin-right:6px"></i>Oynat</button>' +
+              '<select id="rideReplaySpeed" style="padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;border:1px solid rgba(255,255,255,.18)"><option value="1">1x</option><option value="2">2x</option><option value="4" selected>4x</option><option value="0">Gerçek</option></select>' +
+              '</div>');
+            document.getElementById('rideReplayBtn').addEventListener('click', e => { e.stopPropagation(); rideReplay(); });
+            if (hasSpd) {
+              const leg = document.createElement('div');
+              leg.style.cssText = 'position:absolute;z-index:1000;left:10px;bottom:10px;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;line-height:1.4';
+              leg.innerHTML = '<span style="color:#3b82f6">■</span> yavaş <span style="color:#22c55e">■</span> orta <span style="color:#eab308">■</span> hızlı <span style="color:#ef4444">■</span> çok hızlı';
+              ride.sumMap.getContainer().appendChild(leg);
+            }
+          }
         } else ride.sumMap.setView([39, 35], 5);
       } catch (e) {}
     }, 250);
   }
 
+  // Araç sayfasındaki liste için minik rota önizlemesi
+  function rideThumb(pts) {
+    if (!pts || pts.length < 2) return '<i class="fa-solid fa-motorcycle text-accent text-sm"></i>';
+    let a0 = 90, a1 = -90, o0 = 180, o1 = -180;
+    pts.forEach(p => { a0 = Math.min(a0, p[0]); a1 = Math.max(a1, p[0]); o0 = Math.min(o0, p[1]); o1 = Math.max(o1, p[1]); });
+    const k = Math.cos((a0 + a1) / 2 * Math.PI / 180), w = Math.max((o1 - o0) * k, 1e-5), h = Math.max(a1 - a0, 1e-5), S = Math.min(48 / w, 30 / h);
+    const ox = 4 + (48 - w * S) / 2, oy = 4 + (30 - h * S) / 2;
+    const X = p => (ox + (p[1] - o0) * k * S).toFixed(1), Y = p => (oy + (a1 - p[0]) * S).toFixed(1);
+    const st = pts[0], en = pts[pts.length - 1];
+    return '<svg viewBox="0 0 56 38" width="56" height="38"><polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="' + pts.map(p => X(p) + ',' + Y(p)).join(' ') + '"/><circle cx="' + X(st) + '" cy="' + Y(st) + '" r="2.4" fill="#22c55e"/><circle cx="' + X(en) + '" cy="' + Y(en) + '" r="2.4" fill="#ef4444"/></svg>';
+  }
+
+  // ---- Rota tekrarı: motor, gidilen rota üzerinden animasyonlu sürer
+  function rideReplayStop() {
+    if (ride.replayRaf) { cancelAnimationFrame(ride.replayRaf); ride.replayRaf = null; }
+  }
+  function rideReplay(durMs) {
+    const s = ride.pendingSummary, map = ride.sumMap;
+    if (!s || !map || !s.pts || s.pts.length < 2) return;
+    rideReplayStop();
+    const pts = s.pts.filter(p => isFinite(p[0]) && isFinite(p[1]));
+    if (pts.length < 2) return;
+    const speedSel = document.getElementById('rideReplaySpeed');
+    const mult = speedSel ? Number(speedSel.value) : 4;
+    const hasTime = pts.every(p => ridePtT(p) != null) && (ridePtT(pts[pts.length - 1]) - ridePtT(pts[0]) > 1000);
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) {
+      const a = ridePtLatLng(pts[i - 1]), b = ridePtLatLng(pts[i]);
+      cum.push(cum[i - 1] + rideHav({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] }));
+    }
+    const total = cum[cum.length - 1] || 1;
+    let dur;
+    if (mult === 0 && hasTime) {
+      dur = Math.max(2000, (ridePtT(pts[pts.length - 1]) - ridePtT(pts[0])));
+    } else {
+      const base = durMs || Math.min(14000, Math.max(4000, 3500 + total / 1000 * 220));
+      dur = base / Math.max(0.5, mult || 4);
+    }
+    if (ride.replayMarker) { try { map.removeLayer(ride.replayMarker); } catch (e) {} }
+    if (ride.replayTrail) { try { map.removeLayer(ride.replayTrail); } catch (e) {} }
+    if (ride.sumLine) ride.sumLine.setStyle({ opacity: 0.15 });
+    if (ride.sumLineLayers) ride.sumLineLayers.forEach(l => { try { l.setStyle({ opacity: 0.2 }); } catch (e) {} });
+    const firstLL = ridePtLatLng(pts[0]);
+    ride.replayTrail = L.polyline([firstLL], { color: rideAccent(), weight: 6, opacity: 1 }).addTo(map);
+    ride.replayMarker = L.marker(firstLL, { icon: rideIcon(0), interactive: false, zIndexOffset: 2000 }).addTo(map);
+    const mEl = () => { const el = ride.replayMarker.getElement && ride.replayMarker.getElement(); return el && el.querySelector('.ride-me'); };
+    const info = document.getElementById('rideReplayInfo'), btn = document.getElementById('rideReplayBtn'), ctrl = document.getElementById('rideReplayCtrl');
+    if (btn) btn.style.display = 'none';
+    if (ctrl && speedSel) speedSel.style.display = 'none';
+    const t0 = performance.now(); let seg = 0, hd = 0;
+    const step = now => {
+      if (ride.sumMap !== map) return;
+      const f = Math.min(1, (now - t0) / dur);
+      let d = f * total;
+      if (mult === 0 && hasTime) {
+        const tStart = ridePtT(pts[0]), tEnd = ridePtT(pts[pts.length - 1]);
+        const tNow = tStart + f * (tEnd - tStart);
+        while (seg < pts.length - 2 && ridePtT(pts[seg + 1]) < tNow) seg++;
+        const ta = ridePtT(pts[seg]), tb = ridePtT(pts[seg + 1]) || (ta + 1);
+        const u = Math.max(0, Math.min(1, (tNow - ta) / (tb - ta || 1)));
+        const a = ridePtLatLng(pts[seg]), b = ridePtLatLng(pts[seg + 1]);
+        const cur = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+        if (rideHav({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] }) > 0.5) hd = parkBearing({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] });
+        ride.replayMarker.setLatLng(cur);
+        const m = mEl(); if (m) m.style.transform = 'rotate(' + hd + 'deg)';
+        const trailPts = pts.slice(0, seg + 1).map(ridePtLatLng).concat([cur]);
+        ride.replayTrail.setLatLngs(trailPts);
+        if (info) info.textContent = rideDistTxt(s.dist * f) + ' / ' + rideDistTxt(s.dist) + (mult === 0 ? ' · gerçek hız' : '');
+      } else {
+        while (seg < pts.length - 2 && cum[seg + 1] < d) seg++;
+        const span = (cum[seg + 1] - cum[seg]) || 1, u = Math.max(0, Math.min(1, (d - cum[seg]) / span));
+        const a = ridePtLatLng(pts[seg]), b = ridePtLatLng(pts[seg + 1]);
+        const cur = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+        if (cum[seg + 1] - cum[seg] > 0.5) hd = parkBearing({ lat: a[0], lng: a[1] }, { lat: b[0], lng: b[1] });
+        ride.replayMarker.setLatLng(cur);
+        const m = mEl(); if (m) m.style.transform = 'rotate(' + hd + 'deg)';
+        ride.replayTrail.setLatLngs(pts.slice(0, seg + 1).map(ridePtLatLng).concat([cur]));
+        if (info) info.textContent = rideDistTxt(s.dist * f) + ' / ' + rideDistTxt(s.dist) + (mult > 1 ? ' · ' + mult + 'x' : '');
+      }
+      if (f < 1) ride.replayRaf = requestAnimationFrame(step);
+      else {
+        ride.replayRaf = null;
+        if (ride.sumLine) ride.sumLine.setStyle({ opacity: 0.9 });
+        if (ride.sumLineLayers) ride.sumLineLayers.forEach(l => { try { l.setStyle({ opacity: 0.95 }); } catch (e) {} });
+        if (info) info.textContent = 'Tekrar oynatmak için haritaya dokun veya hız seç';
+        if (btn) { btn.style.display = ''; btn.innerHTML = '<i class="fa-solid fa-rotate-right" style="margin-right:6px"></i>Tekrar'; }
+        if (speedSel) speedSel.style.display = '';
+      }
+    };
+    ride.replayRaf = requestAnimationFrame(step);
+  }
+
   function rideHideSummary() {
+    rideReplayStop();
+    ride.replayMarker = null; ride.replayTrail = null; ride.sumLine = null;
+    if (ride.sumLineLayers) { try { ride.sumLineLayers.forEach(l => l.remove()); } catch (e) {} ride.sumLineLayers = null; }
     ride.pendingSummary = null;
     document.getElementById('rideSummaryModal').classList.add('hidden');
     if (ride.sumMap) { try { ride.sumMap.remove(); } catch (e) {} ride.sumMap = null; }
@@ -3925,9 +4130,16 @@
     }
   }
 
+  // Gösterge kapalıyken hız kaybolmaz: ekranı kaplamayan küçük daire göstergeye dönüşür
+  function rideApplyPanel() {
+    const c = !!ride.panelCollapsed;
+    document.getElementById('ridePanelBody').classList.toggle('hidden', c);
+    document.getElementById('rideMiniGauge').classList.toggle('hidden', !c);
+    rideRender(ride.lastSpeedKmh);
+  }
   function rideTogglePanel() {
     ride.panelCollapsed = !ride.panelCollapsed;
-    document.getElementById('ridePanelBody').classList.toggle('hidden', ride.panelCollapsed);
+    rideApplyPanel();
     rideSaveSettings({ hud: !ride.panelCollapsed });
   }
 
@@ -4074,7 +4286,23 @@
     if (hud) hud.textContent = s.hud === false ? 'Kapalı' : 'Açık';
     const nt = document.getElementById('rideNightToggle');
     if (nt) nt.textContent = s.night ? 'Açık' : 'Kapalı';
+    const lim = document.getElementById('rideSpeedLimit');
+    if (lim) lim.value = s.speedLimit > 0 ? s.speedLimit : '';
+    const lu = document.getElementById('rideLimitUnit');
+    if (lu) lu.textContent = (s.unit === 'mph') ? 'mph' : 'km/sa';
+    const wg = document.getElementById('rideWeekGoal');
+    if (wg) wg.value = s.weekGoal > 0 ? s.weekGoal : '';
     document.getElementById('rideSettingsModal').classList.remove('hidden');
+  }
+  function rideSetSpeedLimit(v) {
+    const n = parseFloat(v);
+    rideSaveSettings({ speedLimit: (isFinite(n) && n > 0) ? n : 0 });
+    toast(n > 0 ? ('Hız limiti: ' + n) : 'Hız limiti kapalı');
+  }
+  function rideSetWeekGoal(v) {
+    const n = parseFloat(v);
+    rideSaveSettings({ weekGoal: (isFinite(n) && n > 0) ? n : 0 });
+    toast(n > 0 ? ('Haftalık hedef: ' + n + ' km') : 'Haftalık hedef kapalı');
   }
   function rideSetUnit(u) {
     rideSaveSettings({ unit: u });
@@ -4091,8 +4319,8 @@
     const on = s.hud === false;
     rideSaveSettings({ hud: on });
     document.getElementById('rideHudToggle').textContent = on ? 'Açık' : 'Kapalı';
-    document.getElementById('ridePanelBody').classList.toggle('hidden', !on);
     ride.panelCollapsed = !on;
+    rideApplyPanel();
   }
 
   // ---------- SÜRÜŞ İSTATİSTİKLERİ ----------
@@ -4118,6 +4346,49 @@
     });
     return { buckets, n, dist, time, max, avg: time > 0 ? dist / time * 3.6 : 0, rec, first, total: all.length };
   }
+  function ridePeriodRange(period, offset, now) {
+    now = now || new Date();
+    const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let start, end;
+    if (period === 'week') {
+      const day = d0.getDay(); // 0=Pz
+      const monOffset = day === 0 ? -6 : 1 - day;
+      start = new Date(d0); start.setDate(d0.getDate() + monOffset + offset * 7);
+      end = new Date(start); end.setDate(start.getDate() + 7);
+    } else if (period === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+      end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 1);
+    } else {
+      start = new Date(now.getFullYear() + offset, 0, 1);
+      end = new Date(now.getFullYear() + offset + 1, 0, 1);
+    }
+    return { start, end };
+  }
+  function rideSumInRange(start, end) {
+    let dist = 0, n = 0, time = 0, max = 0;
+    getAllRides().forEach(r => {
+      const d = new Date(r.date); if (isNaN(d) || d < start || d >= end) return;
+      dist += Number(r.dist) || 0; n++; time += Number(r.time) || 0; max = Math.max(max, Number(r.max) || 0);
+    });
+    return { dist, n, time, max };
+  }
+  function rideBadges() {
+    const all = getAllRides();
+    const totalKm = all.reduce((s, r) => s + (Number(r.dist) || 0), 0) / 1000;
+    const night = all.filter(r => { const h = new Date(r.date).getHours(); return h >= 22 || h < 5; }).length;
+    const long = all.filter(r => (r.dist || 0) >= 50000).length;
+    const list = [
+      { id: 'first', n: 'İlk sürüş', ok: all.length >= 1, i: 'fa-flag-checkered' },
+      { id: 'km100', n: '100 km', ok: totalKm >= 100, i: 'fa-road' },
+      { id: 'km500', n: '500 km', ok: totalKm >= 500, i: 'fa-route' },
+      { id: 'km1000', n: '1000 km', ok: totalKm >= 1000, i: 'fa-globe' },
+      { id: 'rides10', n: '10 sürüş', ok: all.length >= 10, i: 'fa-list-ol' },
+      { id: 'long50', n: '50+ km sürüş', ok: long >= 1, i: 'fa-gauge-high' },
+      { id: 'night', n: 'Gece sürüşü', ok: night >= 1, i: 'fa-moon' },
+      { id: 'fav', n: 'Favori rota', ok: all.some(r => r.favorite), i: 'fa-star' }
+    ];
+    return list;
+  }
   function rideStatsOpen(period) {
     period = period || ride.statsPeriod || 'week'; ride.statsPeriod = period;
     const st = rideStatsData(period), mph = rideUnit() === 'mph', conv = m => mph ? m / 1609.344 : m / 1000, u = mph ? 'mi' : 'km';
@@ -4132,11 +4403,51 @@
     const box = (v, l) => `<div class="rounded-xl bg-white/5 p-3 text-center"><div class="text-lg font-bold">${v}</div><div class="text-[10px] text-slate-400">${l}</div></div>`;
     const dt = r => new Date(r.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
     const rec = st.rec;
+    // dönem karşılaştırması
+    const curR = ridePeriodRange(period, 0), prevR = ridePeriodRange(period, -1);
+    const curS = rideSumInRange(curR.start, curR.end), prevS = rideSumInRange(prevR.start, prevR.end);
+    const delta = curS.dist - prevS.dist;
+    const deltaTxt = prevS.dist > 0 || curS.dist > 0
+      ? (delta >= 0 ? '+' : '') + conv(delta).toFixed(1) + ' ' + u + (prevS.dist > 0 ? ' (' + (delta / Math.max(prevS.dist, 1) * 100).toFixed(0) + '%)' : '')
+      : '—';
+    const periodLabel = period === 'week' ? 'önceki hafta' : period === 'month' ? 'önceki ay' : 'önceki yıl';
+    // haftalık hedef
+    const goalKm = Number(rideSettings().weekGoal) || 0;
+    const weekS = rideSumInRange(ridePeriodRange('week', 0).start, ridePeriodRange('week', 0).end);
+    const weekKm = weekS.dist / 1000;
+    const goalPct = goalKm > 0 ? Math.min(100, Math.round(weekKm / goalKm * 100)) : 0;
+    // rozetler
+    const badges = rideBadges();
+    const badgeHtml = badges.map(b =>
+      `<div class="flex flex-col items-center gap-1 p-2 rounded-xl ${b.ok ? 'bg-accent/15 border border-accent/30' : 'bg-white/5 opacity-40'}" title="${b.n}">
+        <i class="fa-solid ${b.i} text-lg ${b.ok ? 'text-accent' : 'text-slate-500'}"></i>
+        <span class="text-[9px] text-center leading-tight">${b.n}</span>
+      </div>`
+    ).join('');
+    // liderlik tablosu (kişisel en iyi 5 mesafe)
+    const board = getAllRides().slice().sort((a, b) => (b.dist || 0) - (a.dist || 0)).slice(0, 5);
+    const boardHtml = board.length ? board.map((r, i) => {
+      const plate = r.vehicleId ? (vehicles.find(v => v.id === r.vehicleId)?.plate || '') : '';
+      return `<div class="flex items-center gap-2 rounded-xl bg-white/5 p-2.5 text-sm">
+        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${i === 0 ? 'bg-amber-500/30 text-amber-300' : 'bg-white/10 text-slate-400'}">${i + 1}</span>
+        <div class="flex-1 min-w-0"><div class="font-semibold truncate">${rideDistTxt(r.dist)}${plate ? ' · ' + plate : ''}</div>
+        <div class="text-[11px] text-slate-500">${dt(r)} · ${rideFmtTime(r.time)} · maks ${rideSpdTxt(r.max)}</div></div>
+      </div>`;
+    }).join('') : '<p class="text-sm text-slate-500 text-center py-2">Henüz sürüş yok</p>';
+
     document.getElementById('rideStatsBody').innerHTML =
       `<div class="flex gap-2 mb-4">${tab('week', 'Hafta')}${tab('month', 'Ay')}${tab('year', 'Yıl')}</div>` +
       (st.total === 0 ? '<p class="text-sm text-slate-400 text-center py-6">Henüz kayıtlı sürüş yok. Bir sürüşü bitirip kaydedince istatistikler burada görünür.</p>' :
       `<div class="grid grid-cols-2 gap-2 mb-3">${box(conv(st.dist).toFixed(1) + ' ' + u, 'toplam mesafe')}${box(st.n, 'sürüş')}${box(rideFmtTime(st.time), 'toplam süre')}${box(rideSpdTxt(st.avg), 'ort. hız')}</div>` +
+      `<div class="rounded-xl bg-white/5 p-3 mb-3 flex items-center justify-between text-sm">
+        <span class="text-slate-400">${period === 'week' ? 'Bu hafta' : period === 'month' ? 'Bu ay' : 'Bu yıl'} vs ${periodLabel}</span>
+        <span class="font-bold ${delta >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${deltaTxt}</span>
+      </div>` +
+      (goalKm > 0 ? `<div class="mb-3"><div class="flex justify-between text-[11px] mb-1"><span class="text-slate-400">Haftalık hedef</span><span class="font-semibold">${weekKm.toFixed(1)} / ${goalKm} km · %${goalPct}</span></div>
+        <div class="h-2.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full transition-all" style="width:${goalPct}%;background:var(--accent)"></div></div></div>` : '') +
       `<svg viewBox="0 0 ${W} ${H}" class="w-full mb-1">${bars}</svg><p class="text-[10px] text-slate-500 text-center mb-4">En yüksek çubuk: ${conv(top).toFixed(1)} ${u}</p>` +
+      `<p class="text-xs text-slate-500 uppercase mb-2">Rozetler</p><div class="grid grid-cols-4 gap-2 mb-4">${badgeHtml}</div>` +
+      `<p class="text-xs text-slate-500 uppercase mb-2">Liderlik · en uzun sürüşler</p><div class="space-y-1.5 mb-4">${boardHtml}</div>` +
       `<p class="text-xs text-slate-500 uppercase mb-2">Rekorlar (tüm zamanlar)</p><div class="space-y-2">` +
       (rec.longest ? `<div class="flex justify-between rounded-xl bg-white/5 p-3 text-sm"><span class="text-slate-400">En uzun sürüş</span><span class="font-semibold">${rideDistTxt(rec.longest.dist)} · ${dt(rec.longest)}</span></div>` : '') +
       (rec.fastest ? `<div class="flex justify-between rounded-xl bg-white/5 p-3 text-sm"><span class="text-slate-400">En yüksek hız</span><span class="font-semibold">${rideSpdTxt(rec.fastest.max)} · ${dt(rec.fastest)}</span></div>` : '') +
@@ -4198,6 +4509,64 @@
   const PARK_KEY = 'garaj_parking';
   const parkGet = () => { try { return JSON.parse(localStorage.getItem(PARK_KEY) || 'null'); } catch { return null; } };
   let parkMarker = null;
+
+  // ---------- KENDİ İŞARETLERİM (harita pin) ----------
+  const RIDE_PIN_KEY = 'garaj_ride_pins';
+  const PIN_TYPES = {
+    manzara: { n: 'Manzara', i: 'fa-mountain-sun', c: '#22c55e' },
+    benzin: { n: 'Benzinlik', i: 'fa-gas-pump', c: '#f59e0b' },
+    cukur: { n: 'Çukur / risk', i: 'fa-triangle-exclamation', c: '#ef4444' },
+    mola: { n: 'Mola', i: 'fa-mug-hot', c: '#38bdf8' },
+    diger: { n: 'Diğer', i: 'fa-location-dot', c: '#a78bfa' }
+  };
+  function ridePinsGet() { try { return JSON.parse(localStorage.getItem(RIDE_PIN_KEY) || '[]'); } catch { return []; } }
+  function ridePinsSave(list) {
+    try { localStorage.setItem(RIDE_PIN_KEY, JSON.stringify(list.slice(0, 80))); } catch (e) { toast('İşaret kaydedilemedi'); }
+  }
+  let ridePinLayers = [];
+  function ridePinsClearLayers() {
+    if (!ride.map) return;
+    ridePinLayers.forEach(m => { try { ride.map.removeLayer(m); } catch (e) {} });
+    ridePinLayers = [];
+  }
+  function ridePinsRender() {
+    if (!ride.map || typeof L === 'undefined') return;
+    ridePinsClearLayers();
+    ridePinsGet().forEach(p => {
+      const t = PIN_TYPES[p.type] || PIN_TYPES.diger;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:34px;height:34px;border-radius:50%;background:${t.c};border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)"><i class="fa-solid ${t.i}" style="color:#fff;font-size:13px"></i></div>`,
+        iconSize: [34, 34], iconAnchor: [17, 17]
+      });
+      const m = L.marker([p.lat, p.lng], { icon }).addTo(ride.map);
+      m.bindPopup(`<div style="min-width:140px"><b>${t.n}</b>${p.note ? '<br><span style="font-size:12px">' + String(p.note).replace(/</g, '&lt;') + '</span>' : ''}<br><button onclick="ridePinDelete('${p.id}')" style="margin-top:6px;font-size:11px;color:#ef4444">Sil</button></div>`);
+      ridePinLayers.push(m);
+    });
+  }
+  function ridePinPrompt() {
+    if (!ride.last && !ride.marker) { toast('Önce konum alınsın'); return; }
+    const ll = ride.last || (ride.marker ? ride.marker.getLatLng() : null);
+    if (!ll) { toast('Konum yok'); return; }
+    const choices = Object.entries(PIN_TYPES).map(([k, v], i) => (i + 1) + ') ' + v.n).join('\n');
+    const ans = prompt('İşaret türü:\n' + choices + '\n\nNumara yaz (1-5):');
+    if (ans == null) return;
+    const idx = parseInt(ans, 10);
+    const keys = Object.keys(PIN_TYPES);
+    const type = keys[(idx >= 1 && idx <= keys.length) ? idx - 1 : 4];
+    const note = prompt('Not (isteğe bağlı):') || '';
+    const list = ridePinsGet();
+    list.unshift({ id: 'p_' + Date.now().toString(36), type, lat: ll.lat, lng: ll.lng, note: note.slice(0, 80), date: new Date().toISOString() });
+    ridePinsSave(list);
+    ridePinsRender();
+    toast((PIN_TYPES[type] || PIN_TYPES.diger).n + ' işareti eklendi');
+  }
+  function ridePinDelete(id) {
+    const list = ridePinsGet().filter(p => p.id !== id);
+    ridePinsSave(list);
+    ridePinsRender();
+    toast('İşaret silindi');
+  }
   function parkBearing(a, b) {
     const r = x => x * Math.PI / 180, y = Math.sin(r(b.lng - a.lng)) * Math.cos(r(b.lat));
     const x = Math.cos(r(a.lat)) * Math.sin(r(b.lat)) - Math.sin(r(a.lat)) * Math.cos(r(b.lat)) * Math.cos(r(b.lng - a.lng));

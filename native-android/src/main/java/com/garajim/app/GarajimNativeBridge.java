@@ -41,6 +41,17 @@ public class GarajimNativeBridge {
         context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit().putBoolean("reminders", true).apply();
     }
 
+    /** Alarmın uygulama kapalıyken de tarih ve km eşiklerini yeniden hesaplayabilmesi için veri. */
+    @JavascriptInterface
+    public void setReminderData(String json) {
+        try {
+            JSONObject data = new JSONObject(json == null ? "{}" : json);
+            if (data.optJSONArray("vehicles") == null) return;
+            context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit()
+                .putString("reminder_data", data.toString()).apply();
+        } catch (Exception ignored) { }
+    }
+
     /** Uygulamadan gelen yaklaşan/geciken kalemler (JSON dizisi: ["34ABC123: Muayene...", ...]) */
     @JavascriptInterface
     public void setReminders(String json) {

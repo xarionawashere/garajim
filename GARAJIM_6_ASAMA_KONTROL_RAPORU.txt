@@ -1,0 +1,56 @@
+GARAJIM — 6 AŞAMALI KONTROL RAPORU
+Tarih: 17.11.2026
+Kontrol edilen kaynak: Garajim-guncel.zip
+
+GENEL SONUÇ
+Kaynaklar üzerinde statik kontroller ve seçili JavaScript işlev testleri başarıyla tamamlandı. Android günlük hatırlatma akışındaki eski uyarı metinlerinin uygulama kapalıyken güncellenmemesi sorunu düzeltildi. Bununla birlikte bu ortamda npm kayıt sunucusuna erişilemediği ve Android SDK/Gradle bulunmadığı için tam web derlemesi, APK derlemesi ve gerçek cihaz testi tamamlanamadı. Bu nedenle Android uygulamasının her cihazda çalıştığına dair kesin onay verilmemektedir.
+
+1. AŞAMA — ZIP ARŞİVİ VE DOSYA BÜTÜNLÜĞÜ
+DURUM: GEÇTİ
+- Girdi ZIP arşivi açıldı; 38 arşiv kaydı okundu.
+- Arşiv CRC kontrolünde bozuk dosya bulunmadı (testzip sonucu: None).
+- Kaynaklar çalışma klasörüne hatasız çıkarıldı.
+
+2. AŞAMA — HTML VE JAVASCRIPT SÖZDİZİMİ
+DURUM: GEÇTİ
+- index.html HTML ayrıştırıcısından geçti.
+- 179 statik HTML ID’sinde tekrar bulunmadı.
+- İki satır içi JavaScript bloğu `node --check` ile doğrulandı.
+- build-web.js için `node --check` başarılı oldu.
+- Statik HTML’de eksik yerel src/href dosya bağlantısı tespit edilmedi.
+
+3. AŞAMA — ARAYÜZ BAĞLANTILARI VE DERLEME YAPILANDIRMASI
+DURUM: GEÇTİ (STATİK KONTROL)
+- 111 statik satır içi olay işleyicisi ve 79 farklı işleyici giriş adı tarandı; çözümlenemeyen bir işleyici bulunmadı.
+- build-web.js içindeki 10 kaynak değiştirme metninin tamamı index.html içinde bulundu.
+- GitHub Actions iş akışı YAML olarak ayrıştırıldı.
+- Statik HTML’de başlangıçta görünmeyen expenseChart, fuelChart, rideReplayBtn, rideReplayCtrl, rideReplaySpeed ve toast öğeleri çalışma sırasında oluşturulan/doldurulan alanlar olarak incelendi.
+
+4. AŞAMA — TEMEL İŞLEV VE HESAPLAMA TESTLERİ
+DURUM: GEÇTİ (SEÇİLİ OTOMATİK TESTLER)
+- Bakım kilometresi: yaklaşan bakım eşiği ve gecikmiş bakım senaryoları test edildi.
+- Yakıt tüketimi: tam depo–tam depo ve aradaki kısmi dolum senaryoları test edildi.
+- Yakıt maliyeti: maliyet verisi eksikse maliyetin uydurulmaması kontrol edildi.
+- 30 km’den kısa yakıt ölçüm aralığının hesaba katılmaması kontrol edildi.
+- 100 km başına toplam masraf hesabı test edildi.
+- Kilometre OCR adaylarının sıralanmasında beklenen adayın korunması kontrol edildi.
+- Bu testler seçili gerçek JavaScript fonksiyonlarından çıkarılan kodla Node.js üzerinde çalıştırıldı; tüm assertion’lar geçti.
+
+5. AŞAMA — ANDROID KATMANI, KAYNAK VE HATIRLATICI DÜZELTMESİ
+DURUM: KAYNAK KONTROLLERİ GEÇTİ; TAM APK DERLEMESİ BEKLEMEDE
+- 5 XML kaynağının tamamı XML ayrıştırıcısından geçti.
+- Java tarafında kullanılan 15 widget R.id öğesinin tamamı widget yerleşiminde tanımlı.
+- Java dosyalarında söz dizimi hatası göstergesi bulunmadı; ancak Android, AndroidX ve Capacitor sınıfları ortamda bulunmadığından gerçek Java/Android derlemesi yapılamadı.
+- GarajimReminderReceiver içindeki tarih hesabı metodu, gerçek kaynak koddan alınarak ayrı bir Java testiyle bugün=0, yarın=1 ve dün=-1 senaryolarında çalıştırıldı; test geçti.
+- DÜZELTİLEN KUSUR: Alarm, uygulamanın son açılışındaki hazır uyarı metinlerini tekrar kullanıyordu. Uygulama kapalıyken yaklaşan tarih uyarıları güncellenmeyebilirdi. Artık web katmanı araçların tarih ve bakım verisini native köprüye iletiyor; günlük alarm çalışırken tarih ve bakım kilometresi uyarıları tekrar hesaplanıyor ve widget uyarı satırı güncelleniyor. Kilometre uyarısı son kaydedilen km değerini kullanır; araç kullanılınca km bilgisi uygulama açılıp kaydedilene kadar kendiliğinden ilerlemez.
+- DOKÜMANTASYON DÜZELTMESİ: Kaynak ZIP’inde bulunmayan logo.png hakkında yanlış/eskimiş not düzeltildi; derlemenin kullandığı icon.png ve icon-foreground.png dosyaları belirtildi.
+
+6. AŞAMA — TAM DERLEME VE TESLİM ZIP’İ
+DURUM: ZIP DOĞRULANDI; TAM DERLEME ORTAM ENGELİ NEDENİYLE BEKLEMEDE
+- `npm install --no-audit --no-fund` denemesi npm kayıt sunucusuna DNS/ağ erişimi hatasıyla (`EAI_AGAIN`) tamamlanamadı; bu yüzden `node build-web.js` gerçek bağımlılıklarla çalıştırılamadı.
+- Ortamda Gradle komutu ve Android SDK (`android.jar`) bulunmadığı için APK derlemesi ve emülatör/gerçek cihaz testleri yapılamadı.
+- Android ana ekran widget’ının gerçek cihazda eklenmesi, bildirim izninin verilmesi, yeniden başlatma sonrası alarm ve üretici pil optimizasyonu davranışı bu kontrolde canlı olarak doğrulanamadı.
+- Teslim ZIP’i oluşturulduktan sonra yeniden bütünlük kontrolünden geçirildi; 26 dosya kaydı içeren arşivde bozuk kayıt bulunmadı (`testzip: None`).
+
+ÖNEMLİ SINIRLAMA
+Kaynak ve seçili işlev testlerinin geçmesi, tam APK’nın üretildiği veya Android cihazda bütün özelliklerin doğrulandığı anlamına gelmez. Gerçek derleme onayı için ağ erişimi olan bir ortamda GitHub Actions iş akışının çalıştırılması ve oluşan APK’nın cihazda denenmesi gerekir.

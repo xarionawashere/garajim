@@ -1,9 +1,9 @@
 GARAJIM - LOGO, WIDGET VE BAKIM BILDIRIMLERI
 
 Logo dosyalari:
-- logo.png: Garajim uygulamasinin ana logosu (koyu arka planli)
 - icon.png: Android uygulama simgesinin temel gorseli
 - icon-foreground.png: Android uyarlanabilir simge on plani
+- logo.png bu kaynak ZIP'inde bulunmuyor ve APK derleme akisi tarafindan kullanilmiyor.
 
 GitHub Actions is akisi bu simge dosyalarini Android mipmap kaynaklarina kopyalar ve uygulama simgesi olarak ayarlar. Uygulama icindeki baslik da Garajim yazisini korur.
 

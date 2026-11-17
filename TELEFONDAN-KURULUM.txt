@@ -28,6 +28,6 @@ Play Protect uyarisi sadece Google Play yayini veya kullanicinin "yine de yukle"
 
 GUNCELLEME NOTLARI
 - Android ana ekran widget'i eklendi: Ana ekranda bos alana basili tut > Widget'lar > Garajim. Widget verisi uygulama acildiginda ve arac kaydedildiginde guncellenir.
-- Uygulamadaki Sistem bildirimi dugmesi Android 13+ bildirim izni ister ve her gun yaklasik 09.00 icin genel bakim kontrolu hatirlaticisi kurar. Bu hatirlatici su an araclara ozel son tarihleri native alarma donusturmez.
+- Uygulamadaki Sistem bildirimi dugmesi Android 13+ bildirim izni ister ve her gun yaklasik 09.00 icin alarm kurar. Alarm, son kaydedilen arac verisindeki tarihleri ve bakim km esigini yeniden hesaplar; km degeri uygulama tekrar acilip kaydedilene kadar degismez.
 - GitHub Actions imza secrets yoksa debug APK olusturur. Kalici guncelleme icin KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS ve KEY_PASSWORD secrets degerlerini tanimlayip release APK olusturun. Keystore'u guvenli bir yerde saklayin; kaybolursa mevcut imzali uygulamanin ustune guncelleme yapilamayabilir.
 - Kaynak paketi hazir APK icermiyor. GitHub Actions derlemesi ve gercek cihaz testi gereklidir.
