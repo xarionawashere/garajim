@@ -2,7 +2,5 @@
   "appId": "com.garajim.app",
   "appName": "Garajım",
   "webDir": "www",
-  "android": {
-    "useLegacyBridge": true
-  }
+  "android": { "allowMixedContent": true }
 }

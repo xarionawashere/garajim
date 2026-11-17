@@ -1,32 +1,33 @@
-GARAJIM — ANDROID / GOOGLE PLAY DERLEME KILAVUZU
+TELEFONDAN APK OLUSTURMA + IMZA
 
-BU KLASORDE HAZIR APK/AAB YOKTUR. APK/AAB GitHub Actions tarafinda olusturulur.
+1) github.com'a gir, depo olustur (garajim).
+2) Su dosyalari yukle:
+   index.html, package.json, capacitor.config.json,
+   icon.png, icon-foreground.png, build-apk.yml
+   (build-apk.yml yolu: .github/workflows/build-apk.yml)
+3) Actions > derleme bitsin > Garajim-APK indir (app-release.apk).
 
-1) GitHub'da bos bir repo olustur (or. garajim). ZIP'i acip proje kokundeki TUM dosyalari/klasorleri repoya yukle. Ozellikle .github/workflows/build-apk.yml, scripts/, native-android/, build-web.js, tw-input.css, tailwind.config.js, package.json, capacitor.config.json, index.html, icon.png ve icon-foreground.png dosyalarini unutma. node_modules/, android/ ve www/ yukleme; bunlar derlemede olusur.
-2) Actions sekmesinde “Android APK ve Google Play AAB Olustur” is akisini calistir. Ilk derleme bagimliliklari indirir; hata olursa logdaki ilk hata satirini kontrol et.
-3) Sadece debug APK test icin uretilir. Google Play'e yuklemek icin imzali AAB gerekir; release derlemesi icin asagidaki secrets degerlerini ekle.
+IMZA
+- Eski hali debug APK idi; telefon "bilinmeyen uygulama" uyarisi verirdi.
+- Yeni workflow RELEASE imzali APK uretir.
+- Uyari tamamen yok olmaz: Play Store disi kurulumda Android guvenlik uyarisi normaldir.
+- Kendi telefonunda: Ayarlar > Guvenlik > Bilinmeyen kaynaklar / uygulamayi yukle izni.
 
-KALICI IMZA (BIR KEZ OLUŞTUR)
-Java yüklü bilgisayarda terminal: 
-  keytool -genkeypair -v -storetype PKCS12 -keystore garajim.p12 -alias garajim -keyalg RSA -keysize 2048 -validity 10000
-Sonra Base64 olustur:
-  base64 -w0 garajim.p12 > keystore-base64.txt
-Windows PowerShell alternatif:
-  [Convert]::ToBase64String([IO.File]::ReadAllBytes('garajim.p12')) | Set-Content -NoNewline keystore-base64.txt
-GitHub repo > Settings > Secrets and variables > Actions > New repository secret:
-  KEYSTORE_BASE64   = keystore-base64.txt icerigi
-  KEYSTORE_PASSWORD = anahtar deposu parolasi
+KALICI IMZA (guncellemede ayni imza)
+Bilgisayarda bir kez:
+  keytool -genkeypair -v -keystore garajim.jks -alias garajim -keyalg RSA -keysize 2048 -validity 10000
+  base64 -w0 garajim.jks > key.txt
+GitHub repo > Settings > Secrets and variables > Actions:
+  KEYSTORE_BASE64  = key.txt icerigi
+  KEYSTORE_PASSWORD = sifren
   KEY_ALIAS         = garajim
-  KEY_PASSWORD      = anahtar parolasi
-Anahtari ve parolalari guvenli, ayrica bir yerde yedekle; kaybolmasi guncelleme yayimlamayi engelleyebilir. Asla GitHub'a .p12/.jks veya parola dosyasi olarak yukleme.
+  KEY_PASSWORD      = sifren
 
-DERLEME CIKTILARI
-- Secrets YOKSA: Garajim-Debug-APK artifact'i (yalniz test; Play'e yukleme).
-- Dort secret da varsa: Garajim-Play-AAB artifact'i; app-release.aab Play Console'un dahili test kanalina yuklenebilir.
+Play Protect uyarisi sadece Google Play yayini veya kullanicinin "yine de yukle" demesiyle asilir.
 
-GOOGLE PLAY ONCESI
-- app-release.aab'yi once Internal testing'e yukle ve gercek Android telefonda test et.
-- Gizlilik politikasini gercek ve herkese acik bir HTTPS URL'sinde yayinla; destek e-posta alanini doldur.
-- Data safety, arka plan konum izni gerekcesi, uygulama erisimi, hedef kitle ve icerik derecelendirme formlarini uygulamanin gercek davranisina gore doldur.
-- Magaza ekran goruntulerini final calisan uygulamadan yeniden al; paketteki gorseller taslaktir.
-- Yerel bildirimler uygulama son acikken hesaplanan uyarilari saklar; uygulama uzun sure kapali kalirsa tarih/uyari yeniden hesaplanmaz. Bu davranisi cihazda test et.
+
+GUNCELLEME NOTLARI
+- Android ana ekran widget'i eklendi: Ana ekranda bos alana basili tut > Widget'lar > Garajim. Widget verisi uygulama acildiginda ve arac kaydedildiginde guncellenir.
+- Uygulamadaki Sistem bildirimi dugmesi Android 13+ bildirim izni ister ve her gun yaklasik 09.00 icin genel bakim kontrolu hatirlaticisi kurar. Bu hatirlatici su an araclara ozel son tarihleri native alarma donusturmez.
+- GitHub Actions imza secrets yoksa debug APK olusturur. Kalici guncelleme icin KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS ve KEY_PASSWORD secrets degerlerini tanimlayip release APK olusturun. Keystore'u guvenli bir yerde saklayin; kaybolursa mevcut imzali uygulamanin ustune guncelleme yapilamayabilir.
+- Kaynak paketi hazir APK icermiyor. GitHub Actions derlemesi ve gercek cihaz testi gereklidir.

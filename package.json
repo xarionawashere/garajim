@@ -1,20 +1,17 @@
 {
   "name": "garajim-app",
-  "version": "1.2.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
-    "build:web": "node build-web.js",
-    "test:syntax": "node scripts/check-syntax.js",
-    "test": "node scripts/check-syntax.js && node scripts/test-core.js"
+    "build:web": "node build-web.js"
   },
   "dependencies": {
-    "@capacitor-community/background-geolocation": "1.3.1",
-    "@capacitor/android": "8.0.0",
-    "@capacitor/app": "8.0.0",
-    "@capacitor/cli": "8.0.0",
-    "@capacitor/core": "8.0.0",
-    "@capacitor/filesystem": "8.0.0",
-    "@capacitor/share": "8.0.0",
+    "@capacitor-community/background-geolocation": "^1.2.0",
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
     "@fontsource/inter": "5.1.0",
     "@fortawesome/fontawesome-free": "6.5.1",
     "@tesseract.js-data/eng": "1.0.0",

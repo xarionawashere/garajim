@@ -1002,59 +1002,7 @@
 </div>
 
 <script>
-  // Safe rendering and import helpers. Backups are user-controlled input; never trust their HTML/IDs/image URLs.
-  function escHtml(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-  function safeImageSrc(value) {
-    if (typeof value !== 'string' || value.length > 8 * 1024 * 1024) return '';
-    return /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(value) ? value : '';
-  }
-  function safeRecordId(value, prefix) {
-    const id = String(value == null ? '' : value);
-    if (/^[A-Za-z0-9_-]{1,100}$/.test(id)) return id;
-    return String(prefix || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
-  }
-  function sanitizeStoredData(value, depth, key) {
-    depth = depth || 0; key = key || '';
-    if (depth > 14) return null;
-    if (value == null || typeof value === 'boolean' || typeof value === 'number') return value;
-    if (typeof value === 'string') {
-      if (/^(photo|receipt|image|avatar|src)$/i.test(key)) return safeImageSrc(value) || null;
-      // Replace angle brackets in untrusted imported text so legacy HTML templates cannot create elements.
-      return value.slice(0, 50000).replace(/</g, '‹').replace(/>/g, '›');
-    }
-    if (Array.isArray(value)) return value.slice(0, 1000).map(v => sanitizeStoredData(v, depth + 1, key));
-    if (typeof value === 'object') {
-      const out = {};
-      for (const [k, v] of Object.entries(value).slice(0, 300)) {
-        if (k === '__proto__' || k === 'prototype' || k === 'constructor') continue;
-        if (k === 'id') out[k] = safeRecordId(v, 'item');
-        else out[k] = sanitizeStoredData(v, depth + 1, k);
-      }
-      return out;
-    }
-    return null;
-  }
-  function normalizeRecordArray(value, prefix, maxItems) {
-    const source = Array.isArray(value) ? value.slice(0, maxItems || 500) : [];
-    const seen = new Set();
-    return source.filter(v => v && typeof v === 'object' && !Array.isArray(v)).map(v => {
-      const row = sanitizeStoredData(v, 0, '');
-      let id = safeRecordId(row.id, prefix || 'item');
-      if (seen.has(id)) id = safeRecordId('', prefix || 'item');
-      seen.add(id);
-      row.id = id;
-      return row;
-    });
-  }
-  function parseStoredArray(key, prefix, maxItems) {
-    try { return normalizeRecordArray(JSON.parse(localStorage.getItem(key) || '[]'), prefix, maxItems); }
-    catch (_) { return []; }
-  }
-  let vehicles = parseStoredArray('garaj_v4', 'vehicle', 500);
+  let vehicles = JSON.parse(localStorage.getItem('garaj_v4') || '[]');
   let currentId = null;
   let tempPhoto = null;
   let currentFilter = 'all';
@@ -1190,20 +1138,7 @@
 
   function formatKm(n) { return (n === null || n === undefined || n === '') ? '—' : Number(n).toLocaleString('tr-TR') + ' km'; }
   function formatMoney(n) { return (!n && n !== 0) ? '' : Number(n).toLocaleString('tr-TR') + ' ₺'; }
-  function daysLeft(d) {
-    if (!d) return null;
-    const dateOnly = typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
-    const target = dateOnly ? new Date(d + 'T00:00:00') : new Date(d);
-    if (!Number.isFinite(target.getTime())) return null;
-    // Date-only değerleri yerel takvim gününde doğrula. UTC ISO kontrolü pozitif
-    // saat dilimlerinde (örn. UTC+14) geçerli tarihi yanlışlıkla bir gün önce sayardı.
-    if (dateOnly && (target.getFullYear() !== Number(d.slice(0, 4)) ||
-        target.getMonth() + 1 !== Number(d.slice(5, 7)) ||
-        target.getDate() !== Number(d.slice(8, 10)))) return null;
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    target.setHours(0, 0, 0, 0);
-    return Math.round((target.getTime() - today.getTime()) / 86400000);
-  }
+  function daysLeft(d) { if (!d) return null; return Math.ceil((new Date(d) - new Date()) / 86400000); }
   function getRemindDays() { return Number(localStorage.getItem('garaj_remind_days') || 30); }
   function setRemindDays(d) {
     localStorage.setItem('garaj_remind_days', d);
@@ -1221,26 +1156,8 @@
   const catOf = h => cats[h.cat] ? h.cat : 'diger';
   const totalCost = v => (v.history || []).reduce((s, h) => s + (Number(h.cost) || 0), 0);
   const fmtTL = n => Math.round(n).toLocaleString('tr-TR') + ' ₺';
-  const todayStr = () => {
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  };
-  function daysBetween(a, b) {
-    const parseDay = value => {
-      if (!value) return null;
-      let d;
-      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        const [y, m, day] = value.split('-').map(Number);
-        d = new Date(y, m - 1, day);
-        if (d.getFullYear() !== y || d.getMonth() !== m - 1 || d.getDate() !== day) return null;
-      } else d = new Date(value);
-      if (!Number.isFinite(d.getTime())) return null;
-      return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-    };
-    const aa = parseDay(a), bb = parseDay(b);
-    return aa == null || bb == null ? 0 : Math.round((bb - aa) / 86400000);
-  }
+  const todayStr = () => new Date().toISOString().slice(0, 10);
+  const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
   function getAlerts(v) {
     const alerts = [];
@@ -1418,13 +1335,13 @@
       </div>`;
     } else {
       box.innerHTML = list.map(n => `
-        <button onclick="openDetailFromNotif('${safeRecordId(n.id, 'vehicle')}')" class="w-full text-left flex gap-3 p-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 mb-1">
+        <button onclick="openDetailFromNotif('${n.id}')" class="w-full text-left flex gap-3 p-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 mb-1">
           <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${n.type === 'danger' ? 'bg-red-500/15 text-red-400' : 'bg-amber-500/15 text-amber-400'}">
             <i class="fa-solid ${n.icon} text-sm"></i>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold truncate">${escHtml(n.title)}</p>
-            <p class="text-[12px] text-slate-400 mt-0.5 leading-snug">${escHtml(n.body)}</p>
+            <p class="text-sm font-semibold truncate">${n.title}</p>
+            <p class="text-[12px] text-slate-400 mt-0.5 leading-snug">${n.body}</p>
           </div>
           <i class="fa-solid fa-chevron-right text-slate-600 text-xs self-center"></i>
         </button>`).join('');
@@ -1508,13 +1425,8 @@
   }
 
   // ---------- OTOMATİK YEDEK ----------
-  // v3 snapshots include vehicles and the complete user-visible Open World data set.
   const AUTO_KEY = 'garaj_auto_backups';
   const AUTO_ON = 'garaj_auto_backup_on';
-  const AUTO_BACKUP_INTERVAL_MS = 60 * 1000;
-  let autoBackupLastAt = 0;
-  let autoBackupTimer = null;
-  let autoBackupLastError = '';
 
   function isAutoBackupOn() { return localStorage.getItem(AUTO_ON) === '1'; }
 
@@ -1522,79 +1434,37 @@
     const on = !isAutoBackupOn();
     localStorage.setItem(AUTO_ON, on ? '1' : '0');
     updateAutoBackupUI();
-    if (on) {
-      runAutoBackup(true);
-      toast(autoBackupLastError ? 'Otomatik yedek açılamadı; depolama alanını kontrol et' : 'Otomatik yedek açıldı');
-    } else {
-      if (autoBackupTimer) { clearTimeout(autoBackupTimer); autoBackupTimer = null; }
-      toast('Otomatik yedek kapandı');
-    }
+    if (on) { runAutoBackup(true); toast('Otomatik yedek açıldı'); }
+    else toast('Otomatik yedek kapandı');
   }
 
   function getAutoBackups() {
-    try {
-      const value = JSON.parse(localStorage.getItem(AUTO_KEY) || '[]');
-      return Array.isArray(value) ? value.filter(x => x && typeof x === 'object').slice(-7) : [];
-    } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(AUTO_KEY) || '[]'); }
+    catch { return []; }
   }
 
   function runAutoBackup(force) {
-    if (!isAutoBackupOn() && !force) return false;
+    if (!isAutoBackupOn() && !force) return;
     try {
+      let list = getAutoBackups();
       const today = todayStr();
-      const list = getAutoBackups();
-      const entry = {
+      // Aynı gün içinde tek anlık kopya (force değilse)
+      if (!force && list[0] && list[0].date === today) return;
+      list.unshift({
         date: today,
         time: new Date().toISOString(),
         count: vehicles.length,
-        data: backupBundle()
-      };
-      // Aynı gün içinde eski snapshot'ı güncelle; gün boyunca kaydedilen Open World
-      // rotaları ve taslaklar bir sonraki otomatik kopyaya dahil olur.
-      let next;
-      if (list[0] && list[0].date === today) next = [entry, ...list.slice(1)];
-      else next = [entry, ...list];
-      next = next.slice(0, 7);
-
-      // localStorage kotası sınırlı. Önce en eski kopyaları buda; hiçbir zaman sessizce
-      // sadece araç listesini yazıp tam yedekmiş gibi gösterme.
-      let saved = false;
-      while (next.length) {
-        try {
-          localStorage.setItem(AUTO_KEY, JSON.stringify(next));
-          saved = true;
-          break;
-        } catch (e) {
-          next.pop();
-          if (!(e && (e.name === 'QuotaExceededError' || e.code === 22))) throw e;
-        }
-      }
-      autoBackupLastAt = Date.now();
-      if (!saved) {
-        autoBackupLastError = 'Depolama alanı tam yedek için yetersiz. Ayarlar → Yedekle ile JSON dosyası indir.';
-        updateAutoBackupUI();
-        return false;
-      }
-      autoBackupLastError = '';
+        data: vehicles
+      });
+      list = list.slice(0, 7); // son 7 yedek
+      localStorage.setItem(AUTO_KEY, JSON.stringify(list));
       updateAutoBackupUI();
-      return true;
     } catch (e) {
-      autoBackupLastError = (e && (e.name === 'QuotaExceededError' || e.code === 22))
-        ? 'Depolama dolu; tam otomatik yedek kaydedilemedi. JSON olarak dışa aktar.'
-        : 'Yedek oluşturulamadı; verileri dışa aktarıp tekrar dene.';
-      updateAutoBackupUI();
-      return false;
+      // kota doluysa eski yedekleri silip dene
+      try {
+        localStorage.setItem(AUTO_KEY, JSON.stringify([{ date: todayStr(), time: new Date().toISOString(), count: vehicles.length, data: vehicles }]));
+      } catch (e2) {}
     }
-  }
-
-  // Sık GPS yazımlarını birleştirir; uzun sürüşlerde de yedek gün içinde yenilenir.
-  function queueAutoBackup() {
-    if (!isAutoBackupOn() || autoBackupTimer) return;
-    const wait = Math.max(1000, AUTO_BACKUP_INTERVAL_MS - (Date.now() - autoBackupLastAt));
-    autoBackupTimer = setTimeout(() => {
-      autoBackupTimer = null;
-      runAutoBackup(false);
-    }, wait);
   }
 
   function updateAutoBackupUI() {
@@ -1604,18 +1474,11 @@
     const on = isAutoBackupOn();
     btn.textContent = on ? 'Açık' : 'Kapalı';
     btn.classList.toggle('active', on);
-    st.classList.remove('text-amber-400', 'text-red-400');
-    if (autoBackupLastError) {
-      st.textContent = autoBackupLastError;
-      st.classList.add('text-amber-400');
-      return;
-    }
     const list = getAutoBackups();
-    if (!list.length) st.textContent = on ? 'Henüz yedek yok — ilk kayıtla oluşacak' : 'Kapalı';
+    if (!list.length) st.textContent = on ? 'Henüz yedek yok — ilk kayıtta oluşacak' : 'Kapalı';
     else {
       const last = list[0];
-      const full = last.data && !Array.isArray(last.data) && last.data.app === 'garajim';
-      st.textContent = `Son otomatik: ${last.date} · ${last.count} araç · ${list.length} kopya · ${full ? 'tam yedek' : 'eski araç yedeği'}`;
+      st.textContent = `Son otomatik: ${last.date} · ${last.count} araç · ${list.length} kopya saklı`;
     }
   }
 
@@ -1624,28 +1487,15 @@
     if (!list.length) { toast('Otomatik yedek yok'); return; }
     const msg = list.map((b, i) => `${i + 1}) ${b.date} — ${b.count} araç`).join('\n');
     const pick = prompt('Hangi yedeği yükleyelim?\n\n' + msg + '\n\nNumara yaz (1 = en yeni):', '1');
-    if (pick == null || pick.trim() === '') { toast('İptal'); return; }
     const idx = Number(pick) - 1;
-    if (!Number.isInteger(idx) || idx < 0 || !list[idx]) { toast('Geçersiz seçim'); return; }
-    const entry = list[idx];
-    if (!confirm(`${entry.date} tarihli yedek yüklenecek. Mevcut verilerin değişir. Devam?`)) return;
-    try {
-      autoBackupLastError = '';
-      if (Array.isArray(entry.data)) {
-        // Eski sürüm otomatik yedekleri yalnız araç listesini içeriyordu.
-        vehicles = normalizeRecordArray(entry.data, 'vehicle', 500).map(v => ({ ...v, photo: safeImageSrc(v.photo) || null }));
-        localStorage.setItem('garaj_v4', JSON.stringify(vehicles));
-        syncNative(); renderList(); updateNotifBadge();
-        toast('Eski yedek yüklendi · yalnız araç kayıtları içerir');
-      } else {
-        applyBackupSnapshot(entry.data);
-        renderList(); updateNotifBadge(); updateBackupInfo(); updateAutoBackupUI();
-        toast(autoBackupLastError ? 'Yedek yüklendi; eski otomatik kopyalar depolama nedeniyle temizlendi' : 'Tam otomatik yedek geri yüklendi');
-      }
-      closeSettings();
-    } catch (e) {
-      toast('Yedek geri yüklenemedi: depolama alanını kontrol et');
-    }
+    if (isNaN(idx) || !list[idx]) { toast('İptal'); return; }
+    if (!confirm(`${list[idx].date} tarihli yedek yüklenecek. Mevcut veri değişir. Devam?`)) return;
+    vehicles = list[idx].data || [];
+    persist();
+    renderList();
+    updateNotifBadge();
+    toast('Otomatik yedekten geri yüklendi');
+    closeSettings();
   }
 
   function downloadAutoBackup() {
@@ -1750,25 +1600,24 @@
       const alerts = getAlerts(v);
       const hs = healthScore(v);
       const icon = typeIcons[v.type] || 'fa-car';
-      const vehiclePhoto = safeImageSrc(v.photo);
       let barColor = 'bg-emerald-500';
       if (prog) {
         if (prog.overdue) barColor = 'bg-red-500';
         else if (prog.warning) barColor = 'bg-amber-500';
       }
       return `
-      <div onclick="openDetail('${safeRecordId(v.id, 'vehicle')}')" class="card card-premium rounded-2xl p-4 cursor-pointer">
+      <div onclick="openDetail('${v.id}')" class="card card-premium rounded-2xl p-4 cursor-pointer">
         <div class="flex gap-3">
-          <div class="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/10 ${vehiclePhoto ? '' : 'photo-placeholder flex items-center justify-center'}">
-            ${vehiclePhoto ? `<img src="${escHtml(vehiclePhoto)}" class="w-full h-full object-cover" alt="">` : `<i class="fa-solid ${icon} text-xl text-slate-500"></i>`}
+          <div class="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/10 ${v.photo ? '' : 'photo-placeholder flex items-center justify-center'}">
+            ${v.photo ? `<img src="${v.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid ${icon} text-xl text-slate-500"></i>`}
             <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full text-[9px] font-bold flex items-center justify-center border-2 border-[var(--bg)]" style="background:${hs.color};color:#fff">${hs.score}</div>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold tracking-wide">${escHtml(v.plate || '—')}</span>
-              ${v.color ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-400">${escHtml(v.color)}</span>` : ''}
+              <span class="font-bold tracking-wide">${v.plate || '—'}</span>
+              ${v.color ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-400">${v.color}</span>` : ''}
             </div>
-            <p class="text-slate-400 text-sm mt-0.5">${escHtml(v.brand || '')} ${escHtml(v.model || '')} ${v.year ? '· ' + escHtml(v.year) : ''}</p>
+            <p class="text-slate-400 text-sm mt-0.5">${v.brand || ''} ${v.model || ''} ${v.year ? '· ' + v.year : ''}</p>
           </div>
           <div class="text-right shrink-0">
             <p class="font-semibold text-sm">${formatKm(v.km)}</p>
@@ -1789,7 +1638,7 @@
         </div>` : ''}
         ${alerts.length ? `
         <div class="mt-2.5 flex flex-wrap gap-1.5">
-          ${alerts.slice(0, 3).map(a => `<span class="text-[10px] px-2 py-1 rounded-lg ${a.includes('dolmuş') || a.includes('gecikti') ? 'status-danger' : 'status-warn'}">${escHtml(a)}</span>`).join('')}
+          ${alerts.slice(0, 3).map(a => `<span class="text-[10px] px-2 py-1 rounded-lg ${a.includes('dolmuş') || a.includes('gecikti') ? 'status-danger' : 'status-warn'}">${a}</span>`).join('')}
           ${alerts.length > 3 ? `<span class="text-[10px] px-2 py-1 rounded-lg bg-white/10 text-slate-400">+${alerts.length-3}</span>` : ''}
         </div>` : ''}
       </div>`;
@@ -1798,7 +1647,6 @@
 
   // ---------- DETAIL ----------
   function openDetail(id) {
-    id = safeRecordId(id, 'vehicle');
     currentId = id;
     const v = vehicles.find(x => x.id === id);
     if (!v) return;
@@ -1814,7 +1662,6 @@
 
     const prog = serviceProgress(v);
     const icon = typeIcons[v.type] || 'fa-car';
-    const vehiclePhoto = safeImageSrc(v.photo);
     const alerts = getAlerts(v);
     const hs = healthScore(v);
     const est90 = estimate90Days(v);
@@ -1895,15 +1742,15 @@
 
     document.getElementById('detailContent').innerHTML = `
       <div class="relative rounded-3xl overflow-hidden border border-white/10">
-        <div class="aspect-[16/10] ${vehiclePhoto ? '' : 'photo-placeholder flex items-center justify-center'}">
-          ${vehiclePhoto ? `<img src="${escHtml(vehiclePhoto)}" class="w-full h-full object-cover" alt="">` : `<i class="fa-solid ${icon} text-6xl text-slate-600"></i>`}
+        <div class="aspect-[16/10] ${v.photo ? '' : 'photo-placeholder flex items-center justify-center'}">
+          ${v.photo ? `<img src="${v.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid ${icon} text-6xl text-slate-600"></i>`}
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
         <div class="absolute bottom-0 left-0 right-0 p-4 on-photo">
-          <h3 class="text-2xl font-extrabold">${escHtml(v.plate || '—')}</h3>
-          <p class="text-slate-300 text-sm">${escHtml(v.brand || '')} ${escHtml(v.model || '')} ${v.year ? '· ' + escHtml(v.year) : ''}</p>
+          <h3 class="text-2xl font-extrabold">${v.plate || '—'}</h3>
+          <p class="text-slate-300 text-sm">${v.brand || ''} ${v.model || ''} ${v.year ? '· ' + v.year : ''}</p>
         </div>
-        ${alerts.length ? `<div class="absolute top-3 left-3"><span class="badge-red text-white text-[11px] font-semibold px-3 py-1.5 rounded-full">${escHtml(alerts[0])}</span></div>` : ''}
+        ${alerts.length ? `<div class="absolute top-3 left-3"><span class="badge-red text-white text-[11px] font-semibold px-3 py-1.5 rounded-full">${alerts[0]}</span></div>` : ''}
       </div>
 
       <div class="grid grid-cols-5 gap-2">
@@ -2015,7 +1862,7 @@
                 <p class="text-[11px] text-slate-500">${p.dateVal || p.desc}</p>
               </div>
               <div class="flex items-center gap-2">
-                ${p.dateVal ? `<button type="button" onclick="addToCalendar(${JSON.stringify(p.label + ' — ' + (v.plate || '')).replace(/&/g, '&amp;').replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/"/g, '&quot;')}, ${JSON.stringify(p.dateVal).replace(/&/g, '&amp;').replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/"/g, '&quot;')})" class="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-slate-400">Takvim</button>` : ''}
+                ${p.dateVal ? `<button type="button" onclick="addToCalendar('${p.label} — ${v.plate || ''}', '${p.dateVal}')" class="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-slate-400">Takvim</button>` : ''}
                 <span class="text-xs font-semibold ${p.statusClass}">${p.statusTxt}</span>
               </div>
             </div>`).join('')}
@@ -2028,18 +1875,18 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="bg-black/30 rounded-xl p-3">
             <p class="text-[11px] text-cyan-400 font-semibold mb-1"><i class="fa-solid fa-snowflake mr-1"></i>Kış</p>
-            <p class="text-sm">${escHtml(v.kisLastikInfo || '—')}</p>
-            <p class="text-xs text-slate-500 mt-1">${escHtml(v.kisLastigi || 'Tarih yok')} ${v.kisLastikDis ? '· ' + escHtml(v.kisLastikDis) + ' mm' : ''}</p>
+            <p class="text-sm">${v.kisLastikInfo || '—'}</p>
+            <p class="text-xs text-slate-500 mt-1">${v.kisLastigi || 'Tarih yok'} ${v.kisLastikDis ? '· ' + v.kisLastikDis + ' mm' : ''}</p>
           </div>
           <div class="bg-black/30 rounded-xl p-3">
             <p class="text-[11px] text-amber-400 font-semibold mb-1"><i class="fa-solid fa-sun mr-1"></i>Yaz</p>
-            <p class="text-sm">${escHtml(v.yazLastikInfo || '—')}</p>
-            <p class="text-xs text-slate-500 mt-1">${escHtml(v.yazLastigi || 'Tarih yok')} ${v.yazLastikDis ? '· ' + escHtml(v.yazLastikDis) + ' mm' : ''}</p>
+            <p class="text-sm">${v.yazLastikInfo || '—'}</p>
+            <p class="text-xs text-slate-500 mt-1">${v.yazLastigi || 'Tarih yok'} ${v.yazLastikDis ? '· ' + v.yazLastikDis + ' mm' : ''}</p>
           </div>
           <div class="bg-black/30 rounded-xl p-3">
             <p class="text-[11px] text-emerald-400 font-semibold mb-1"><i class="fa-solid fa-cloud-sun mr-1"></i>4 Mevsim</p>
-            <p class="text-sm">${escHtml(v.dortMevsimInfo || '—')}</p>
-            <p class="text-xs text-slate-500 mt-1">${escHtml(v.dortMevsim || 'Tarih yok')} ${v.dortMevsimDis ? '· ' + escHtml(v.dortMevsimDis) + ' mm' : ''}</p>
+            <p class="text-sm">${v.dortMevsimInfo || '—'}</p>
+            <p class="text-xs text-slate-500 mt-1">${v.dortMevsim || 'Tarih yok'} ${v.dortMevsimDis ? '· ' + v.dortMevsimDis + ' mm' : ''}</p>
           </div>
         </div>
       </div>
@@ -2057,10 +1904,10 @@
         <div class="mt-4 bg-black/40 rounded-xl p-3.5">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <p class="text-[11px] text-slate-500">Son depo: ${escHtml(lastFuel.date)} · ${formatKm(lastFuel.km)}</p>
-              <p class="text-[11px] text-slate-400 mt-0.5">${lastFuel.liters ? escHtml(lastFuel.liters) + ' L' : ''}${lastFuel.cost ? ' · ' + formatMoney(lastFuel.cost) : ''}</p>
+              <p class="text-[11px] text-slate-500">Son depo: ${lastFuel.date} · ${formatKm(lastFuel.km)}</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">${lastFuel.liters ? lastFuel.liters + ' L' : ''}${lastFuel.cost ? ' · ' + formatMoney(lastFuel.cost) : ''}</p>
             </div>
-            ${safeImageSrc(lastFuel && lastFuel.receipt) ? `<button onclick="openFuelReceiptByIndex(${flogs.length - 1})" class="w-12 h-12 rounded-lg overflow-hidden border border-white/10 shrink-0"><img src="${escHtml(safeImageSrc(lastFuel.receipt))}" class="w-full h-full object-cover" alt=""></button>` : ''}
+            ${lastFuel.receipt ? `<button onclick="openFuelReceiptByIndex(${flogs.length - 1})" class="w-12 h-12 rounded-lg overflow-hidden border border-white/10 shrink-0"><img src="${lastFuel.receipt}" class="w-full h-full object-cover"></button>` : ''}
           </div>
           <div class="grid grid-cols-2 gap-3 mt-2.5">
             <div><p class="text-2xl font-extrabold text-amber-400">${fuelNow.days}<span class="text-xs text-slate-500 ml-1">gün</span></p></div>
@@ -2092,12 +1939,12 @@
         })()}
         ${(() => {
           const idxs = [];
-          (flogs || []).forEach((f, i) => { if (safeImageSrc(f.receipt)) idxs.push(i); });
+          (flogs || []).forEach((f, i) => { if (f.receipt) idxs.push(i); });
           const last = idxs.slice(-4).reverse();
           if (!last.length) return '';
           return `<div class="mt-3"><p class="text-[10px] text-slate-500 mb-1.5">Fişler</p>
             <div class="flex gap-2 overflow-x-auto pb-1">
-              ${last.map(i => `<button onclick="openFuelReceiptByIndex(${i})" class="w-14 h-14 rounded-lg overflow-hidden border border-white/10 shrink-0"><img src="${escHtml(safeImageSrc(flogs[i].receipt))}" class="w-full h-full object-cover" alt=""></button>`).join('')}
+              ${last.map(i => `<button onclick="openFuelReceiptByIndex(${i})" class="w-14 h-14 rounded-lg overflow-hidden border border-white/10 shrink-0"><img src="${flogs[i].receipt}" class="w-full h-full object-cover"></button>`).join('')}
             </div></div>`;
         })()}
         ${fuelChartHtml}` : '<p class="text-xs text-slate-600 mt-3 text-center">Henüz yakıt kaydı yok</p>'}
@@ -2164,8 +2011,8 @@
                 <i class="fa-solid ${cats[catOf(h)].i} text-sm" style="color:${cats[catOf(h)].c}"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm">${escHtml(h.desc || cats[catOf(h)].n)}</p>
-                <p class="text-xs text-slate-500 mt-0.5">${escHtml(h.date || '—')} · ${formatKm(h.km)}</p>
+                <p class="font-medium text-sm">${h.desc || cats[catOf(h)].n}</p>
+                <p class="text-xs text-slate-500 mt-0.5">${h.date || '—'} · ${formatKm(h.km)}</p>
               </div>
               <div class="text-right flex flex-col items-end justify-between">
                 <p class="text-sm font-semibold">${h.cost ? formatMoney(h.cost) : ''}</p>
@@ -2264,8 +2111,7 @@
     document.getElementById('dortMevsimDis').value = v.dortMevsimDis || '';
     tempPhoto = v.photo || null;
     document.getElementById('photoData').value = v.photo || '';
-    const photoSrc = safeImageSrc(v.photo);
-    document.getElementById('photoPreview').innerHTML = photoSrc ? `<img src="${escHtml(photoSrc)}" class="w-full h-full object-cover" alt="Araç fotoğrafı">` : '<i class="fa-solid fa-camera text-3xl text-slate-600"></i>';
+    document.getElementById('photoPreview').innerHTML = v.photo ? `<img src="${v.photo}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-camera text-3xl text-slate-600"></i>';
     document.getElementById('formModal').classList.remove('hidden');
   }
 
@@ -2834,119 +2680,10 @@
   }
 
   // ---------- EXPORT / IMPORT ----------
-  // Yedek v3: araçlar + Açık Dünya rotaları, park yeri, kişisel işaretler,
-  // sürüş analizleri, yarım kalmış sürüş ve uygulama tercihleri. API anahtarı/PIN dışarı alınmaz.
-  function backupStorageValue(key, fallback) {
-    try { const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); }
-    catch { return fallback; }
-  }
+  // Yedek v2: araçlar + kayıtlı sürüşler + park yeri + sürüş ayarları (eski yedekler de açılır)
   function backupBundle() {
-    return {
-      app: 'garajim', version: 3, exportedAt: new Date().toISOString(),
-      vehicles: vehicles,
-      rides: getAllRides(),
-      parking: parkGet(),
-      rideSettings: rideSettings(),
-      ridePins: ridePinsGet(),
-      rideCards: rideCardsGet(),
-      rideAsphalt: rideAsphaltGet(),
-      rideDna: rideDnaGet(),
-      rideSegments: rideSegGet(),
-      rideBlackbox: backupStorageValue(RIDE_BLACKBOX_KEY, null),
-      rideDraft: backupStorageValue('garaj_ride_draft', null),
-      selectedRideVehicle: localStorage.getItem('garaj_ride_vehicle'),
-      preferences: {
-        remindDays: Number(localStorage.getItem('garaj_remind_days') || 30),
-        theme: localStorage.getItem('garaj_theme') || 'dark',
-        pack: localStorage.getItem('garaj_pack') || 'dark-red'
-      }
-    };
+    return { app: 'garajim', version: 2, exportedAt: new Date().toISOString(), vehicles, rides: getAllRides(), parking: parkGet(), rideSettings: rideSettings() };
   }
-
-  function applyBackupSnapshot(bundle, options) {
-    options = options || {};
-    if (!bundle || bundle.app !== 'garajim' || !Array.isArray(bundle.vehicles) || bundle.vehicles.length > 500) {
-      throw new Error('Yedek dosyası geçersiz');
-    }
-    bundle = sanitizeStoredData(bundle, 0, '');
-    const oldVehicles = vehicles;
-    const keys = [
-      'garaj_v4', 'garaj_rides', PARK_KEY, 'garaj_ride_settings', RIDE_PIN_KEY,
-      RIDE_CARDS_KEY, RIDE_ASPHALT_KEY, RIDE_DNA_KEY, RIDE_SEGMENT_KEY,
-      RIDE_BLACKBOX_KEY, 'garaj_ride_draft', 'garaj_ride_vehicle',
-      'garaj_remind_days', 'garaj_theme', 'garaj_pack', AUTO_KEY
-    ];
-    const previous = {};
-    keys.forEach(k => { previous[k] = localStorage.getItem(k); });
-    const previousAuto = previous[AUTO_KEY];
-
-    const write = () => {
-      vehicles = normalizeRecordArray(bundle.vehicles, 'vehicle', 500).map(v => ({ ...v, photo: safeImageSrc(v.photo) || null }));
-      localStorage.setItem('garaj_v4', JSON.stringify(vehicles));
-      if (Array.isArray(bundle.rides)) {
-        const rides = normalizeRecordArray(options.mergeRideHistory ? getAllRides().concat(bundle.rides) : bundle.rides, 'ride', 150);
-        const seen = new Set();
-        const unique = rides.filter(r => r && r.id && !seen.has(r.id) && seen.add(r.id))
-          .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 150);
-        localStorage.setItem('garaj_rides', JSON.stringify(unique));
-      } else if (Number(bundle.version) >= 2) localStorage.setItem('garaj_rides', '[]');
-
-      if (Number(bundle.version) >= 2) {
-        if (bundle.parking) localStorage.setItem(PARK_KEY, JSON.stringify(bundle.parking));
-        else if (Number(bundle.version) >= 3) localStorage.removeItem(PARK_KEY);
-        if (bundle.rideSettings && typeof bundle.rideSettings === 'object') localStorage.setItem('garaj_ride_settings', JSON.stringify(bundle.rideSettings));
-        else if (Number(bundle.version) >= 3) localStorage.removeItem('garaj_ride_settings');
-      }
-      if (Number(bundle.version) >= 3) {
-        const writeJsonOrRemove = (key, value) => {
-          if (value === null || value === undefined) localStorage.removeItem(key);
-          else localStorage.setItem(key, JSON.stringify(value));
-        };
-        writeJsonOrRemove(RIDE_PIN_KEY, Array.isArray(bundle.ridePins) ? bundle.ridePins.slice(0, 80) : []);
-        writeJsonOrRemove(RIDE_CARDS_KEY, Array.isArray(bundle.rideCards) ? bundle.rideCards.slice(0, 120) : []);
-        writeJsonOrRemove(RIDE_ASPHALT_KEY, Array.isArray(bundle.rideAsphalt) ? bundle.rideAsphalt.slice(-400) : []);
-        writeJsonOrRemove(RIDE_DNA_KEY, bundle.rideDna);
-        writeJsonOrRemove(RIDE_SEGMENT_KEY, bundle.rideSegments || {});
-        writeJsonOrRemove(RIDE_BLACKBOX_KEY, bundle.rideBlackbox);
-        writeJsonOrRemove('garaj_ride_draft', bundle.rideDraft);
-        if (bundle.selectedRideVehicle) localStorage.setItem('garaj_ride_vehicle', bundle.selectedRideVehicle);
-        else localStorage.removeItem('garaj_ride_vehicle');
-        const pref = bundle.preferences || {};
-        if (Number.isFinite(Number(pref.remindDays))) localStorage.setItem('garaj_remind_days', String(Number(pref.remindDays)));
-        else localStorage.removeItem('garaj_remind_days');
-        if (pref.theme) localStorage.setItem('garaj_theme', String(pref.theme));
-        else localStorage.removeItem('garaj_theme');
-        if (pref.pack) localStorage.setItem('garaj_pack', String(pref.pack));
-        else localStorage.removeItem('garaj_pack');
-      }
-    };
-
-    const rollback = () => {
-      vehicles = oldVehicles;
-      for (const key of keys) {
-        try { if (previous[key] === null) localStorage.removeItem(key); else localStorage.setItem(key, previous[key]); }
-        catch (e) {}
-      }
-    };
-
-    try {
-      write();
-    } catch (e) {
-      rollback();
-      const quota = e && (e.name === 'QuotaExceededError' || e.code === 22);
-      if (!quota || !previousAuto) throw e;
-      // Only when storage is full, clear duplicate automatic snapshots and retry once.
-      // The selected snapshot is already held in memory during this restore.
-      try { localStorage.removeItem(AUTO_KEY); write(); }
-      catch (retryError) { rollback(); throw retryError; }
-      autoBackupLastError = 'Yedek yüklendi; depolama için önceki otomatik kopyalar temizlendi.';
-    }
-    try { syncNative(); } catch (e) {}
-    updateNotifBadge();
-    updateBackupInfo();
-    updateAutoBackupUI();
-  }
-
   async function exportData() {
     const via = await saveFileToast('garajim-yedek-' + todayStr() + '.json', 'application/json', JSON.stringify(backupBundle(), null, 2), 'Yedek');
     if (via !== 'cancel') { localStorage.setItem('garaj_last_backup', todayStr()); updateBackupInfo(); }
@@ -2965,52 +2702,22 @@
   function importData(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 25 * 1024 * 1024) { alert('Yedek dosyası 25 MB sınırını aşıyor.'); e.target.value = ''; return; }
     const r = new FileReader();
     r.onload = () => {
       try {
-        const parsed = JSON.parse(r.result);
-        const raw = sanitizeStoredData(parsed, 0, '');
+        const raw = JSON.parse(r.result);
         const bundle = raw && !Array.isArray(raw) && raw.app === 'garajim' && Array.isArray(raw.vehicles);
         const data = bundle ? raw.vehicles : raw;
         if (!Array.isArray(data) || data.length > 500) throw new Error('Dosya biçimi veya kayıt sayısı geçersiz');
         if (!data.every(v => v && typeof v === 'object' && !Array.isArray(v))) throw new Error('Her araç kaydı nesne olmalı');
         const rides = bundle && Array.isArray(raw.rides) ? raw.rides : [];
-        if (!confirm(data.length + ' araç' + (rides.length ? ' ve ' + rides.length + ' sürüş' : '') + ' yüklenecek. Araç listen yenisiyle değişir; cihazdaki mevcut sürüşlerin korunup yeni sürüşler birleştirilir. Devam?')) return;
-        if (bundle && Number(raw.version) >= 3) {
-          const current = backupBundle();
-          const incomingPins = Array.isArray(raw.ridePins) ? raw.ridePins : [];
-          const pinMap = new Map();
-          [...incomingPins, ...(current.ridePins || [])].forEach(x => { if (x && x.id) pinMap.set(x.id, x); });
-          const mergedPins = Array.from(pinMap.values()).slice(0, 80);
-          const incomingCards = Array.isArray(raw.rideCards) ? raw.rideCards : [];
-          const cardMap = new Map();
-          [...incomingCards, ...(current.rideCards || [])].forEach(x => { if (x && x.id) cardMap.set(x.id, x); });
-          localStorage.setItem(RIDE_PIN_KEY, JSON.stringify(mergedPins));
-          localStorage.setItem(RIDE_CARDS_KEY, JSON.stringify(Array.from(cardMap.values()).slice(0, 120)));
-          const asphaltMap = new Map();
-          [...(Array.isArray(raw.rideAsphalt) ? raw.rideAsphalt : []), ...(current.rideAsphalt || [])].forEach(x => {
-            if (x) asphaltMap.set(String(x.t || '') + ':' + String(x.lat || '') + ':' + String(x.lng || ''), x);
-          });
-          localStorage.setItem(RIDE_ASPHALT_KEY, JSON.stringify(Array.from(asphaltMap.values()).slice(-400)));
-          if (!current.parking && raw.parking && typeof raw.parking.lat === 'number') localStorage.setItem(PARK_KEY, JSON.stringify(raw.parking));
-          if (!current.rideSettings || !Object.keys(current.rideSettings).length) localStorage.setItem('garaj_ride_settings', JSON.stringify(raw.rideSettings || {}));
-          if (!current.rideDna && raw.rideDna) localStorage.setItem(RIDE_DNA_KEY, JSON.stringify(raw.rideDna));
-          if (!current.rideSegments || !Object.keys(current.rideSegments).length) localStorage.setItem(RIDE_SEGMENT_KEY, JSON.stringify(raw.rideSegments || {}));
-          if (!current.rideBlackbox && raw.rideBlackbox) localStorage.setItem(RIDE_BLACKBOX_KEY, JSON.stringify(raw.rideBlackbox));
-          if (!current.rideDraft && raw.rideDraft) localStorage.setItem('garaj_ride_draft', JSON.stringify(raw.rideDraft));
-          if (!localStorage.getItem('garaj_ride_vehicle') && raw.selectedRideVehicle) localStorage.setItem('garaj_ride_vehicle', raw.selectedRideVehicle);
-          if (!localStorage.getItem('garaj_remind_days') && raw.preferences && raw.preferences.remindDays) localStorage.setItem('garaj_remind_days', String(raw.preferences.remindDays));
-          if (!localStorage.getItem('garaj_theme') && raw.preferences && raw.preferences.theme) localStorage.setItem('garaj_theme', raw.preferences.theme);
-          if (!localStorage.getItem('garaj_pack') && raw.preferences && raw.preferences.pack) localStorage.setItem('garaj_pack', raw.preferences.pack);
-        } else if (bundle) {
-          if (raw.parking && typeof raw.parking.lat === 'number' && !parkGet()) { try { localStorage.setItem(PARK_KEY, JSON.stringify(raw.parking)); } catch (x) {} }
-          if (raw.rideSettings && !localStorage.getItem('garaj_ride_settings')) { try { localStorage.setItem('garaj_ride_settings', JSON.stringify(raw.rideSettings)); } catch (x) {} }
-        }
-        vehicles = normalizeRecordArray(data, 'vehicle', 500).map(v => ({ ...v, photo: safeImageSrc(v.photo) || null }));
+        if (!confirm(data.length + ' araç' + (rides.length ? ' ve ' + rides.length + ' sürüş' : '') + ' yüklenecek. Araç listen yenisiyle değişir; cihazdaki kayıtlı sürüşlerin korunur. Devam?')) return;
+        vehicles = data.map(v => ({...v, id: v.id || ('import-' + Math.random().toString(36).slice(2) + Date.now().toString(36))}));
         if (rides.length) mergeRides(rides);
+        if (bundle && raw.parking && typeof raw.parking.lat === 'number' && !parkGet()) { try { localStorage.setItem(PARK_KEY, JSON.stringify(raw.parking)); } catch (x) {} }
+        if (bundle && raw.rideSettings && !localStorage.getItem('garaj_ride_settings')) { try { localStorage.setItem('garaj_ride_settings', JSON.stringify(raw.rideSettings)); } catch (x) {} }
         persist(); renderList();
-        toast('Geri yükleme tamam' + (rides.length ? ' · ' + rides.length + ' sürüş' : '') + (bundle && Number(raw.version) >= 3 ? ' · Açık Dünya verileri birleştirildi' : ''));
+        toast('Geri yükleme tamam' + (rides.length ? ' · ' + rides.length + ' sürüş' : ''));
       } catch { alert('Geçersiz dosya'); }
     };
     r.readAsText(file);
@@ -3574,7 +3281,7 @@
 
   // ---------- SOSYAL AKIŞ ----------
   let socialPosts = [];
-  socialPosts = parseStoredArray('garaj_social', 'post', 500);
+  try { socialPosts = JSON.parse(localStorage.getItem('garaj_social') || '[]'); } catch { socialPosts = []; }
 
   function saveSocial() {
     try { localStorage.setItem('garaj_social', JSON.stringify(socialPosts)); }
@@ -3603,7 +3310,8 @@
   };
 
   function getAllRides() {
-    return parseStoredArray('garaj_rides', 'ride', 150);
+    try { return JSON.parse(localStorage.getItem('garaj_rides') || '[]'); }
+    catch { return []; }
   }
   function getVehicleRides(vehicleId) {
     if (!vehicleId) return [];
@@ -3617,19 +3325,19 @@
   const RIDE_BLACKBOX_KEY = 'garaj_ride_blackbox';
   const RIDE_SEGMENT_KEY = 'garaj_ride_segments';
 
-  function rideCardsGet() { return parseStoredArray(RIDE_CARDS_KEY, 'card', 120); }
-  function rideCardsSave(list) { try { localStorage.setItem(RIDE_CARDS_KEY, JSON.stringify(list.slice(0, 120))); queueAutoBackup(); } catch (e) {} }
+  function rideCardsGet() { try { return JSON.parse(localStorage.getItem(RIDE_CARDS_KEY) || '[]'); } catch { return []; } }
+  function rideCardsSave(list) { try { localStorage.setItem(RIDE_CARDS_KEY, JSON.stringify(list.slice(0, 120))); } catch (e) {} }
   function rideCardPush(card) {
     const list = rideCardsGet();
     list.unshift(card);
     rideCardsSave(list);
   }
-  function rideAsphaltGet() { return parseStoredArray(RIDE_ASPHALT_KEY, 'asphalt', 400); }
-  function rideAsphaltSave(list) { try { localStorage.setItem(RIDE_ASPHALT_KEY, JSON.stringify(list.slice(-400))); queueAutoBackup(); } catch (e) {} }
-  function rideDnaGet() { try { return sanitizeStoredData(JSON.parse(localStorage.getItem(RIDE_DNA_KEY) || 'null'), 0, ''); } catch { return null; } }
-  function rideDnaSave(d) { try { localStorage.setItem(RIDE_DNA_KEY, JSON.stringify(d)); queueAutoBackup(); } catch (e) {} }
-  function rideSegGet() { try { return sanitizeStoredData(JSON.parse(localStorage.getItem(RIDE_SEGMENT_KEY) || '{}'), 0, ''); } catch { return {}; } }
-  function rideSegSave(o) { try { localStorage.setItem(RIDE_SEGMENT_KEY, JSON.stringify(o)); queueAutoBackup(); } catch (e) {} }
+  function rideAsphaltGet() { try { return JSON.parse(localStorage.getItem(RIDE_ASPHALT_KEY) || '[]'); } catch { return []; } }
+  function rideAsphaltSave(list) { try { localStorage.setItem(RIDE_ASPHALT_KEY, JSON.stringify(list.slice(-400))); } catch (e) {} }
+  function rideDnaGet() { try { return JSON.parse(localStorage.getItem(RIDE_DNA_KEY) || 'null'); } catch { return null; } }
+  function rideDnaSave(d) { try { localStorage.setItem(RIDE_DNA_KEY, JSON.stringify(d)); } catch (e) {} }
+  function rideSegGet() { try { return JSON.parse(localStorage.getItem(RIDE_SEGMENT_KEY) || '{}'); } catch { return {}; } }
+  function rideSegSave(o) { try { localStorage.setItem(RIDE_SEGMENT_KEY, JSON.stringify(o)); } catch (e) {} }
   function rideGeoHash(lat, lng, prec) {
     prec = prec || 3;
     return lat.toFixed(prec) + ',' + lng.toFixed(prec);
@@ -3663,7 +3371,6 @@
             samples: ride.blackbox.slice(),
             note: 'Otomatik kilit — yüksek sarsıntı'
           }));
-          queueAutoBackup();
         } catch (x) {}
         toast('Kara kutu kilitlendi (yüksek sarsıntı)');
         try { if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]); } catch (x) {}
@@ -3966,7 +3673,7 @@
     if (dna && ban) {
       ban.classList.remove('hidden');
       ban.innerHTML = '<div class="text-[10px] text-slate-500 uppercase mb-1">Sürüş DNA</div><div class="text-lg font-bold text-accent">' +
-        escHtml(dna.label || '—') + '</div><div class="text-[11px] text-slate-400 mt-1">' + (dna.total || 0) + ' sürüşten öğrenildi</div>';
+        (dna.label || '—') + '</div><div class="text-[11px] text-slate-400 mt-1">' + (dna.total || 0) + ' sürüşten öğrenildi</div>';
     } else if (ban) ban.classList.add('hidden');
     const cards = rideCardsGet();
     if (!cards.length) {
@@ -3976,8 +3683,8 @@
       box.innerHTML = cards.map(c =>
         '<div class="rounded-2xl border border-white/10 bg-white/5 p-3">' +
         '<div class="flex items-start gap-2"><div class="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center shrink-0"><i class="fa-solid ' + (icon[c.type] || 'fa-layer-group') + ' text-accent"></i></div>' +
-        '<div class="min-w-0 flex-1"><p class="text-sm font-semibold">' + escHtml(c.title || 'Kart') + '</p>' +
-        '<p class="text-[12px] text-slate-400 mt-0.5 leading-relaxed">' + escHtml(c.body || '') + '</p>' +
+        '<div class="min-w-0 flex-1"><p class="text-sm font-semibold">' + (c.title || 'Kart').replace(/</g, '') + '</p>' +
+        '<p class="text-[12px] text-slate-400 mt-0.5 leading-relaxed">' + String(c.body || '').replace(/</g, '') + '</p>' +
         '<p class="text-[10px] text-slate-600 mt-1">' + (c.date ? new Date(c.date).toLocaleString('tr-TR') : '') + '</p></div></div></div>'
       ).join('');
     }
@@ -4450,21 +4157,6 @@
     const txt = document.getElementById('rideStartTxt');
     const icon = document.querySelector('#rideStartBtn i');
     if (!ride.running) {
-      // Play politika uyumu: arka plan konum izni istenmeden önce belirgin uygulama içi açıklama.
-      const isNative = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
-      const disclosureKey = 'garaj_bg_location_disclosure_v1';
-      if (isNative && !localStorage.getItem(disclosureKey)) {
-        const accepted = confirm(
-          'AÇIK DÜNYA · KONUM BİLGİSİ\n\n' +
-          'Sürüş sırasında GPS konumun rota çizmek, mesafe ve sürüş özetini hesaplamak için kullanılır. ' +
-          'Sürüş devam ederken uygulamayı arka plana alırsan rota kaydı için konum arka planda da kullanılabilir.\n\n' +
-          'Kaydedilen sürüş ve kişisel rota verileri bu cihazda tutulur; Garajım bu rotaları kendi sunucusuna yüklemez. ' +
-          'Haritayı kullanırken harita sağlayıcısına görünen harita alanı için istek gönderilir.\n\n' +
-          'Arka planda GPS kullanımını kabul ediyor musun? İzin vermezsen arka plan rota kaydı çalışmayabilir.'
-        );
-        if (!accepted) { toast('Arka plan konum açıklaması kabul edilmedi'); return; }
-        try { localStorage.setItem(disclosureKey, 'accepted'); } catch (e) {}
-      }
       // yeni veya devam
       if (!ride.startedAt) {
         ride.startedAt = new Date().toISOString();
@@ -4802,7 +4494,6 @@
         try { localStorage.setItem('garaj_rides', JSON.stringify(keep)); break; }
         catch (e) { if (keep.length <= 1) throw e; keep = keep.slice(0, Math.max(1, keep.length - 5)); }
       }
-      runAutoBackup(false);
       const v = s.vehicleId ? vehicles.find(x => x.id === s.vehicleId) : null;
       if (v) {
         if (!v.rides) v.rides = [];
@@ -4837,7 +4528,6 @@
         paused: ride.paused,
         vehicleId: ride.vehicleId
       }));
-      queueAutoBackup();
     } catch (e) {}
   }
 
@@ -5315,10 +5005,9 @@
     mola: { n: 'Mola', i: 'fa-mug-hot', c: '#38bdf8' },
     diger: { n: 'Diğer', i: 'fa-location-dot', c: '#a78bfa' }
   };
-  function ridePinsGet() { return parseStoredArray(RIDE_PIN_KEY, 'pin', 80).filter(p => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)) && Math.abs(Number(p.lat)) <= 90 && Math.abs(Number(p.lng)) <= 180).map(p => ({ ...p, lat: Number(p.lat), lng: Number(p.lng), note: String(p.note || '').slice(0, 80) })); }
+  function ridePinsGet() { try { return JSON.parse(localStorage.getItem(RIDE_PIN_KEY) || '[]'); } catch { return []; } }
   function ridePinsSave(list) {
-    try { localStorage.setItem(RIDE_PIN_KEY, JSON.stringify(list.slice(0, 80))); queueAutoBackup(); }
-    catch (e) { toast('İşaret kaydedilemedi'); }
+    try { localStorage.setItem(RIDE_PIN_KEY, JSON.stringify(list.slice(0, 80))); } catch (e) { toast('İşaret kaydedilemedi'); }
   }
   let ridePinLayers = [];
   function ridePinsClearLayers() {
@@ -5337,7 +5026,7 @@
         iconSize: [34, 34], iconAnchor: [17, 17]
       });
       const m = L.marker([p.lat, p.lng], { icon }).addTo(ride.map);
-      m.bindPopup(`<div style="min-width:140px"><b>${t.n}</b>${p.note ? '<br><span style="font-size:12px">' + escHtml(p.note) + '</span>' : ''}<br><button onclick="ridePinDelete('${safeRecordId(p.id, 'pin')}')" style="margin-top:6px;font-size:11px;color:#ef4444">Sil</button></div>`);
+      m.bindPopup(`<div style="min-width:140px"><b>${t.n}</b>${p.note ? '<br><span style="font-size:12px">' + String(p.note).replace(/</g, '&lt;') + '</span>' : ''}<br><button onclick="ridePinDelete('${p.id}')" style="margin-top:6px;font-size:11px;color:#ef4444">Sil</button></div>`);
       ridePinLayers.push(m);
     });
   }
@@ -5392,7 +5081,6 @@
       const c = pos.coords;
       const p = { lat: c.latitude, lng: c.longitude, acc: c.accuracy, t: Date.now(), vehicleId: ride.vehicleId || (vehicles[0] && vehicles[0].id) || null };
       try { localStorage.setItem(PARK_KEY, JSON.stringify(p)); } catch (e) { toast('Kaydedilemedi'); return; }
-      queueAutoBackup();
       parkRenderMarker();
       toast('Park yeri kaydedildi' + (c.accuracy > 60 ? ' (±' + Math.round(c.accuracy) + ' m — zayıf sinyal)' : ''));
       parkOpen();
@@ -5430,7 +5118,6 @@
   function parkDelete() {
     if (!confirm('Park yeri silinsin mi?')) return;
     try { localStorage.removeItem(PARK_KEY); } catch (e) {}
-    queueAutoBackup();
     parkRenderMarker(); parkClose(); toast('Park yeri silindi');
   }
 
@@ -6012,7 +5699,7 @@ ${buildGarageContext()}
   function openCompose() {
     const sel = document.getElementById('postVehicle');
     sel.innerHTML = '<option value="">Araç seçme</option>' +
-      vehicles.map(v => `<option value="${escHtml(safeRecordId(v.id, 'vehicle'))}">${escHtml(v.plate || '—')} · ${escHtml(v.brand || '')} ${escHtml(v.model || '')}</option>`).join('');
+      vehicles.map(v => `<option value="${v.id}">${v.plate || '—'} · ${v.brand || ''} ${v.model || ''}</option>`).join('');
     document.getElementById('postText').value = '';
     document.getElementById('postPhotoData').value = '';
     document.getElementById('postPhotoPreview').innerHTML = '<i class="fa-solid fa-image text-slate-600"></i>';
@@ -6046,15 +5733,14 @@ ${buildGarageContext()}
     const id = document.getElementById('postVehicle').value;
     if (!id) { toast('Önce araç seç'); return; }
     const v = vehicles.find(x => x.id === id);
-    const photo = v ? safeImageSrc(v.photo) : '';
-    if (!photo) { toast('Bu araçta kullanılabilir fotoğraf yok'); return; }
-    document.getElementById('postPhotoData').value = photo;
-    document.getElementById('postPhotoPreview').innerHTML = `<img src="${escHtml(photo)}" class="w-full h-full object-cover" alt="Araç fotoğrafı">`;
+    if (!v || !v.photo) { toast('Bu araçta fotoğraf yok'); return; }
+    document.getElementById('postPhotoData').value = v.photo;
+    document.getElementById('postPhotoPreview').innerHTML = `<img src="${v.photo}" class="w-full h-full object-cover">`;
   }
 
   function publishPost() {
     const text = document.getElementById('postText').value.trim();
-    const photo = safeImageSrc(document.getElementById('postPhotoData').value || '') || '';
+    const photo = document.getElementById('postPhotoData').value || '';
     const vid = document.getElementById('postVehicle').value;
     if (!text && !photo) { toast('Yazı veya fotoğraf ekle'); return; }
     const v = vid ? vehicles.find(x => x.id === vid) : null;
@@ -6119,19 +5805,19 @@ ${buildGarageContext()}
     box.innerHTML = socialPosts.map(p => `
       <article class="post-card">
         <div class="p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-accent">${escHtml((p.author || 'S').charAt(0))}</div>
+          <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-accent">${(p.author || 'S').charAt(0)}</div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold">${escHtml(p.author || 'Sen')}</p>
-            <p class="text-[11px] text-slate-500">${timeAgo(p.createdAt)}${p.plate ? ' · ' + escHtml(p.plate) : ''}</p>
+            <p class="text-sm font-semibold">${p.author || 'Sen'}</p>
+            <p class="text-[11px] text-slate-500">${timeAgo(p.createdAt)}${p.plate ? ' · ' + p.plate : ''}</p>
           </div>
-          <button onclick="deletePost('${safeRecordId(p.id, 'post')}')" class="w-8 h-8 rounded-lg text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
+          <button onclick="deletePost('${p.id}')" class="w-8 h-8 rounded-lg text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>
-        ${safeImageSrc(p.photo) ? `<img class="post-img" src="${escHtml(safeImageSrc(p.photo))}" alt="Araç fotoğrafı">` : ''}
-        <div class="p-4 ${safeImageSrc(p.photo) ? 'pt-3' : 'pt-0'}">
-          ${p.text ? `<p class="text-sm leading-relaxed whitespace-pre-wrap">${escHtml(p.text)}</p>` : ''}
-          ${p.plate ? `<div class="mt-2"><span class="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400"><i class="fa-solid fa-car mr-1"></i>${escHtml(p.plate)} · ${escHtml(p.brand || '')} ${escHtml(p.model || '')}</span></div>` : ''}
+        ${p.photo ? `<img class="post-img" src="${p.photo}" alt="">` : ''}
+        <div class="p-4 ${p.photo ? 'pt-3' : 'pt-0'}">
+          ${p.text ? `<p class="text-sm leading-relaxed whitespace-pre-wrap">${p.text.replace(/</g,'&lt;')}</p>` : ''}
+          ${p.plate ? `<div class="mt-2"><span class="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400"><i class="fa-solid fa-car mr-1"></i>${p.plate} · ${p.brand || ''} ${p.model || ''}</span></div>` : ''}
           <div class="mt-3 flex items-center gap-4">
-            <button onclick="toggleLike('${safeRecordId(p.id, 'post')}')" class="flex items-center gap-1.5 text-sm ${p.liked ? 'text-accent' : 'text-slate-400'}">
+            <button onclick="toggleLike('${p.id}')" class="flex items-center gap-1.5 text-sm ${p.liked ? 'text-accent' : 'text-slate-400'}">
               <i class="fa-${p.liked ? 'solid' : 'regular'} fa-heart"></i> ${p.likes || 0}
             </button>
           </div>

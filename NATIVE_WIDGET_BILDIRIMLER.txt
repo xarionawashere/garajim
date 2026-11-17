@@ -1,11 +1,11 @@
 GARAJIM — Native Android widget ve bakım bildirimleri
 
-Bu kaynak paketi Capacitor ile oluşturulan Android uygulamasına yerel ana ekran widget'ı ve günlük bakım hatırlatmaları ekler.
+Bu sürüm, mevcut web arayüzünü korur ve Capacitor ile oluşturulan Android uygulamasına yerel ana ekran widget’ı ve günlük bakım hatırlatmaları ekler.
 
-Widget: Android ana ekranında boş alana basılı tut > Widget'lar > Garajım. İlk araç bilgileri uygulama açıldıktan ve veriler eşitlendikten sonra görünür. Widget'a dokunmak uygulamayı açar.
+Widget: Android ana ekranında boş alana basılı tut > Widget’lar > Garajım. İlk araç bilgileri uygulama açıldıktan ve veriler eşitlendikten sonra görünür. Widget’a dokunmak uygulamayı açar.
 
-Bildirimler: Uygulamadaki bildirim izni akışını kullanın ve Android izin penceresinde bildirimlere izin verin. Alarm yaklaşık 09.00 için kurulur. Bildirim, uygulama en son açıkken JavaScript'in Android'e eşitlediği yaklaşan/geciken uyarı satırlarını kullanır. Uygulama uzun süre kapalı kalırsa alarm anında güncel tarihler yeniden hesaplanmaz; uygulama açıldığında yeniden eşitlenir. Android üretici pil optimizasyonları alarmı geciktirebilir.
+Bildirimler: Uygulamadaki zil/bildirim izni akışını kullanın ve Android izin penceresinde bildirimlere izin verin. Uygulama bakım tarihi kontrollerini her gün yaklaşık 09.00’da yapar; tarihli bakım/evrak kalemleri için uygulamadaki hatırlatma gününü (varsayılan 30 gün), kilometre bakımında ise uygulamanın bakım uyarı eşiğini kullanır. Android’in pil tasarrufu üreticiye göre zamanlamayı geciktirebilir.
 
-APK/AAB: GitHub Actions > “Android APK ve Google Play AAB Olustur”. İmza secrets yoksa yalnız Garajim-Debug-APK artifact'i üretilir. Dört imzalama secret'i ayarlıysa Garajim-Play-AAB artifact'i üretilir. Bu kaynak ZIP'inde hazır APK/AAB yoktur.
+APK: GitHub deposuna gönderildiğinde Actions > APK Olustur iş akışı çalışır. Çıktı, Garajim-APK adlı artifact olarak indirilir. Bu ZIP içinde hazır derlenmiş APK yoktur; APK GitHub Actions üzerinde oluşturulur.
 
-Not: Kaynak değişiklikleri gerçek Android cihaz üzerinde doğrulanmış sayılmaz. İlk derlemeden sonra GPS izinleri, widget, yeniden başlatma, bildirim ve arka plan davranışını test edin.
+Not: Bu kaynak değişiklikleri henüz gerçek bir Android cihazda test edilmiş değildir. İlk derleme ve cihaz testi sonrasında hata çıkarsa Actions derleme günlüğüyle düzeltme yapılmalıdır.
