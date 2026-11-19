@@ -22,13 +22,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Web kaynaklarini hazirla
-        run: |
-          mkdir -p www
-          cp index.html www/index.html
-
       - name: Bagimliliklari yukle
         run: npm install --no-audit --no-fund
+
+      - name: Otomatik testler (APK oncesi)
+        run: node --test tests/ride-logic.test.mjs
+
+      - name: Web uygulamasini hazirla (internetsiz calisacak sekilde gom)
+        run: node build-web.js
 
       - name: Android projesini olustur
         run: |
@@ -76,6 +77,15 @@ jobs:
               for act in actions: ET.SubElement(f, 'action', {A+'name': act})
             if meta:
               ET.SubElement(r, 'meta-data', {A+'name': 'android.appwidget.provider', A+'resource': meta})
+          # Sürüş arka plan foreground service
+          svc_name = 'com.garajim.app.GarajimRideService'
+          services = {s.get(A+'name') for s in app.findall('service')}
+          if svc_name not in services:
+            ET.SubElement(app, 'service', {
+              A+'name': svc_name,
+              A+'exported': 'false',
+              A+'foregroundServiceType': 'location'
+            })
           tree.write(p, encoding='utf-8', xml_declaration=True)
           PY
 
@@ -111,6 +121,7 @@ jobs:
                 signingConfigs {
                     release {
                         storeFile file("../keystore/garajim.jks")
+                        storeType "pkcs12"
                         storePassword System.getenv("KEYSTORE_PASSWORD")
                         keyAlias System.getenv("KEY_ALIAS")
                         keyPassword System.getenv("KEY_PASSWORD")
