@@ -26,11 +26,13 @@ public class GarajimRideService extends Service {
         Intent i = new Intent(ctx, GarajimRideService.class);
         i.putExtra(EXTRA_TITLE, title);
         i.putExtra(EXTRA_TEXT, text);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ctx.startForegroundService(i);
-        } else {
-            ctx.startService(i);
-        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ctx.startForegroundService(i);
+            } else {
+                ctx.startService(i);
+            }
+        } catch (Exception ignored) { }          // arka plan kısıtı vb.: uygulama çökmesin
     }
 
     public static void stop(Context ctx) {
@@ -50,7 +52,7 @@ public class GarajimRideService extends Service {
         open.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         int piFlags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= 23) piFlags |= PendingIntent.FLAG_IMMUTABLE;
-        PendingIntent pi = PendingIntent.getActivity(this, 7411, open, piFlags);
+        PendingIntent pi = PendingIntent.getActivity(this, 7430, open, piFlags);
 
         int icon = getResources().getIdentifier("ic_stat_garajim", "drawable", getPackageName());
         if (icon == 0) icon = android.R.drawable.ic_menu_mylocation;
@@ -71,8 +73,13 @@ public class GarajimRideService extends Service {
         }
 
         Notification n = b.build();
-        startForeground(NOTIF_ID, n);
-        return START_STICKY;
+        try {
+            startForeground(NOTIF_ID, n);
+        } catch (Exception e) {                 // konum izni yoksa / arka plan kısıtı: çökme, servisi kapat
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+        return START_NOT_STICKY;                // süreç ölürse hayalet bildirim kalmasın
     }
 
     private void ensureChannel() {

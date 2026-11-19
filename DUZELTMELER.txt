@@ -100,3 +100,18 @@ SURUM 1.6
 - Acik Dunya hiz gostergesi kapatilinca hiz KAYBOLMAZ: ekrani kaplamayan 88 px cam efektli daire gosterge
   (hiz, birim, hiza gore dolan yay: >110 sari, >140 kirmizi, kayit noktasi). Dokununca buyuk gosterge acilir.
   Duraklat/Bitir butonlari her zaman acikta. Tercih hatirlanir.
+
+GUNCEL INCELEME (Garajim-guncel.zip uzerinden)
+- Arka plan servisi: GarajimRideService istek kodu 7411 widget "Yakit" dugmesiyle cakisiyordu (dugme eylemini kaybedebilirdi) -> 7430.
+  START_STICKY hayalet bildirim birakiyordu -> START_NOT_STICKY; startForeground/startForegroundService hata verirse cokmez.
+- Servis + arka plan GPS artik surus BASLARKEN (on planda) acilir; arka plana gecince acmaya calismaz (Android 12+ engelliyordu).
+- "Sil" deyince DNA / kart / guzergah / asfalt verisi de geri alinir (once Sil denese bile kaydediliyordu).
+- Viraj algilama: yalniz baslangic yonune donen virajlar sayiliyordu; artik yon oturunca viraj kapanir (90 derece, S virajlari).
+- Ani pini onerisi bloklayan confirm() yerine 10 sn'lik kutu; 20 sn durunca, 10 dk'da bir, en cok 3 kez.
+- Yakit: depo bilinmeden 45 L varsayip sacma menzil veriyordu; artik gercek L/100 (fuelStats) + bu surusteki tahmini litre.
+- Carpma tespiti esigi 18 -> 30 m/s2 ve >25 km/sa (cukur yanlis alarmi).
+- Gece modu kullanici kapatsa da 45 sn'de bir zorla aciliyordu -> surus basina bir kez.
+- Taslak kaydi her GPS'te degil 10 sn'de bir; son 6000 nokta (500 degil) -> cokme sonrasi rota kesilmiyor.
+- Hiz renkli cizgi: nokta basina bir katman yerine art arda ayni renkler tek cizgide (299 -> 7 katman).
+- Tekrar hizi varsayilani 4x (1-3 sn) yerine 1x. Ozette HTML kacisi.
+- Yedek: isaretler, kartlar, DNA, guzergah sayaci, asfalt verisi de yedege girer; geri yuklemede birlesir.
