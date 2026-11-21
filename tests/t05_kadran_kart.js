@@ -61,7 +61,7 @@ calls.w.length=0; calls.s.length=0;
 w.showTab('ride'); w.openVehicleRidePreview('v1',0); ok(d.getElementById('rideSummaryModal').innerHTML.includes('rideShareCard()'),'özet ekranında Kart düğmesi');
 await w.rideShareCard(); const f=calls.w[0];
 ok(f&&f.path.endsWith('.png')&&Buffer.from(f.data,'base64').slice(1,4).toString()==='PNG','kart PNG olarak paylaşıldı');
-fsx.writeFileSync('/tmp/lint/card.png',Buffer.from(f.data,'base64'));
+try{fsx.mkdirSync('/tmp/lint',{recursive:true})}catch(e){} fsx.writeFileSync('/tmp/lint/card.png',Buffer.from(f.data,'base64'));
 ok(calls.s.length===1&&calls.s[0].url.endsWith('.png'),'paylaşım menüsü açıldı');
 process.exit(process.exitCode||0);
 })();

@@ -70,7 +70,7 @@ const S={id:'k',vehicleId:'v1',date:new Date().toISOString(),dist:24000,time:240
 const kr=ev("rideKarneRows("+JSON.stringify(S)+")"); ok(kr.rows.length>=3&&kr.overall>0,'karne notları: '+kr.rows.map(r=>r.k+' '+r.v).join(', ')+' → genel '+kr.overall);
 ok(ev("rideGrade(95)+rideGrade(80)+rideGrade(65)+rideGrade(10)")==='ABCD','harf notları A/B/C/D');
 ev("ride.pendingSummary="+JSON.stringify(S)); await w.rideShareKarne(); const png=Buffer.from(shared.data,'base64');
-ok(shared.path.includes('karne')&&png.slice(1,4).toString()==='PNG','karne PNG olarak paylaşıldı'); fsx.writeFileSync('/tmp/lint/karne.png',png);
+ok(shared.path.includes('karne')&&png.slice(1,4).toString()==='PNG','karne PNG olarak paylaşıldı'); try{fsx.mkdirSync('/tmp/lint',{recursive:true})}catch(e){} fsx.writeFileSync('/tmp/lint/karne.png',png);
 const dim=[png.readUInt32BE(16),png.readUInt32BE(20)]; ok(dim[0]===1080&&dim[1]===1920,'boyut 1080x1920');
 ok(d.getElementById('rideSummaryModal').innerHTML.includes('rideShareKarne()'),'özet ekranında Karne düğmesi');
 ok(errors.length===0,'sayfa hatası yok '+errors.join('|'));
