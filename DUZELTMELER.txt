@@ -115,3 +115,24 @@ GUNCEL INCELEME (Garajim-guncel.zip uzerinden)
 - Hiz renkli cizgi: nokta basina bir katman yerine art arda ayni renkler tek cizgide (299 -> 7 katman).
 - Tekrar hizi varsayilani 4x (1-3 sn) yerine 1x. Ozette HTML kacisi.
 - Yedek: isaretler, kartlar, DNA, guzergah sayaci, asfalt verisi de yedege girer; geri yuklemede birlesir.
+
+SURUM 2.0 (Garajim-guncel uzerine)
+- Navigasyon (Acik Dunya): hedef arama (Nominatim), 3 rota alternatifi (OSRM), rota secimi, Google Haritalar gibi donus donus
+  yonerge (Turkce metin, ok, mesafe, kalan km/sure, varis saati), sesli yonlendirme (ac/kapat), rotadan cikinca otomatik
+  yeniden rota, "Haritadan sec", Park yerim / isaretlerim / son aramalar hizli hedef, "Google Haritalar'da ac" yedegi.
+  Konum rota cizgisine izdusurulur (seyrek koseli yollarda yanlis "rotadan ciktin" olmaz). Internet ve herkese acik OSM
+  sunuculari gerekir; trafik bilgisi yoktur.
+- Canli ghost: surus baslarken ayni noktadan baslayan en hizli turun haritada seffaf motorla yarisir; "12 sn onde/geride".
+- Surus karnesi: ozet ekraninda "Karne" -> 1080x1920 paylasim gorseli (hiz renkli rota, istatistik, Akicilik/Yol puruzu/
+  Fren disiplini/Surus skoru notlari A-D, genel not, DNA, ghost).
+- Otomatik test: tests/ (10 dosya, 212 kontrol). "npm test"; GitHub'da her derlemede APK'dan once calisir, hata varsa APK uretilmez.
+  Acil durumda Actions > Run workflow > "Testleri atla". Ilk calistirmada yakalanan hata: bg-black/88 gecersiz Tailwind sinifi.
+
+SURUM 2.1 - MUZIK (Spotify dahil)
+- Hesap/API anahtari/Premium GEREKTIRMEZ: Android medya oturumu uzerinden calisir (Spotify, YouTube Music, vb.).
+- Surus ekraninda sol altta kucuk muzik dugmesi (calarken halka yanar, kapak gorunur). Dokununca mini oynatici karti:
+  kapak, sarki, sanatci, ilerleme, onceki / oynat-duraklat / sonraki. Sarki degisince 4,5 sn gorunup kendiliginden kapanir.
+  Kapaga dokununca muzik uygulamasi acilir. Ayarlar > "Muzik kontrolu" ile tamamen kapatilir. Tarayicida gizli.
+- Izin vermeden de onceki/oynat/sonraki calisir (medya tusu). Sarki adi icin bir kez Ayarlar > Bildirim erisimi > Garajim.
+- Yeni dosyalar: GarajimMedia.java, GarajimMediaListener.java; manifest (servis + Spotify gorunurlugu) workflow ile eklenir.
+- Test: tests/t11_muzik.js (21 kontrol). Toplam 233 kontrol.

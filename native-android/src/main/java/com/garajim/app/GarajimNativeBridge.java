@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -95,6 +96,44 @@ public class GarajimNativeBridge {
     public void stopRideNotification() {
         try {
             activity.runOnUiThread(() -> GarajimRideService.stop(context));
+        } catch (Exception ignored) { }
+    }
+
+    // ---------- Müzik (Spotify dahil) ----------
+    @JavascriptInterface
+    public String mediaState() {
+        try { return GarajimMedia.state(context); } catch (Exception e) { return "{\"access\":false,\"session\":false}"; }
+    }
+
+    @JavascriptInterface
+    public String mediaArt() {
+        try { return GarajimMedia.art(context); } catch (Exception e) { return ""; }
+    }
+
+    @JavascriptInterface
+    public void mediaCmd(String cmd) {
+        try { GarajimMedia.command(context, cmd == null ? "toggle" : cmd); } catch (Exception ignored) { }
+    }
+
+    /** Ayarlar > Bildirim erişimi ekranını açar (şarkı bilgisini okuyabilmek için). */
+    @JavascriptInterface
+    public void mediaOpenAccess() {
+        try {
+            Intent i = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(i);
+        } catch (Exception ignored) { }
+    }
+
+    /** Çalan oturumun (yoksa Spotify'ın) uygulamasını açar. */
+    @JavascriptInterface
+    public void mediaOpenApp() {
+        try {
+            android.media.session.MediaController mc = GarajimMedia.hasAccess(context) ? GarajimMedia.active(context) : null;
+            String pkg = mc != null ? mc.getPackageName() : GarajimMedia.SPOTIFY;
+            Intent i = context.getPackageManager().getLaunchIntentForPackage(pkg);
+            if (i == null) i = context.getPackageManager().getLaunchIntentForPackage(GarajimMedia.SPOTIFY);
+            if (i != null) { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); context.startActivity(i); }
         } catch (Exception ignored) { }
     }
 }
