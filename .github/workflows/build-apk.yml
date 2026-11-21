@@ -4,6 +4,11 @@ on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Testleri atla (yalnizca acil durumda)'
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -25,11 +30,12 @@ jobs:
       - name: Bagimliliklari yukle
         run: npm install --no-audit --no-fund
 
-      - name: Otomatik testler (APK oncesi)
-        run: node --test tests/ride-logic.test.mjs
-
       - name: Web uygulamasini hazirla (internetsiz calisacak sekilde gom)
         run: node build-web.js
+
+      - name: Otomatik testler (hata varsa APK uretilmez)
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        run: npm test
 
       - name: Android projesini olustur
         run: |
@@ -86,6 +92,15 @@ jobs:
               A+'exported': 'false',
               A+'foregroundServiceType': 'location'
             })
+          # Müzik kontrolü: bildirim dinleyici (kullanıcı izin verirse şarkı bilgisi okunur) + Spotify görünürlüğü
+          lst = 'com.garajim.app.GarajimMediaListener'
+          if lst not in services:
+            sv = ET.SubElement(app, 'service', {A+'name': lst, A+'label': 'Garajım müzik kontrolü', A+'exported': 'true', A+'permission': 'android.permission.BIND_NOTIFICATION_LISTENER_SERVICE'})
+            f = ET.SubElement(sv, 'intent-filter'); ET.SubElement(f, 'action', {A+'name': 'android.service.notification.NotificationListenerService'})
+          q = root.find('queries')
+          if q is None: q = ET.SubElement(root, 'queries')
+          if not [x for x in q.findall('package') if x.get(A+'name') == 'com.spotify.music']:
+            ET.SubElement(q, 'package', {A+'name': 'com.spotify.music'})
           tree.write(p, encoding='utf-8', xml_declaration=True)
           PY
 
