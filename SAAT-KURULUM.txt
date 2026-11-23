@@ -21,5 +21,9 @@ Garajım — Wear OS (sırayla eklenen özellikler)
    - "Arabam nerede?" → mesafe + yön (kuzey, doğu…)
    - Telefonda kayıtlı park noktası gerekir (Açık Dünya → P)
 
-Kurulum: telefon APK + wear APK (Actions artifact).
-Saat ile telefon bağlı ve Google hesabı aynı olmalı.
+Kurulum: GitHub Actions sonucunda iki ayrı dosya indirilir:
+- Garajim-Mobil-APK: telefon uygulaması
+- Garajim-WearOS-APK: Wear OS saat uygulaması
+
+İki APK dosyasını da indir. Telefon APK’sını telefona, Wear OS APK’sını saate kur.
+Saat ile telefon bağlı olmalı ve Google hesabı aynı olmalı. Saat uygulamasının gerçek cihazda eşleşme ve veri aktarımı ayrıca test edilmelidir.
