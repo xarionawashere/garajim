@@ -27,6 +27,9 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 import org.json.JSONArray;
@@ -35,18 +38,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /** Garajım Wear OS: araç seçimi, sürüş kontrolü ve sürüş bitirme/kayıt kararları saatten yapılır. */
-public class WearMainActivity extends Activity implements DataClient.OnDataChangedListener {
+public class WearMainActivity extends Activity implements DataClient.OnDataChangedListener, MessageClient.OnMessageReceivedListener {
     private static final String PATH_STATE = "/garajim/ride_state";
     private static final String PATH_VEHICLES = "/garajim/vehicles";
     private static final String PATH_ALERT = "/garajim/alert";
     private static final String PATH_CMD = "/garajim/cmd";
+    private static final String PATH_ACK = "/garajim/ack";
+    private static final String PENDING_PREFS = "garajim_wear_pending_command";
+    private static final String KEY_PENDING_ID = "id";
+    private static final String KEY_PENDING_TEXT = "command";
+    private static final String KEY_PENDING_AT = "createdAt";
+    private static final long COMMAND_ACK_TTL_MS = 6_500L;
+    private static final long PENDING_RESTORE_TTL_MS = 120_000L;
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
 
-    private TextView speed, meta, status, connection, alert, track, parkInfo, mapStatus;
+    private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus;
     private MiniRouteView miniMap;
     private Button btnToggle, btnVehicle, btnPendingSummary;
     private View speedRing;
@@ -59,6 +70,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private boolean lastStatePaused = false;
     private double parkDist = -1;
     private String parkDir = "";
+    private boolean parkSaved = false;
     private int lastShownSpeed = -1;
     private boolean entered;
     private boolean phoneConnected = false;
@@ -68,6 +80,12 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private long lastSyncRequestAt = 0L;
     private volatile String lastCommandSent = "";
     private volatile long lastCommandSentAt = 0L;
+    private volatile String pendingCommandId = "";
+    private volatile String pendingCommandText = "";
+    private volatile long pendingCommandAt = 0L;
+    private volatile boolean pendingResumeGrace = false;
+    private volatile boolean activityResumed = false;
+    private Runnable commandAckTimeout;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Runnable connectionTicker = new Runnable() {
         @Override public void run() {
@@ -102,8 +120,12 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.activity_wear);
+        restorePendingCommand();
         speed = findViewById(R.id.wearSpeed);
         meta = findViewById(R.id.wearMeta);
+        distanceView = findViewById(R.id.wearDistance);
+        durationView = findViewById(R.id.wearDuration);
+        maxSpeedView = findViewById(R.id.wearMaxSpeed);
         status = findViewById(R.id.wearStatus);
         connection = findViewById(R.id.wearConnection);
         alert = findViewById(R.id.wearAlert);
@@ -365,7 +387,14 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     @Override protected void onResume() {
         super.onResume();
+        activityResumed = true;
+        if (!pendingCommandId.isEmpty() && pendingResumeGrace) {
+            // Kurtarma süresini komutun gönderildiği andan değil, ekrana geri dönüldüğü andan başlat.
+            pendingCommandAt = System.currentTimeMillis();
+            persistPendingCommand();
+        }
         Wearable.getDataClient(this).addListener(this);
+        Wearable.getMessageClient(this).addListener(this);
         mainHandler.removeCallbacks(connectionTicker);
         refreshPhoneConnection();
         mainHandler.postDelayed(connectionTicker, 8000L);
@@ -377,22 +406,124 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     DataMap map = DataMapItem.fromDataItem(item).getDataMap();
                     if (PATH_STATE.equals(path)) applyState(map);
                     else if (PATH_VEHICLES.equals(path)) applyVehicles(map.getString("json", "[]"));
+                    else if (path.startsWith(PATH_ACK + "/")) {
+                        processAck(map.getString("id", ""), map.getBoolean("accepted", false),
+                                map.getString("message", "Telefon yanıt verdi."));
+                        Wearable.getDataClient(this).deleteDataItems(item.getUri());
+                    }
                 }
             } catch (Exception ignored) {
-            } finally { items.release(); }
-        });
+            } finally {
+                items.release();
+                // First recover a durable ACK; only then show a timeout for any still-pending command.
+                scheduleCommandAckTimeout();
+            }
+        }).addOnFailureListener(e -> scheduleCommandAckTimeout());
     }
 
     @Override protected void onPause() {
+        activityResumed = false;
+        if (!pendingCommandId.isEmpty()) {
+            // Ekran uyursa, kısa ön plan zaman aşımı yerine sonradan gelecek Data Item ACK için
+            // daha uzun kurtarma penceresi kalıcı olarak saklanır.
+            pendingResumeGrace = true;
+            persistPendingCommand();
+        }
         mainHandler.removeCallbacks(connectionTicker);
         Wearable.getDataClient(this).removeListener(this);
+        Wearable.getMessageClient(this).removeListener(this);
+        if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
+        commandAckTimeout = null;
+        // Komut beklemedeyken ekranın uyuması sonucu kaybolmamalı; ACK Data Layer'da tutulur.
         super.onPause();
     }
 
     @Override protected void onDestroy() {
         mainHandler.removeCallbacks(connectionTicker);
+        if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
         if (summaryDialog != null && summaryDialog.isShowing()) summaryDialog.dismiss();
         super.onDestroy();
+    }
+
+    @Override public void onMessageReceived(MessageEvent event) {
+        if (event == null || !PATH_ACK.equals(event.getPath()) || event.getData() == null) return;
+        try {
+            JSONObject ack = new JSONObject(new String(event.getData(), StandardCharsets.UTF_8));
+            processAck(ack.optString("id", ""), ack.optBoolean("accepted", false),
+                    ack.optString("message", "Telefon yanıt verdi."));
+        } catch (Exception ignored) { }
+    }
+
+    private void processAck(String id, boolean accepted, String message) {
+        if (id == null || id.isEmpty() || !id.equals(pendingCommandId)) return;
+        String command = pendingCommandText;
+        clearPendingCommand();
+        if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
+        commandAckTimeout = null;
+        String safeMessage = message == null ? "Telefon yanıt verdi." : message;
+        runOnUiThread(() -> {
+            if (!accepted) {
+                Toast.makeText(this, safeMessage.isEmpty() ? "Telefon komutu kabul etmedi" : safeMessage, Toast.LENGTH_LONG).show();
+            } else if (command.startsWith("request_sync") || command.startsWith("select_vehicle|")
+                    || command.startsWith("summary_save|") || command.startsWith("summary_discard|")) {
+                Toast.makeText(this, "Telefon komutu aldı", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void restorePendingCommand() {
+        android.content.SharedPreferences prefs = getSharedPreferences(PENDING_PREFS, MODE_PRIVATE);
+        String id = prefs.getString(KEY_PENDING_ID, "");
+        String cmd = prefs.getString(KEY_PENDING_TEXT, "");
+        long at = prefs.getLong(KEY_PENDING_AT, 0L);
+        long age = System.currentTimeMillis() - at;
+        if (!id.isEmpty() && !cmd.isEmpty() && at > 0 && age >= 0 && age <= PENDING_RESTORE_TTL_MS) {
+            pendingCommandId = id;
+            pendingCommandText = cmd;
+            // Activity/process yeniden yaratıldığı için ACK Data Layer üzerinden geç gelebilir.
+            // onResume() bu zaman damgasını tekrar tazeleyerek geri dönüş penceresini başlatır.
+            pendingCommandAt = at;
+            pendingResumeGrace = true;
+            persistPendingCommand();
+        } else {
+            clearPendingCommand();
+        }
+    }
+
+    private void persistPendingCommand() {
+        getSharedPreferences(PENDING_PREFS, MODE_PRIVATE).edit()
+                .putString(KEY_PENDING_ID, pendingCommandId)
+                .putString(KEY_PENDING_TEXT, pendingCommandText)
+                .putLong(KEY_PENDING_AT, pendingCommandAt)
+                .apply();
+    }
+
+    private void clearPendingCommand() {
+        pendingCommandId = "";
+        pendingCommandText = "";
+        pendingCommandAt = 0L;
+        pendingResumeGrace = false;
+        getSharedPreferences(PENDING_PREFS, MODE_PRIVATE).edit()
+                .remove(KEY_PENDING_ID).remove(KEY_PENDING_TEXT).remove(KEY_PENDING_AT).apply();
+    }
+
+    private void scheduleCommandAckTimeout() {
+        if (pendingCommandId.isEmpty() || pendingCommandAt <= 0L) return;
+        if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
+        final String id = pendingCommandId;
+        long age = Math.max(0L, System.currentTimeMillis() - pendingCommandAt);
+        // Ön planda komutlar hızlı yanıt bekler. Uyku/yeniden yaratma sonrası ACK Data Item
+        // gecikebileceğinden, restore penceresinin sonuna kadar korelasyon kimliğini koru.
+        long ttl = pendingResumeGrace ? PENDING_RESTORE_TTL_MS : COMMAND_ACK_TTL_MS;
+        long delay = Math.max(0L, ttl - age);
+        commandAckTimeout = () -> {
+            if (!id.equals(pendingCommandId)) return;
+            if (!activityResumed) return;
+            clearPendingCommand();
+            commandAckTimeout = null;
+            Toast.makeText(this, "Telefon yanıt vermedi · bağlantıyı kontrol et", Toast.LENGTH_SHORT).show();
+        };
+        if (activityResumed) mainHandler.postDelayed(commandAckTimeout, delay);
     }
 
     @Override public void onDataChanged(DataEventBuffer events) {
@@ -406,6 +537,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 if (PATH_STATE.equals(path)) applyState(map);
                 else if (PATH_VEHICLES.equals(path)) applyVehicles(map.getString("json", "[]"));
                 else if (PATH_ALERT.equals(path)) applyAlert(map);
+                else if (path.startsWith(PATH_ACK + "/")) {
+                    processAck(map.getString("id", ""), map.getBoolean("accepted", false),
+                            map.getString("message", "Telefon yanıt verdi."));
+                    Wearable.getDataClient(this).deleteDataItems(e.getDataItem().getUri());
+                }
             }
         } finally {
             events.release();
@@ -418,6 +554,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         final boolean incomingRunning = map.getBoolean("running", false);
         final boolean incomingPaused = map.getBoolean("paused", false);
         final double kmh = map.getDouble("kmh", 0);
+        final double maxKmh = map.getDouble("maxKmh", 0);
         final double distM = map.getDouble("distM", 0);
         final int sec = map.getInt("elapsedSec", 0);
         final String plate = map.getString("plate", "");
@@ -429,6 +566,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         final String routeJson = map.getString("routeJson", "[]");
         final double incomingParkDist = map.getDouble("parkDistM", -1);
         final String incomingParkDir = map.getString("parkDir", "");
+        final double incomingParkLat = map.getDouble("parkLat", 0);
+        final double incomingParkLng = map.getDouble("parkLng", 0);
+        final boolean incomingParkSaved = map.getBoolean("parkSaved",
+                incomingParkDist >= 0 || incomingParkLat != 0 || incomingParkLng != 0);
         final String alertStr = map.getString("alert", "");
         final boolean hasSummary = map.getBoolean("pendingSummary", false);
         final String sumId = map.getString("summaryId", "");
@@ -452,6 +593,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (stateTransition) buzz(1);
             parkDist = incomingParkDist;
             parkDir = incomingParkDir;
+            parkSaved = incomingParkSaved;
+            if (parkInfo != null && parkInfo.getVisibility() == View.VISIBLE) renderParkInfoText();
             if (miniMap != null) miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused);
             if (mapStatus != null) {
                 String mapText;
@@ -488,8 +631,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 lastOverLimit = over;
             }
             int m = sec / 60, s = sec % 60;
-            meta.setText(String.format(Locale.US, "%.2f km  ·  %d:%02d%s", distM / 1000.0, m, s,
-                    plate.isEmpty() ? "" : "  ·  " + plate));
+            if (meta != null) meta.setText(plate.isEmpty() ? "Araç seçilmedi" : plate);
+            if (distanceView != null) distanceView.setText(String.format(Locale.US, "%.2f km", distM / 1000.0));
+            if (durationView != null) durationView.setText(String.format(Locale.US, "%d:%02d", m, s));
+            if (maxSpeedView != null) maxSpeedView.setText(String.format(Locale.US, "%.0f km/sa", maxKmh));
             selectedVehicleId = vehicleId == null ? "" : vehicleId;
             selectedPlate = plate == null ? "" : plate;
             updateVehicleButton();
@@ -623,13 +768,24 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private void showPark() {
         if (parkInfo == null) return;
         parkInfo.setVisibility(View.VISIBLE); parkInfo.setAlpha(0f);
-        if (parkDist < 0) parkInfo.setText("Park kaydı yok / telefon bekleniyor");
-        else {
-            String d = parkDist >= 1000 ? String.format(Locale.US, "%.1f km", parkDist / 1000.0)
-                    : String.format(Locale.US, "%.0f m", parkDist);
-            parkInfo.setText(d + (parkDir.isEmpty() ? "" : "  ·  " + parkDir));
-        }
+        renderParkInfoText();
         parkInfo.animate().alpha(1f).setDuration(220).start(); buzz(1);
+    }
+
+    /** Durum verisi geç gelirse açık park kartının metnini güncelle; her tickte titreşim üretme. */
+    private void renderParkInfoText() {
+        if (parkInfo == null) return;
+        if (!parkSaved) {
+            parkInfo.setText("Park yeri kayıtlı değil");
+            return;
+        }
+        if (parkDist < 0) {
+            parkInfo.setText("Park kayıtlı · güncel GPS bekleniyor");
+            return;
+        }
+        String d = parkDist >= 1000 ? String.format(Locale.US, "%.1f km", parkDist / 1000.0)
+                : String.format(Locale.US, "%.0f m", parkDist);
+        parkInfo.setText(d + (parkDir.isEmpty() ? "" : "  ·  " + parkDir));
     }
 
     private void buzz(int pattern) {
@@ -654,11 +810,29 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         if (cmd.equals(lastCommandSent) && now - lastCommandSentAt < 700L) return;
         lastCommandSent = cmd;
         lastCommandSentAt = now;
+        final String commandId = UUID.randomUUID().toString();
+        final String payload;
+        try {
+            JSONObject envelope = new JSONObject();
+            envelope.put("id", commandId);
+            envelope.put("cmd", cmd);
+            payload = envelope.toString();
+        } catch (Exception e) {
+            Toast.makeText(this, "Komut hazırlanamadı", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        pendingCommandId = commandId;
+        pendingCommandText = cmd;
+        pendingCommandAt = now;
+        pendingResumeGrace = false;
+        persistPendingCommand();
+        if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
         IO.execute(() -> {
             try {
-                byte[] data = cmd.getBytes(StandardCharsets.UTF_8);
+                byte[] data = payload.getBytes(StandardCharsets.UTF_8);
                 List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
                 if (nodes.isEmpty()) {
+                    if (commandId.equals(pendingCommandId)) clearPendingCommand();
                     phoneConnected = false;
                     runOnUiThread(() -> {
                         updateConnectionUi();
@@ -668,13 +842,28 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 }
                 boolean sent = false;
                 for (Node n : nodes) {
-                    Tasks.await(Wearable.getMessageClient(this).sendMessage(n.getId(), PATH_CMD, data));
-                    sent = true;
+                    // Bir düğüme gönderim hatası diğer eşleşmiş düğümlere denemeyi durdurmasın.
+                    try {
+                        Tasks.await(Wearable.getMessageClient(this).sendMessage(n.getId(), PATH_CMD, data));
+                        sent = true;
+                    } catch (Exception nodeError) {
+                        // Başarılı bir başka gönderim varsa ACK beklemeye devam edilir.
+                    }
                 }
-                if (sent && ("request_sync".equals(cmd) || cmd.startsWith("select_vehicle|"))) {
-                    runOnUiThread(() -> Toast.makeText(this, "Komut telefona iletildi", Toast.LENGTH_SHORT).show());
+                if (sent) {
+                    runOnUiThread(() -> {
+                        if (!commandId.equals(pendingCommandId)) return;
+                        pendingCommandAt = System.currentTimeMillis();
+                        if (!activityResumed) pendingResumeGrace = true;
+                        persistPendingCommand();
+                        if (activityResumed) scheduleCommandAckTimeout();
+                    });
+                } else {
+                    if (commandId.equals(pendingCommandId)) clearPendingCommand();
+                    runOnUiThread(() -> Toast.makeText(this, "Komut hiçbir bağlı cihaza iletilemedi", Toast.LENGTH_SHORT).show());
                 }
             } catch (Exception e) {
+                if (commandId.equals(pendingCommandId)) clearPendingCommand();
                 runOnUiThread(() -> Toast.makeText(this, "Komut iletilemedi · bağlantıyı kontrol et", Toast.LENGTH_SHORT).show());
             }
         });
