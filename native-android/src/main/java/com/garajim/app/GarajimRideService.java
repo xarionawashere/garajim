@@ -865,8 +865,15 @@ public class GarajimRideService extends Service {
             double lng = point.optDouble(1, Double.NaN);
             if (Double.isNaN(lat) || Double.isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) continue;
             JSONArray xy = new JSONArray();
-            xy.put(lat); xy.put(lng);
-            compact.put(xy);
+            try {
+                // JSONArray.put(double) throws JSONException in Android's org.json API.
+                // Values were range/NaN checked above, but still handle the checked exception.
+                xy.put(lat);
+                xy.put(lng);
+                compact.put(xy);
+            } catch (JSONException e) {
+                Log.w(TAG, "Skipping invalid mini-route point", e);
+            }
         }
         return compact.toString();
     }
