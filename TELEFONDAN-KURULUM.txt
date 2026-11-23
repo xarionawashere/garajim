@@ -1,15 +1,15 @@
 TELEFONDAN APK OLUSTURMA + IMZA
 
-1) github.com'a gir, depo olustur (garajim).
-2) Su dosyalari yukle:
-   index.html, package.json, capacitor.config.json,
-   icon.png, icon-foreground.png, build-apk.yml
-   (build-apk.yml yolu: .github/workflows/build-apk.yml)
-3) Actions > derleme bitsin > Garajim-APK indir (app-release.apk).
+1) Bu ZIP'i bilgisayarına çıkar. Klasör yapısını koru; özellikle .github/workflows, native-android, native-wear, scripts ve tests klasörleri eksik kalmamalı.
+2) GitHub'da bir depo oluştur veya mevcut Garajım deponun yerel kopyasına tüm proje dosyalarını aktar. Gizli .github klasörünün de yüklendiğini doğrula.
+3) Değişiklikleri main veya master dalına commit edip push et.
+4) GitHub > Actions > APK Olustur çalışmasını aç. Test ve derleme adımları tamamen başarılı olmadan APK'yı kurma.
+5) Aynı başarılı çalıştırmanın içinden iki ayrı artifact indir: Garajim-Mobil-APK ve Garajim-WearOS-APK. Telefon ve saat APK'larını farklı çalıştırmalardan karıştırma.
 
+Bu kaynak ZIP'i hazır APK içermez; APK'lar yukarıdaki GitHub Actions derlemesinde oluşturulur.
 IMZA
 - Eski hali debug APK idi; telefon "bilinmeyen uygulama" uyarisi verirdi.
-- Yeni workflow RELEASE imzali APK uretir.
+- Workflow yalnızca KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS ve KEY_PASSWORD secrets degerlerinin tamami tanimliysa RELEASE imzali APK uretir. Bu degerler eksikse DEBUG APK olusur ve mevcut release-imzali kurulumun ustune yuklenemeyebilir.
 - Uyari tamamen yok olmaz: Play Store disi kurulumda Android guvenlik uyarisi normaldir.
 - Kendi telefonunda: Ayarlar > Guvenlik > Bilinmeyen kaynaklar / uygulamayi yukle izni.
 
@@ -23,7 +23,7 @@ GitHub repo > Settings > Secrets and variables > Actions:
   KEY_ALIAS         = garajim
   KEY_PASSWORD      = sifren
 
-Play Protect uyarisi sadece Google Play yayini veya kullanicinin "yine de yukle" demesiyle asilir.
+Play Protect ve bilinmeyen kaynak uyarilari Android surumune ve cihaz politikasina gore degisebilir; ekrandaki resmi guvenlik adimlarini izle.
 
 
 GUNCELLEME NOTLARI

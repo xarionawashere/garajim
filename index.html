@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -217,6 +217,22 @@
   body .rounded-t-3xl.slide-up::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.2); margin: -8px auto 14px; }
   html.light body .rounded-t-3xl.slide-up::before { background: rgba(0,0,0,.18); }
   body .progress-bar { box-shadow: 0 0 14px -3px currentColor; }
+
+  /* Klavye, erişilebilirlik hizmetleri ve tercih edilen hareket azaltımı için ortak temel. */
+  :where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px;
+  }
+  button, a, [role="button"] { touch-action: manipulation; }
+  input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: var(--accent); }
+  button:disabled, [aria-disabled="true"] { opacity: .52; cursor: not-allowed; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: .001ms !important;
+    }
+  }
 </style>
 </head>
 <body class="min-h-screen">
@@ -1505,6 +1521,25 @@
     else closeNotifPanel();
   }
 
+  // JSON yedeklerinden ve yerel kayıtlardan gelen metinler HTML içine gömülmeden kaçırılır.
+  function garajimHtmlEsc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
+  }
+  // onclick gibi HTML özniteliklerinde JS argümanı üretirken hem JS hem HTML katmanını koru.
+  function garajimInlineJsArg(value) {
+    const quoted = JSON.stringify(String(value == null ? '' : value))
+      .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    return garajimHtmlEsc(quoted);
+  }
+  function garajimSafeImageSrc(value) {
+    const src = String(value == null ? '' : value).trim();
+    if (/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\r\n]+$/i.test(src)) return garajimHtmlEsc(src);
+    if (/^https:\/\/[^\s"'<>`]+$/i.test(src)) return garajimHtmlEsc(src);
+    return '';
+  }
+
   function openNotifPanel() {
     const list = collectNotifications();
     const box = document.getElementById('notifList');
@@ -1516,13 +1551,13 @@
       </div>`;
     } else {
       box.innerHTML = list.map(n => `
-        <button onclick="openDetailFromNotif('${n.id}')" class="w-full text-left flex gap-3 p-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 mb-1">
+        <button onclick="openDetailFromNotif(${garajimInlineJsArg(n.id)})" class="w-full text-left flex gap-3 p-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 mb-1">
           <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${n.type === 'danger' ? 'bg-red-500/15 text-red-400' : 'bg-amber-500/15 text-amber-400'}">
             <i class="fa-solid ${n.icon} text-sm"></i>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold truncate">${n.title}</p>
-            <p class="text-[12px] text-slate-400 mt-0.5 leading-snug">${n.body}</p>
+            <p class="text-sm font-semibold truncate">${garajimHtmlEsc(n.title)}</p>
+            <p class="text-[12px] text-slate-400 mt-0.5 leading-snug">${garajimHtmlEsc(n.body)}</p>
           </div>
           <i class="fa-solid fa-chevron-right text-slate-600 text-xs self-center"></i>
         </button>`).join('');
@@ -1781,24 +1816,25 @@
       const alerts = getAlerts(v);
       const hs = healthScore(v);
       const icon = typeIcons[v.type] || 'fa-car';
+      const photo = garajimSafeImageSrc(v.photo);
       let barColor = 'bg-emerald-500';
       if (prog) {
         if (prog.overdue) barColor = 'bg-red-500';
         else if (prog.warning) barColor = 'bg-amber-500';
       }
       return `
-      <div onclick="openDetail('${v.id}')" class="card card-premium rounded-2xl p-4 cursor-pointer">
+      <div onclick="openDetail(${garajimInlineJsArg(v.id)})" class="card card-premium rounded-2xl p-4 cursor-pointer">
         <div class="flex gap-3">
-          <div class="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/10 ${v.photo ? '' : 'photo-placeholder flex items-center justify-center'}">
-            ${v.photo ? `<img src="${v.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid ${icon} text-xl text-slate-500"></i>`}
+          <div class="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/10 ${photo ? '' : 'photo-placeholder flex items-center justify-center'}">
+            ${photo ? `<img src="${photo}" class="w-full h-full object-cover">` : `<i class="fa-solid ${icon} text-xl text-slate-500"></i>`}
             <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full text-[9px] font-bold flex items-center justify-center border-2 border-[var(--bg)]" style="background:${hs.color};color:#fff">${hs.score}</div>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold tracking-wide">${v.plate || '—'}</span>
-              ${v.color ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-400">${v.color}</span>` : ''}
+              <span class="font-bold tracking-wide">${garajimHtmlEsc(v.plate || '—')}</span>
+              ${v.color ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-400">${garajimHtmlEsc(v.color)}</span>` : ''}
             </div>
-            <p class="text-slate-400 text-sm mt-0.5">${v.brand || ''} ${v.model || ''} ${v.year ? '· ' + v.year : ''}</p>
+            <p class="text-slate-400 text-sm mt-0.5">${garajimHtmlEsc(v.brand || '')} ${garajimHtmlEsc(v.model || '')} ${v.year ? '· ' + garajimHtmlEsc(v.year) : ''}</p>
           </div>
           <div class="text-right shrink-0">
             <p class="font-semibold text-sm">${formatKm(v.km)}</p>
@@ -1819,7 +1855,7 @@
         </div>` : ''}
         ${alerts.length ? `
         <div class="mt-2.5 flex flex-wrap gap-1.5">
-          ${alerts.slice(0, 3).map(a => `<span class="text-[10px] px-2 py-1 rounded-lg ${a.includes('dolmuş') || a.includes('gecikti') ? 'status-danger' : 'status-warn'}">${a}</span>`).join('')}
+          ${alerts.slice(0, 3).map(a => `<span class="text-[10px] px-2 py-1 rounded-lg ${a.includes('dolmuş') || a.includes('gecikti') ? 'status-danger' : 'status-warn'}">${garajimHtmlEsc(a)}</span>`).join('')}
           ${alerts.length > 3 ? `<span class="text-[10px] px-2 py-1 rounded-lg bg-white/10 text-slate-400">+${alerts.length-3}</span>` : ''}
         </div>` : ''}
       </div>`;
@@ -1843,6 +1879,8 @@
 
     const prog = serviceProgress(v);
     const icon = typeIcons[v.type] || 'fa-car';
+    const photo = garajimSafeImageSrc(v.photo);
+    const vehicleIdArg = garajimInlineJsArg(v.id);
     const alerts = getAlerts(v);
     const hs = healthScore(v);
     const est90 = estimate90Days(v);
@@ -1923,15 +1961,15 @@
 
     document.getElementById('detailContent').innerHTML = `
       <div class="relative rounded-3xl overflow-hidden border border-white/10">
-        <div class="aspect-[16/10] ${v.photo ? '' : 'photo-placeholder flex items-center justify-center'}">
-          ${v.photo ? `<img src="${v.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid ${icon} text-6xl text-slate-600"></i>`}
+        <div class="aspect-[16/10] ${photo ? '' : 'photo-placeholder flex items-center justify-center'}">
+          ${photo ? `<img src="${photo}" class="w-full h-full object-cover">` : `<i class="fa-solid ${icon} text-6xl text-slate-600"></i>`}
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
         <div class="absolute bottom-0 left-0 right-0 p-4 on-photo">
-          <h3 class="text-2xl font-extrabold">${v.plate || '—'}</h3>
-          <p class="text-slate-300 text-sm">${v.brand || ''} ${v.model || ''} ${v.year ? '· ' + v.year : ''}</p>
+          <h3 class="text-2xl font-extrabold">${garajimHtmlEsc(v.plate || '—')}</h3>
+          <p class="text-slate-300 text-sm">${garajimHtmlEsc(v.brand || '')} ${garajimHtmlEsc(v.model || '')} ${v.year ? '· ' + garajimHtmlEsc(v.year) : ''}</p>
         </div>
-        ${alerts.length ? `<div class="absolute top-3 left-3"><span class="badge-red text-white text-[11px] font-semibold px-3 py-1.5 rounded-full">${alerts[0]}</span></div>` : ''}
+        ${alerts.length ? `<div class="absolute top-3 left-3"><span class="badge-red text-white text-[11px] font-semibold px-3 py-1.5 rounded-full">${garajimHtmlEsc(alerts[0])}</span></div>` : ''}
       </div>
 
       <div class="grid grid-cols-5 gap-2">
@@ -1951,7 +1989,7 @@
           <i class="fa-solid fa-file-pdf text-rose-400"></i><span class="text-[10px] text-slate-400">PDF</span>
         </button>
       </div>
-      ${window.GarajimNative && window.GarajimNative.setWidgetVehicle ? `<button onclick="setWidgetVehicle('${v.id}')" class="w-full text-[11px] text-slate-400 py-1"><i class="fa-solid fa-grip mr-1"></i>Widget'ta bu aracı göster</button>` : ''}
+      ${window.GarajimNative && window.GarajimNative.setWidgetVehicle ? `<button onclick="setWidgetVehicle(${vehicleIdArg})" class="w-full text-[11px] text-slate-400 py-1"><i class="fa-solid fa-grip mr-1"></i>Widget'ta bu aracı göster</button>` : ''}
 
       <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
         <div class="flex items-center justify-between mb-3">
@@ -2043,7 +2081,7 @@
                 <p class="text-[11px] text-slate-500">${p.dateVal || p.desc}</p>
               </div>
               <div class="flex items-center gap-2">
-                ${p.dateVal ? `<button type="button" onclick="addToCalendar('${p.label} — ${v.plate || ''}', '${p.dateVal}')" class="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-slate-400">Takvim</button>` : ''}
+                ${p.dateVal ? `<button type="button" onclick="addToCalendar(${garajimInlineJsArg((p.label || '') + ' — ' + (v.plate || ''))}, ${garajimInlineJsArg(p.dateVal)})" class="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-slate-400">Takvim</button>` : ''}
                 <span class="text-xs font-semibold ${p.statusClass}">${p.statusTxt}</span>
               </div>
             </div>`).join('')}
@@ -2056,18 +2094,18 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="bg-black/30 rounded-xl p-3">
             <p class="text-[11px] text-cyan-400 font-semibold mb-1"><i class="fa-solid fa-snowflake mr-1"></i>Kış</p>
-            <p class="text-sm">${v.kisLastikInfo || '—'}</p>
-            <p class="text-xs text-slate-500 mt-1">${v.kisLastigi || 'Tarih yok'} ${v.kisLastikDis ? '· ' + v.kisLastikDis + ' mm' : ''}</p>
+            <p class="text-sm">${garajimHtmlEsc(v.kisLastikInfo || '—')}</p>
+            <p class="text-xs text-slate-500 mt-1">${garajimHtmlEsc(v.kisLastigi || 'Tarih yok')} ${v.kisLastikDis ? '· ' + garajimHtmlEsc(v.kisLastikDis) + ' mm' : ''}</p>
           </div>
           <div class="bg-black/30 rounded-xl p-3">
             <p class="text-[11px] text-amber-400 font-semibold mb-1"><i class="fa-solid fa-sun mr-1"></i>Yaz</p>
-            <p class="text-sm">${v.yazLastikInfo || '—'}</p>
-            <p class="text-xs text-slate-500 mt-1">${v.yazLastigi || 'Tarih yok'} ${v.yazLastikDis ? '· ' + v.yazLastikDis + ' mm' : ''}</p>
+            <p class="text-sm">${garajimHtmlEsc(v.yazLastikInfo || '—')}</p>
+            <p class="text-xs text-slate-500 mt-1">${garajimHtmlEsc(v.yazLastigi || 'Tarih yok')} ${v.yazLastikDis ? '· ' + garajimHtmlEsc(v.yazLastikDis) + ' mm' : ''}</p>
           </div>
           <div class="bg-black/30 rounded-xl p-3">
             <p class="text-[11px] text-emerald-400 font-semibold mb-1"><i class="fa-solid fa-cloud-sun mr-1"></i>4 Mevsim</p>
-            <p class="text-sm">${v.dortMevsimInfo || '—'}</p>
-            <p class="text-xs text-slate-500 mt-1">${v.dortMevsim || 'Tarih yok'} ${v.dortMevsimDis ? '· ' + v.dortMevsimDis + ' mm' : ''}</p>
+            <p class="text-sm">${garajimHtmlEsc(v.dortMevsimInfo || '—')}</p>
+            <p class="text-xs text-slate-500 mt-1">${garajimHtmlEsc(v.dortMevsim || 'Tarih yok')} ${v.dortMevsimDis ? '· ' + garajimHtmlEsc(v.dortMevsimDis) + ' mm' : ''}</p>
           </div>
         </div>
       </div>
@@ -2125,7 +2163,7 @@
           if (!last.length) return '';
           return `<div class="mt-3"><p class="text-[10px] text-slate-500 mb-1.5">Fişler</p>
             <div class="flex gap-2 overflow-x-auto pb-1">
-              ${last.map(i => `<button onclick="openFuelReceiptByIndex(${i})" class="w-14 h-14 rounded-lg overflow-hidden border border-white/10 shrink-0"><img src="${flogs[i].receipt}" class="w-full h-full object-cover"></button>`).join('')}
+              ${last.map(i => `<button onclick="openFuelReceiptByIndex(${i})" class="w-14 h-14 rounded-lg overflow-hidden border border-white/10 shrink-0"><img src="${garajimSafeImageSrc(flogs[i].receipt)}" class="w-full h-full object-cover"></button>`).join('')}
             </div></div>`;
         })()}
         ${fuelChartHtml}` : '<p class="text-xs text-slate-600 mt-3 text-center">Henüz yakıt kaydı yok</p>'}
@@ -2141,7 +2179,7 @@
           const rides = getVehicleRides(v.id).slice(0, 8);   // (idx = araca bağlı listedeki sıra)
           if (!rides.length) return '<p class="text-xs text-slate-600 text-center py-3">Bu araca bağlı sürüş yok</p>';
           return `<div class="space-y-2">${rides.map((r, idx) => `
-            <button type="button" onclick="openVehicleRidePreview('${v.id}', ${idx})" class="w-full bg-black/30 rounded-xl p-3 flex items-center gap-3 text-left">
+            <button type="button" onclick="openVehicleRidePreview(${vehicleIdArg}, ${idx})" class="w-full bg-black/30 rounded-xl p-3 flex items-center gap-3 text-left">
               <div class="w-14 h-10 rounded-lg bg-black/40 flex items-center justify-center overflow-hidden shrink-0">${rideThumb(r.pts)}</div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium">${rideDistTxt(r.dist)} · ${rideFmtTime(r.time)}</p>
@@ -2192,8 +2230,8 @@
                 <i class="fa-solid ${cats[catOf(h)].i} text-sm" style="color:${cats[catOf(h)].c}"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm">${h.desc || cats[catOf(h)].n}</p>
-                <p class="text-xs text-slate-500 mt-0.5">${h.date || '—'} · ${formatKm(h.km)}</p>
+                <p class="font-medium text-sm">${garajimHtmlEsc(h.desc || cats[catOf(h)].n)}</p>
+                <p class="text-xs text-slate-500 mt-0.5">${garajimHtmlEsc(h.date || '—')} · ${formatKm(h.km)}</p>
               </div>
               <div class="text-right flex flex-col items-end justify-between">
                 <p class="text-sm font-semibold">${h.cost ? formatMoney(h.cost) : ''}</p>
@@ -4419,10 +4457,14 @@
         if (t) track = t.textContent || '';
         if (a) artist = a.textContent || '';
       } catch (e) {}
-      let parkLat = 0, parkLng = 0, parkDistM = -1, parkDir = '';
+      let parkLat = 0, parkLng = 0, parkDistM = -1, parkDir = '', parkSaved = false;
       try {
         const p = typeof parkGet === 'function' ? parkGet() : null;
-        if (p && p.lat != null && ride.last) {
+        const plat = p ? Number(p.lat) : NaN, plng = p ? Number(p.lng) : NaN;
+        parkSaved = !!p && Number.isFinite(plat) && Number.isFinite(plng)
+          && plat >= -90 && plat <= 90 && plng >= -180 && plng <= 180;
+        if (parkSaved) { parkLat = plat; parkLng = plng; }
+        if (parkSaved && ride.last) {
           parkLat = p.lat; parkLng = p.lng;
           parkDistM = rideHav(ride.last, { lat: p.lat, lng: p.lng });
           if (typeof parkBearing === 'function' && typeof parkDirTxt === 'function') {
@@ -4454,6 +4496,7 @@
         alert: overLimit ? ('Limit ' + lim + '+') : '',
         parkLat: parkLat,
         parkLng: parkLng,
+        parkSaved: parkSaved,
         parkDistM: parkDistM,
         parkDir: parkDir
       }));
@@ -5806,6 +5849,18 @@
   // ---------- PARK YERİM ----------
   const PARK_KEY = 'garaj_parking';
   const parkGet = () => { try { return JSON.parse(localStorage.getItem(PARK_KEY) || 'null'); } catch { return null; } };
+  function parkSyncNative(p) {
+    if (!p || !Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lng))) return;
+    const N = window.GarajimNative;
+    if (!N || typeof N.syncParkLocation !== 'function') return;
+    try { N.syncParkLocation(JSON.stringify({ lat: Number(p.lat), lng: Number(p.lng), acc: Number(p.acc) || 0, t: Number(p.t) || Date.now() })); } catch (e) {}
+  }
+  function parkClearNative() {
+    const N = window.GarajimNative;
+    if (N && typeof N.clearParkLocation === 'function') { try { N.clearParkLocation(); } catch (e) {} }
+  }
+  // Yükseltmeden önce telefona kaydedilmiş park yeri varsa ilk açılışta native servise kopyala.
+  try { parkSyncNative(parkGet()); } catch (e) {}
   let parkMarker = null;
 
   // ---------- KENDİ İŞARETLERİM (harita pin) ----------
@@ -5893,6 +5948,7 @@
       const c = pos.coords;
       const p = { lat: c.latitude, lng: c.longitude, acc: c.accuracy, t: Date.now(), vehicleId: ride.vehicleId || (vehicles[0] && vehicles[0].id) || null };
       try { localStorage.setItem(PARK_KEY, JSON.stringify(p)); } catch (e) { toast('Kaydedilemedi'); return; }
+      parkSyncNative(p);
       parkRenderMarker();
       toast('Park yeri kaydedildi' + (c.accuracy > 60 ? ' (±' + Math.round(c.accuracy) + ' m — zayıf sinyal)' : ''));
       parkOpen();
@@ -5930,6 +5986,7 @@
   function parkDelete() {
     if (!confirm('Park yeri silinsin mi?')) return;
     try { localStorage.removeItem(PARK_KEY); } catch (e) {}
+    parkClearNative();
     parkRenderMarker(); parkClose(); toast('Park yeri silindi');
   }
 
@@ -6614,27 +6671,35 @@ ${buildGarageContext()}
       </div>`;
       return;
     }
-    box.innerHTML = socialPosts.map(p => `
+    box.innerHTML = socialPosts.map(p => {
+      const photo = garajimSafeImageSrc(p.photo);
+      const postIdArg = garajimInlineJsArg(p.id);
+      const author = garajimHtmlEsc(p.author || 'Sen');
+      const plate = garajimHtmlEsc(p.plate || '');
+      const brand = garajimHtmlEsc(p.brand || '');
+      const model = garajimHtmlEsc(p.model || '');
+      return `
       <article class="post-card">
         <div class="p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-accent">${(p.author || 'S').charAt(0)}</div>
+          <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-accent">${garajimHtmlEsc(String(p.author || 'S').charAt(0))}</div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold">${p.author || 'Sen'}</p>
-            <p class="text-[11px] text-slate-500">${timeAgo(p.createdAt)}${p.plate ? ' · ' + p.plate : ''}</p>
+            <p class="text-sm font-semibold">${author}</p>
+            <p class="text-[11px] text-slate-500">${timeAgo(p.createdAt)}${p.plate ? ' · ' + plate : ''}</p>
           </div>
-          <button onclick="deletePost('${p.id}')" class="w-8 h-8 rounded-lg text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
+          <button onclick="deletePost(${postIdArg})" class="w-8 h-8 rounded-lg text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
         </div>
-        ${p.photo ? `<img class="post-img" src="${p.photo}" alt="">` : ''}
-        <div class="p-4 ${p.photo ? 'pt-3' : 'pt-0'}">
-          ${p.text ? `<p class="text-sm leading-relaxed whitespace-pre-wrap">${p.text.replace(/</g,'&lt;')}</p>` : ''}
-          ${p.plate ? `<div class="mt-2"><span class="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400"><i class="fa-solid fa-car mr-1"></i>${p.plate} · ${p.brand || ''} ${p.model || ''}</span></div>` : ''}
+        ${photo ? `<img class="post-img" src="${photo}" alt="">` : ''}
+        <div class="p-4 ${photo ? 'pt-3' : 'pt-0'}">
+          ${p.text ? `<p class="text-sm leading-relaxed whitespace-pre-wrap">${garajimHtmlEsc(p.text)}</p>` : ''}
+          ${p.plate ? `<div class="mt-2"><span class="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400"><i class="fa-solid fa-car mr-1"></i>${plate} · ${brand} ${model}</span></div>` : ''}
           <div class="mt-3 flex items-center gap-4">
-            <button onclick="toggleLike('${p.id}')" class="flex items-center gap-1.5 text-sm ${p.liked ? 'text-accent' : 'text-slate-400'}">
+            <button onclick="toggleLike(${postIdArg})" class="flex items-center gap-1.5 text-sm ${p.liked ? 'text-accent' : 'text-slate-400'}">
               <i class="fa-${p.liked ? 'solid' : 'regular'} fa-heart"></i> ${p.likes || 0}
             </button>
           </div>
         </div>
-      </article>`).join('');
+      </article>`;
+    }).join('');
   }
 
   // Saatten seçilmiş aracı, telefon yeniden açıldığında yerel sürüş seçimine geri al.
