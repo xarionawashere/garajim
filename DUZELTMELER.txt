@@ -136,3 +136,6 @@ SURUM 2.1 - MUZIK (Spotify dahil)
 - Izin vermeden de onceki/oynat/sonraki calisir (medya tusu). Sarki adi icin bir kez Ayarlar > Bildirim erisimi > Garajim.
 - Yeni dosyalar: GarajimMedia.java, GarajimMediaListener.java; manifest (servis + Spotify gorunurlugu) workflow ile eklenir.
 - Test: tests/t11_muzik.js (21 kontrol). Toplam 233 kontrol.
+
+
+Wear OS telefon bağlantısı düzeltmesi (v1.2): Wear modülünün applicationId değeri telefon uygulamasıyla aynı olacak şekilde com.garajim.app yapıldı. Telefon uygulaması açılışında ilk Wear OS durumu gönderilir; saat açılırken daha önce senkronize edilmiş son sürüş durumu da okunur. Telefon ve saat APK'ları aynı Actions çalıştırmasından kullanılmalı (aynı imza).

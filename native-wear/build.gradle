@@ -4,11 +4,13 @@ android {
     namespace 'com.garajim.wear'
     compileSdk 34
     defaultConfig {
-        applicationId "com.garajim.wear"
+        // Google Wearable Data Layer requires the same applicationId on phone and watch.
+        // namespace remains separate for the watch Java package; applicationId matches mobile.
+        applicationId "com.garajim.app"
         minSdk 26
         targetSdk 34
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
     }
     buildTypes {
         release { minifyEnabled false }

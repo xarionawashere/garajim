@@ -6375,6 +6375,9 @@ ${buildGarageContext()}
   renderList();
   syncNative();
   setTimeout(syncNative, 1500);                               // köprü geç yüklenirse tekrar dene
+  // Telefon uygulaması açıldığında saatin ilk durum bilgisini de gönder.
+  // Böylece saat, ilk sürüş başlatılana kadar "Telefona bağlan" yazısında kalmaz.
+  setTimeout(() => { try { rideWearPush(); } catch (e) {} }, 2000);
   setTimeout(checkWidgetAction, 700);                         // widget'tan soğuk açılış
   setTimeout(checkWidgetAction, 2500);
 </script>

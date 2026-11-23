@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Node;
@@ -165,6 +166,20 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     @Override protected void onResume() {
         super.onResume();
         Wearable.getDataClient(this).addListener(this);
+        // Read the most recent phone state too, in case it arrived while the watch app was closed.
+        Wearable.getDataClient(this).getDataItems().addOnSuccessListener(items -> {
+            try {
+                for (DataItem item : items) {
+                    String path = item.getUri() == null ? null : item.getUri().getPath();
+                    if (path != null && path.endsWith("/garajim/ride_state")) {
+                        applyState(DataMapItem.fromDataItem(item).getDataMap());
+                    }
+                }
+            } catch (Exception ignored) {
+            } finally {
+                items.release();
+            }
+        });
     }
 
     @Override protected void onPause() {
