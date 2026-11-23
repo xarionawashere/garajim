@@ -46,7 +46,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final String PATH_CMD = "/garajim/cmd";
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
 
-    private TextView speed, meta, status, connection, alert, track, parkInfo;
+    private TextView speed, meta, status, connection, alert, track, parkInfo, mapStatus;
+    private MiniRouteView miniMap;
     private Button btnToggle, btnVehicle, btnPendingSummary;
     private View speedRing;
     private boolean running, paused, pendingSummary;
@@ -108,6 +109,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         alert = findViewById(R.id.wearAlert);
         track = findViewById(R.id.wearTrack);
         parkInfo = findViewById(R.id.wearPark);
+        mapStatus = findViewById(R.id.wearMapStatus);
+        miniMap = findViewById(R.id.wearMiniMap);
         btnToggle = findViewById(R.id.btnToggle);
         btnVehicle = findViewById(R.id.btnVehicle);
         btnPendingSummary = findViewById(R.id.btnPendingSummary);
@@ -423,6 +426,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         final boolean incomingGpsReady = map.getBoolean("gpsReady", false);
         final String tr = map.getString("track", "");
         final String ar = map.getString("artist", "");
+        final String routeJson = map.getString("routeJson", "[]");
         final double incomingParkDist = map.getDouble("parkDistM", -1);
         final String incomingParkDir = map.getString("parkDir", "");
         final String alertStr = map.getString("alert", "");
@@ -448,6 +452,18 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (stateTransition) buzz(1);
             parkDist = incomingParkDist;
             parkDir = incomingParkDir;
+            if (miniMap != null) miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused);
+            if (mapStatus != null) {
+                String mapText;
+                int mapColor;
+                if (!incomingGpsReady) { mapText = "GPS BEKLENİYOR"; mapColor = 0xFFFBBF24; }
+                else if (incomingRunning && incomingPaused) { mapText = "DURAKLATILDI"; mapColor = 0xFFFBBF24; }
+                else if (incomingRunning) { mapText = "CANLI ROTA"; mapColor = 0xFF67E8F9; }
+                else if (routeJson != null && routeJson.length() > 4) { mapText = "SON ROTA"; mapColor = 0xFF93C5FD; }
+                else { mapText = "GPS HAZIR"; mapColor = 0xFF94A3B8; }
+                mapStatus.setText(mapText);
+                mapStatus.setTextColor(mapColor);
+            }
             lastDistM = distM;
             lastElapsedSec = sec;
 

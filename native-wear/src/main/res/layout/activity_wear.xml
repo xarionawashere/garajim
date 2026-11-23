@@ -86,6 +86,45 @@
             android:textColor="#CBD5E1"
             android:textSize="11sp"/>
 
+        <!-- Canlı mini rota haritası: rotanın GPS noktaları telefondan gelir; arka plan çevrimdışı şematik çizilir. -->
+        <LinearLayout
+            android:id="@+id/wearMapCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="6dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="SÜRÜŞ ROTASI"
+                    android:textColor="#94A3B8"
+                    android:textSize="9sp"
+                    android:letterSpacing="0.10"/>
+                <TextView
+                    android:id="@+id/wearMapStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GPS BEKLENİYOR"
+                    android:textColor="#FBBF24"
+                    android:textSize="8sp"
+                    android:maxLines="1"/>
+            </LinearLayout>
+            <com.garajim.wear.MiniRouteView
+                android:id="@+id/wearMiniMap"
+                android:layout_width="match_parent"
+                android:layout_height="88dp"
+                android:layout_marginTop="5dp"
+                android:contentDescription="Telefon GPS verisinden oluşturulan mini sürüş rotası"/>
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnVehicle"
             android:layout_width="match_parent"

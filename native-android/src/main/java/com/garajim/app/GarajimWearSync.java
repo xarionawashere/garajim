@@ -54,6 +54,8 @@ public final class GarajimWearSync {
                 req.getDataMap().putString("mode", o.optString("mode", ""));
                 req.getDataMap().putString("track", o.optString("track", ""));
                 req.getDataMap().putString("artist", o.optString("artist", ""));
+                // En fazla 24 koordinat çifti: harita gerçek sokak karoları indirmez ve yükü küçüktür.
+                req.getDataMap().putString("routeJson", o.optString("routeJson", "[]"));
                 req.getDataMap().putBoolean("overLimit", o.optBoolean("overLimit", false));
                 req.getDataMap().putString("alert", o.optString("alert", ""));
                 req.getDataMap().putBoolean("pendingSummary", o.optBoolean("pendingSummary", false));

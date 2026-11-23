@@ -850,6 +850,27 @@ public class GarajimRideService extends Service {
         GarajimWearSync.pushVehicles(this, json);
     }
 
+    /** Mini rota için tüm GPS geçmişini değil, rotanın şeklini temsil eden en fazla 24 örneği paylaş. */
+    private String buildMiniRouteJson() {
+        JSONArray source = state == null ? null : state.optJSONArray("points");
+        JSONArray compact = new JSONArray();
+        if (source == null || source.length() == 0) return compact.toString();
+        int count = source.length();
+        int limit = Math.min(24, count);
+        for (int i = 0; i < limit; i++) {
+            int index = limit == count ? i : (int) Math.round((double) i * (count - 1) / Math.max(1, limit - 1));
+            JSONArray point = source.optJSONArray(index);
+            if (point == null || point.length() < 2) continue;
+            double lat = point.optDouble(0, Double.NaN);
+            double lng = point.optDouble(1, Double.NaN);
+            if (Double.isNaN(lat) || Double.isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) continue;
+            JSONArray xy = new JSONArray();
+            xy.put(lat); xy.put(lng);
+            compact.put(xy);
+        }
+        return compact.toString();
+    }
+
     private void publishState() {
         if (state == null) state = readState();
         try {
@@ -873,6 +894,7 @@ public class GarajimRideService extends Service {
             outgoing.put("vehicleId", state.optString("vehicleId", ""));
             outgoing.put("mode", nativeMode ? "Yerel arka plan sürüşü" : "Hazır");
             outgoing.put("track", ""); outgoing.put("artist", "");
+            outgoing.put("routeJson", buildMiniRouteJson());
             outgoing.put("overLimit", false); outgoing.put("alert", state.optString("alert", ""));
             outgoing.put("pendingSummary", state.optBoolean("pendingSummary", false));
             outgoing.put("summaryId", state.optString("summaryId", ""));

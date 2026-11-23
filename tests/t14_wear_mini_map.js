@@ -1,0 +1,20 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.dirname(process.argv[2]);
+const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+const layout = read('native-wear/src/main/res/layout/activity_wear.xml');
+const wear = read('native-wear/src/main/java/com/garajim/wear/WearMainActivity.java');
+const map = read('native-wear/src/main/java/com/garajim/wear/MiniRouteView.java');
+const ride = read('native-android/src/main/java/com/garajim/app/GarajimRideService.java');
+const sync = read('native-android/src/main/java/com/garajim/app/GarajimWearSync.java');
+let fails = 0;
+function check(ok, name) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) fails++; }
+check(layout.includes('@+id/wearMiniMap') && layout.includes('com.garajim.wear.MiniRouteView'), 'Saat düzeninde özel mini rota bileşeni var');
+check(wear.includes('miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused)'), 'Saat veri güncellemesinde rota ve GPS durumu haritaya verilir');
+check(ride.includes('buildMiniRouteJson()') && ride.includes('Math.min(24, count)') && ride.includes('outgoing.put("routeJson", buildMiniRouteJson())'), 'Telefon tam geçmiş yerine en fazla 24 rota örneği yollar');
+check(sync.includes('putString("routeJson", o.optString("routeJson", "[]"))'), 'Rota Wearable Data Layer üzerinden taşınır');
+check(map.includes('drawRoute(Canvas c') && map.includes('Color') && map.includes('drawWaiting(Canvas c'), 'Saat rota çizgisi ve GPS bekleme durumunu çizebilir');
+check(map.includes('lng * cos') && map.includes('points.size() >= 2'), 'GPS enlem/boylamları mini haritada ölçeklenir');
+check(/versionCode 6/.test(read('native-wear/build.gradle')), 'Wear OS versionCode artırıldı');
+check(/versionCode=4, versionName=1\.3\.2/.test(read('.github/workflows/build-apk.yml')), 'Telefon workflow sürümü artırıldı');
+process.exit(fails ? 1 : 0);
