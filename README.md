@@ -287,7 +287,7 @@ APK'nın adı imzalama yapılandırmasına göre `app-release.apk` / `wear-relea
 - **PIN şifreleme değildir:** Uygulama içi kilit, yerel veri dosyalarını şifrelemez.
 - **AI anahtarı yerel depolamadadır:** Güvenli sunucu tarafı sır kasası değildir; anahtarın erişilebilir olduğu cihazı koru.
 - **Yedeklerin kapsamı aynı değildir:** Manuel JSON yedeği otomatik yerel yedekten daha kapsamlıdır; ikisi de tüm verileri veya sırları içermez. Yedeğini geri yüklemeyi gerçek bir testle doğrula.
-- **Sürüm bilgisi:** CI telefon APK'sının sürümünü workflow içinde, saat APK'sının sürümünü `native-wear/build.gradle` içinde belirler. `package.json` sürümü de ayrı bulunduğu için resmî yayın öncesi bu değerlerin birlikte güncellenmesi gerekir.
+- **Sürüm bilgisi:** CI telefon APK'sının sürümünü workflow içinde, saat APK'sının sürümünü `native-wear/build.gradle` içinde belirler. `package.json` sürümü de bu pakette `1.3.8` olarak eşitlendi.
 - **Lisans:** Bu pakette henüz kök dizinde `LICENSE` dosyası bulunmuyor. Yeniden dağıtım ve katkı koşulları yayın öncesi ayrıca belirlenmelidir.
 
 ## Güvenli kullanım
@@ -305,3 +305,53 @@ Araçlarını kaydet, bakım ve sigorta tarihlerini takip et, yakıt fişlerini 
 <div align="center">
   <sub>Garajım · Araç yönetimi, sürüş kaydı ve Wear OS kontrolü tek deneyimde.</sub>
 </div>
+
+
+## Wear OS kokpit güncellemesi
+
+Saat arayüzü; hız, seçili araç, mesafe, geçen süre, maksimum hız ve GPS rota önizlemesini tek akışta sunar. Telefonun sürüş hizmetinden gelen sınırlı rota örnekleri Wearable Data Layer üzerinden aktarılır; saat, rota çizgisini yerel olarak işler ve gerçek sokak haritası varmış gibi davranmaz. Bağlantı, GPS bekleme ve eski veri durumları ayrıca gösterilir.
+
+Bu kaynak paketteki telefon ve saat APK sürümleri `1.3.8` için ayarlanmıştır. Derleme sonucu ve gerçek cihaz davranışı GitHub Actions ile ayrıca doğrulanmalıdır.
+
+### 1.3.4 — Senkronizasyon ve kullanım güvenilirliği
+
+- Sürüş telemetrisi aktarımı yavaş bağlantıda eski durumları kuyruğa biriktirmek yerine son bekleyen snapshot'ı korur.
+- Wear OS komutları benzersiz kimlikle gönderilir; telefonun kabul/ret yanıtı saate döner. Yanıt telefonun komutu kesin tamamladığını değil, kabul edip yönlendirdiğini belirtir.
+- Native sürüş devam ederken müzik ve park kısayolları açık WebView'e doğru yönlendirilir; gerekli telefon oturumu yoksa yanlış başarı sinyali verilmez.
+- Telefon arayüzü klavye odağı göstergesini ve işletim sistemi `prefers-reduced-motion` tercihini destekler.
+- Telefon arayüzünde sistem yakınlaştırması kapatılmaz; erişilebilirlik testi, `user-scalable=no` / `maximum-scale=1.0` kısıtlarının eklenmesini yakalar.
+- Güncel kaynak testleri `tests/t12_wear_reliability.js`–`tests/t23_import_render_safety.js` aralığındadır. Tam `npm test` ve APK derlemesi için bağımlılıklar, Android SDK/Gradle ve gerçek cihaz doğrulaması ayrıca gerekir.
+
+### 1.3.5 — Ekran kapalıyken müzik ve park kısayolları
+
+- Müzik komutları açık WebView'de önce uygulama köprüsüne gider; telefon ekranı kapalıyken/arayüz yokken native Android medya denetimine düşer.
+- Park yeri native olarak da kaydedilir. Saat, servis hazır olduğunda park kaydını telefon arayüzü açık olmadan sorabilir; mesafe/yön yalnızca son GPS konumu 2 dakikadan yeniyse verilir.
+- Park kaydı silindiğinde native kopyası da temizlenir; bozuk koordinatlar kabul edilmez.
+- Bu geliştirmeler statik kaynak kontrollerinden geçirilmiştir, ancak gerçek medya oturumu, GPS tazeliği ve saat bağlantısı Galaxy Watch7 üzerinde ayrıca doğrulanmalıdır.
+
+
+## Yayın öncesi doğrulama
+
+1.3.5 ve 1.3.6 listeleri geçmiş iterasyonları kapsar. Güncel 1.3.8 teslimi için `TEST-KONTROL-LISTESI-1.3.8.md` dosyasını kullan. Statik kontrolleri Android derlemesi veya gerçek cihaz testi yerine sayma.
+
+
+### 1.3.6 — Wear OS kokpit ergonomisi
+
+- Saatte araç seçimi ve sürüş başlat/duraklat/bitir kontrolleri, müzik kartının altından ilk ekrana yakın bölüme taşındı. Sürüş için kritik eylemler artık önce geliyor; rota ve müzik yardımcı alanları aşağıda kalıyor.
+- Araç seçimi, bekleyen sürüş özeti, park ve müzik kontrollerinin dokunma alanları 44 dp seviyesine çıkarıldı; müzik düğmelerine ekran okuyucu açıklamaları eklendi.
+- Komut onayı için kalıcı Data Item yedeği eklendi: saat uyursa bekleyen komut kimliği korunur, yeniden açılınca ACK okunur ve tüketilen kayıt temizlenir.
+- Bu düzen XML ve kaynak regresyon kontrolleriyle doğrulanır; gerçek saat ekranında görünür alan ve parmakla kullanım yine Galaxy Watch7 üzerinde denenmelidir.
+
+
+### 1.3.7 — Saat ACK kurtarma
+
+- Bekleyen Wear OS komut kimliği, ekran uykuya girdiğinde korunur. Ekrana geri dönüldüğünde kalıcı Data Item ACK'sini yakalamak için iki dakikalık kurtarma penceresi başlatılır.
+- Birden fazla bağlı düğüme komut gönderiminde tek düğüm hatası diğer düğümlerin denenmesini engellemez.
+- Bu değişiklik kaynak regresyon testi `tests/t22_wear_ack_resume_grace.js` ile kontrol edilir; fiziksel saat testi ayrıca gereklidir.
+
+### 1.3.8 — Güvenli render ve sürüm teslimi
+
+- İçe aktarılmış veya yerel kayıtlardan gelen araç, bildirim ve sosyal akış metinlerinin önemli bölümleri HTML kaçışından geçirilir; dinamik kimlikler güvenli JS dize argümanlarıyla aktarılır.
+- Araç/fiş/sosyal görsel kaynaklarında desteklenen biçimler base64 PNG/JPEG/GIF/WebP ve HTTPS'tir. Bu, uygulamanın her HTML render noktasının tamamını denetlediğimiz anlamına gelmez; kalan noktalar yol haritasında tutulur.
+- `tests/t23_import_render_safety.js` güvenlik yardımcılarını kötü niyetli metin ve URL örnekleriyle test eder.
+- Bu paket kaynak kod paketidir, hazır APK içermez. Güncel checklist `TEST-KONTROL-LISTESI-1.3.8.md` içindedir.
