@@ -14,8 +14,14 @@ const day=n=>new Date(Date.now()-n*864e5).toISOString();
  const rides=[{id:'r1',vehicleId:'v1',date:day(1),dist:10000,time:1200,avg:30,max:80,pts:[[41,29],[41.01,29.01]]},{id:'r2',vehicleId:'v1',date:day(2),dist:20000,time:2400,avg:30,max:90,pts:[[41,29],[41.02,29.02]]}];
  const veh=[{id:'v1',plate:'34 ABC 123',brand:'Honda',model:'CB',km:5000,history:[],fuelLogs:[]}];
  const c1={}; const w1=await mk({garaj_v4:veh,garaj_rides:rides,garaj_parking:{lat:41,lng:29,acc:5,t:Date.now()},garaj_ride_settings:{unit:'mph'}},c1);
+ w1.localStorage.setItem('garaj_theme','light'); w1.localStorage.setItem('garaj_pack','neon-mint'); w1.localStorage.setItem('garaj_remind_days','14');
+ w1.localStorage.setItem('garaj_ride_draft',JSON.stringify({startedAt:new Date().toISOString(),dist:2500,elapsed:300,maxSpeed:65,pts:[[41,29],[41.001,29.001]],vehicleId:'v1'}));
+ w1.localStorage.setItem('garaj_ride_watch_pending',JSON.stringify({id:'pending-1',vehicleId:'v1',date:day(0),dist:2500,time:300,avg:30,max:65,pts:[[41,29],[41.001,29.001]]}));
  await w1.eval('exportData()'); const bundle=JSON.parse(Buffer.from(c1.w.data,'base64').toString('utf8'));
- ok(bundle.app==='garajim'&&bundle.version===2&&bundle.vehicles.length===1&&bundle.rides.length===2&&bundle.parking&&bundle.rideSettings.unit==='mph','yedek v2: araçlar + 2 sürüş + park + ayarlar dosyada');
+ ok(bundle.app==='garajim'&&bundle.version===3&&bundle.vehicles.length===1&&bundle.rides.length===2&&bundle.parking&&bundle.rideSettings.unit==='mph','yedek v3: araçlar + sürüşler + park + ayarlar');
+ ok(bundle.preferences.theme==='light'&&bundle.preferences.pack==='neon-mint'&&bundle.preferences.remindDays===14,'güvenli tercihler yedekte (PIN/API anahtarı değil)');
+ ok(bundle.rideDraft&&bundle.rideDraft.startedAt&&bundle.rideDraft.pts.length===2,'kurtarılabilir yarım sürüş taslağı yedekte');
+ ok(bundle.pendingRide&&bundle.pendingRide.id==='pending-1','bekleyen sürüş özeti yedekte');
  // yeni (boş) cihaza geri yükleme
  const c2={}; const w2=await mk({},c2);
  const load=(w,obj)=>{const f=new w.File([JSON.stringify(obj)],'y.json'); const inp={target:{files:[f],value:''}}; w.importData(inp); return new Promise(r=>setTimeout(r,300))};
@@ -23,6 +29,9 @@ const day=n=>new Date(Date.now()-n*864e5).toISOString();
  ok(got.length===2&&got[0].id==='r1'&&got[0].pts.length===2,'boş cihaza geri yüklemede sürüşler ve rotaları geldi');
  ok(/1 araç ve 2 sürüş/.test(c2.conf[0]||''),'onay penceresi sürüş sayısını söylüyor');
  ok(!!JSON.parse(w2.localStorage.getItem('garaj_parking')||'null')&&JSON.parse(w2.localStorage.getItem('garaj_ride_settings')).unit==='mph','park yeri ve sürüş ayarı da geldi');
+ ok(JSON.parse(w2.localStorage.getItem('garaj_ride_draft')||'null')?.pts?.length===2,'yarım sürüş taslağı geri yüklendi');
+ ok(JSON.parse(w2.localStorage.getItem('garaj_ride_watch_pending')||'null')?.id==='pending-1','bekleyen sürüş özeti geri yüklendi');
+ ok(w2.localStorage.getItem('garaj_theme')==='light'&&w2.localStorage.getItem('garaj_pack')==='neon-mint'&&w2.localStorage.getItem('garaj_remind_days')==='14','boş cihazda güvenli tercihler geri yüklendi');
  // mevcut sürüşler silinmesin: cihazda r3 var, yedekte r1,r2
  const c3={}; const w3=await mk({garaj_v4:veh,garaj_rides:[{id:'r3',vehicleId:'v1',date:day(0),dist:5000,time:600,avg:30,max:60,pts:[]}]},c3);
  await load(w3,bundle); const g3=JSON.parse(w3.localStorage.getItem('garaj_rides')).map(r=>r.id).sort();
@@ -30,6 +39,9 @@ const day=n=>new Date(Date.now()-n*864e5).toISOString();
  await load(w3,bundle); ok(JSON.parse(w3.localStorage.getItem('garaj_rides')).length===3,'aynı yedeği tekrar yüklemek çift kayıt üretmedi');
  // eski biçim (sadece araç dizisi) hâlâ açılıyor ve sürüşlere dokunmuyor
  await load(w3,veh); ok(JSON.parse(w3.localStorage.getItem('garaj_rides')).length===3,'eski yedek biçimi açıldı, sürüşler korundu');
+ // Eski sürüm bundle v2 de içe aktarılabilmeli.
+ const oldV2={app:'garajim',version:2,vehicles:veh,rides:[{id:'r-v2',vehicleId:'v1',date:day(4),dist:1000,time:100,avg:36,max:50,pts:[]}],parking:null,rideSettings:{unit:'kmh'}};
+ await load(w3,oldV2); ok(JSON.parse(w3.localStorage.getItem('garaj_rides')).some(r=>r.id==='r-v2'),'eski yedek v2 geriye dönük uyumlu');
  // 40 sınırı
  const many=Array.from({length:60},(_,i)=>({id:'m'+i,vehicleId:'v1',date:day(i+3),dist:1000,time:100,avg:30,max:50,pts:[]}));
  const c4={}; const w4=await mk({garaj_v4:veh,garaj_rides:many},c4); w4.eval("ride.pendingSummary={id:'new',vehicleId:'v1',date:new Date().toISOString(),dist:2000,time:200,avg:36,max:60,pts:[]}; rideKeepSummary()");

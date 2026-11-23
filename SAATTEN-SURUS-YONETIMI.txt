@@ -1,0 +1,31 @@
+GARAJIM — SAATTEN SÜRÜŞ KONTROLLERİ
+
+Bu kaynak güncellemesi, telefon ve Galaxy Watch7 arasındaki sürüş akışını saate taşır:
+
+- Araç listesi (plaka / marka / model) telefondan ayrı Wear OS Data Item olarak senkronize edilir.
+- Saatteki “Araç seç” düğmesi araç listesini açar ve seçim telefonun JS sürüş oturumuna iletilir.
+- Saatten başlat / duraklat / devam komutları verilebilir.
+- “Bitir” düğmesi telefon ekranındaki JavaScript confirm penceresini kullanmaz; kısa sürüş kontrolü saatte gösterilir.
+- Sürüş bitince mesafe/süre/ortalama/maksimum bilgileri saatten gözden geçirilir; “Kaydet”, “Sil” ve “Sonra” seçenekleri saatten seçilebilir.
+- Saatten gelen komutlar, telefon Garajım Activity/WebView hâlâ arka planda varsa o oturuma doğrudan iletilir; telefon Activity’si öne getirilmez.
+
+GÜNCELLEME ADIMLARI
+1. ZIP'i kendi GitHub deposunun yerel kopyasına çıkar ve dosyaların üzerine yaz.
+2. Değişiklikleri main/master dalına commit edip push et.
+3. GitHub Actions'ta aynı çalıştırmadan hem Garajim-Mobil-APK hem Garajim-WearOS-APK artifact'larını indir.
+4. Telefon APK'sını ve Wear OS APK'sını ilgili cihazlara install -r ile kur. Telefon uygulamasını kaldırma.
+5. Güncellemeden sonra Garajım'ı telefonda bir kez aç ve araç listesinin Watch7'ye senkronize olması için birkaç saniye bekle. Ardından telefon ekranından çıkıp uygulamayı arka planda bırakabilirsin.
+
+ÖNEMLİ SINIR
+Telefon uygulamasındaki sürüş/GPS mantığı hâlâ WebView JavaScript içinde yaşıyor. Bu nedenle telefon uygulaması süreci tamamen öldürülmüşse, saatten yeni bir sürüşü başlatma/bitirme komutları o anda çalıştırılamaz; saat bunu bildirimle belirtir. Aktif sürüş sırasında telefon ekranını açmadan kullanım, uygulama süreci ve sürüş oturumu arka planda canlı kaldığında hedeflenir. Telefon süreci tamamen kapalıyken de tüm sürüş mantığının çalışması istenirse GPS, kayıt ve sürüş durumunun native foreground service'e taşınması ayrı bir mimari çalışmadır.
+
+DOĞRULAMA
+- index.html içindeki inline JavaScript blokları node --check ile doğrulandı.
+- XML kaynakları XML parser ile doğrulandı.
+- Bu çalışma ortamında Android SDK/Gradle ve npm bağımlılıkları bulunmadığından tam APK derlemesi burada yapılmadı; son derlemeyi GitHub Actions yapmalıdır.
+
+GÜVENLİK / KAYIT DAYANIKLILIĞI
+- Bitirilen sürüş özeti, saatten Kaydet/Sil kararı gelene kadar garaj_ride_watch_pending anahtarıyla yerel depoda tutulur.
+- Uygulama yeniden açılırsa bekleyen özet geri yüklenip saate yeniden bildirilir.
+- Kayıt listesine yazma başarısız olursa bekleyen özet hemen silinmez; saatten tekrar denemeye uygun biçimde tutulur.
+- Araç listesi gönderim önbelleği, yalnızca Wear OS Data Layer gönderimi başarılı olduktan sonra güncellenir; geçici hata olursa yeniden gönderim denenebilir.

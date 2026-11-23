@@ -1,0 +1,35 @@
+GARAJIM TEK TUS BAT - KISA KURULUM
+
+NE YAPAR?
+- Kaynak dosyalarini GitHub depona aktarir (ilk calistirmada depo URL'si sorabilir).
+- Git commit/push yapar.
+- GitHub Actions build-apk.yml calismasini bekler.
+- Ayni calismadan Garajim-Mobil-APK ve Garajim-WearOS-APK artifact'larini indirir.
+- APK'lari secilen Android telefona ve Samsung Galaxy Watch7'ye ADB ile yukler.
+- Telefon ve saat seri numaralarini ilk kurulumdan sonra %APPDATA%\Garajim-OneClick\devices.ini dosyasinda saklar.
+
+ILK KULLANIM ONCESI
+1. Git for Windows: https://git-scm.com/download/win
+2. GitHub CLI: https://cli.github.com/
+3. Android Platform-Tools: https://developer.android.com/tools/releases/platform-tools
+   BAT, %USERPROFILE%\Desktop\platform-tools\adb.exe konumunu da arar.
+4. Telefonda USB debugging acik olmali, telefon USB ile bilgisayara baglanmali.
+5. Galaxy Watch7'de Wireless debugging acik ve ADB baglantisi yetkilendirilmis olmali.
+
+ILK CALISTIRMA
+- ZIP'ten cikardigin proje klasorundeki Garajim-Tek-Tus.bat dosyasina cift tikla.
+- GitHub CLI girisi yoksa bir defalik gh auth login sureci acilir; tarayicidan giris yap.
+- BAT kaynak ZIP klasorundeyse GitHub depo URL'sini sorar; repoyu %USERPROFILE%\Garajim-GitHub altina klonlar ve kaynak dosyalarini oraya kopyalar.
+- Ilk kez telefon ve saat seri numaralarini adb devices listesinden girmen gerekir.
+- Sonraki calistirmalarda klonlanan depodaki Garajim-Tek-Tus.bat dosyasina cift tikla.
+
+VERI GUVENLIGI
+- Telefon APK'si `adb install -r` ile yuklenir; BAT telefon uygulamasini kaldirmaz.
+- Telefon kurulumu imza uyusmazligi hatasi verirse BAT durur ve telefondaki eski uygulamaya dokunmaz.
+- Saatte eski com.garajim.wear paketi varsa yalnizca saatten kaldirilir; telefon verileri etkilenmez.
+- .jks, .keystore, .env, .pem, .key gibi gizli/anahtar dosyalari staging listesinde bulunursa BAT commit'i durdurur.
+
+NOTLAR
+- GitHub deposunda .github/workflows/build-apk.yml bulunmali; workflow artifact adlari Garajim-Mobil-APK ve Garajim-WearOS-APK olmali.
+- Actions derlemesi basarisiz olursa BAT APK kurulumuna gecmez ve basarisiz loglari gosterir.
+- Farkli debug imzalari Android uygulama guncellemesini engelleyebilir. Telefon kurulumunda imza hatasi cikarsa uygulamayi kaldirma; once yedekle ve ayni release keystore ile imzalama yapilandir.

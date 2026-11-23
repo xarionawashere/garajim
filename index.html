@@ -1095,6 +1095,10 @@
       const N = window.GarajimNative;
       if (!N) return;
       if (typeof N.syncWidget === 'function') N.syncWidget(JSON.stringify(vehicles.map(v => ({ id: v.id, name: v.name || [v.brand, v.model].filter(Boolean).join(' ') || 'Aracınız', plate: v.plate || 'Plaka girilmedi', km: v.km || v.mileage || '', cons: (() => { const f = fuelStats(v); return f ? f.avg.toFixed(1) : ''; })(), svc: (() => { const p = serviceProgress(v); return p ? { remaining: Math.round(p.remaining), percent: Math.round(p.percent), state: p.overdue ? 'bad' : p.warning ? 'warn' : 'ok' } : null; })() }))));
+      // Araç ekleme/düzenleme/silme sonrası saat listesini anında yenile; heartbeat ayrıca yedek yol sağlar.
+      if (typeof N.pushWearVehicles === 'function') N.pushWearVehicles(JSON.stringify(vehicles.slice(0, 60).map(v => ({
+        id: String(v.id || ''), plate: String(v.plate || ''), name: String(v.name || ''), brand: String(v.brand || ''), model: String(v.model || '')
+      }))));
       if (typeof N.setReminders === 'function') N.setReminders(JSON.stringify(collectNotifications().map(n => n.title + ': ' + n.body)));
     } catch (e) {}
   }
@@ -1106,7 +1110,7 @@
     showTab('ride');
   }
   function runWidgetAction(a, vid) {
-    if (lockVisible()) {                                      // PIN kilidi açılınca çalıştır
+    if (!String(a || '').startsWith('wear_') && lockVisible()) { // telefon widget'ı PIN'e uyar; saatin sürüş kontrolleri kullanılabilir
       widgetPending = { a, vid };
       if (!widgetTimer) widgetTimer = setInterval(() => {
         if (lockVisible()) return;
@@ -1115,6 +1119,89 @@
       }, 500);
       return;
     }
+    // Watch işlemleri telefon ekranını açmadan mevcut WebView oturumunda yürütülür.
+    if (a === 'wear_select_vehicle') {
+      if (ride.running) {
+        try { rideWearAlert('info', 'Aktif sürüş sırasında araç değiştirilemez. Önce sürüşü bitir.'); } catch (e) {}
+        return;
+      }
+      const selected = vehicles.find(x => String(x.id) === String(vid));
+      if (!selected) { try { rideWearAlert('info', 'Araç bulunamadı; telefondaki araç listesi yenilensin.'); } catch (e) {} return; }
+      rideSetVehicle(selected.id);
+      rideRefreshVehicleSelect();
+      const sel = document.getElementById('rideVehicleSelect');
+      if (sel) sel.value = selected.id;
+      try { rideWearPush(); } catch (e) {}
+      try { if (typeof toast === 'function') toast('Saatten araç seçildi · ' + (selected.plate || selected.brand || selected.model || 'Garajım')); } catch (e) {}
+      return;
+    }
+    if (a === 'wear_finish_confirmed') {
+      if (ride.running || ride.startedAt) { rideFinish(true); }
+      else { try { rideWearAlert('info', 'Aktif sürüş bulunamadı.'); } catch (e) {} }
+      return;
+    }
+    if (a === 'wear_summary_save') {
+      if (ride.pendingSummary && (!vid || String(ride.pendingSummary.id) === String(vid))) {
+        rideKeepSummary();
+      } else { try { rideWearAlert('info', 'Kaydedilecek sürüş özeti bulunamadı.'); } catch (e) {} }
+      return;
+    }
+    if (a === 'wear_summary_discard') {
+      if (ride.pendingSummary && (!vid || String(ride.pendingSummary.id) === String(vid))) {
+        rideDiscardSummary();
+      } else { try { rideWearAlert('info', 'Silinecek sürüş özeti bulunamadı.'); } catch (e) {} }
+      return;
+    }
+    if (a === 'wear_request_sync') { try { rideWearPush(); } catch (e) {} return; }
+    if (a === 'wear_start') {
+      if (ride.pendingSummary && !ride.running) { try { rideWearAlert('info', 'Önce bekleyen sürüş özetini kaydet veya sil.'); } catch (e) {} return; }
+      if (!ride.running && !(ride.vehicleId || localStorage.getItem('garaj_ride_vehicle'))) {
+        try { rideWearAlert('info', 'Önce saatten bir araç seç.'); } catch (e) {}
+        return;
+      }
+      try { if (!ride.running) rideToggle(); } catch (e) {}
+      return;
+    }
+    if (a === 'wear_resume') {
+      if (ride.pendingSummary && !ride.running) { try { rideWearAlert('info', 'Önce bekleyen sürüş özetini kaydet veya sil.'); } catch (e) {} return; }
+      try { if (!ride.running || ride.paused) rideToggle(); } catch (e) {}
+      return;
+    }
+    if (a === 'wear_toggle') { // Eski saat APK'sı için uyumluluk
+      if (!ride.running && ride.pendingSummary) { try { rideWearAlert('info', 'Önce bekleyen sürüş özetini kaydet veya sil.'); } catch (e) {} return; }
+      if (!ride.running && !(ride.vehicleId || localStorage.getItem('garaj_ride_vehicle'))) {
+        try { rideWearAlert('info', 'Önce saatten bir araç seç.'); } catch (e) {}
+        return;
+      }
+      try { rideToggle(); } catch (e) {}
+      return;
+    }
+    if (a === 'wear_pause') {
+      try { if (ride.running && !ride.paused) rideToggle(); } catch (e) {}
+      return;
+    }
+    if (a === 'wear_stop_request') {
+      try { rideWearAlert('info', 'Sürüşü bitirmek için saatteki Bitir düğmesini kullan.'); } catch (e) {}
+      return;
+    }
+    if (a === 'wear_music_next') { try { rideMusic('next'); } catch (e) {} return; }
+    if (a === 'wear_music_prev') { try { rideMusic('prev'); } catch (e) {} return; }
+    if (a === 'wear_music_playpause') { try { rideMusic('playpause'); } catch (e) {} return; }
+    if (a === 'wear_park_where') {
+      try {
+        const p = parkGet();
+        if (!p) { rideWearAlert('park', 'Kayıtlı park yok'); return; }
+        if (ride.last && typeof parkBearing === 'function') {
+          const d = rideHav(ride.last, { lat: p.lat, lng: p.lng });
+          const dir = parkDirTxt(parkBearing(ride.last, { lat: p.lat, lng: p.lng }));
+          const txt = (d >= 1000 ? (d/1000).toFixed(1) + ' km' : Math.round(d) + ' m') + ' · ' + dir;
+          rideWearAlert('park', 'Park: ' + txt);
+        }
+        rideWearPush();
+      } catch (e) {}
+      return;
+    }
+
     const v = vehicles.find(x => x.id === vid) || vehicles[0];   // widget'ta seçili araç
     if (a === 'ride') { openRideForVehicle(v && v.id); return; }
     if (a === 'ride_toggle' || a === 'toggle') {
@@ -1180,6 +1267,7 @@
   }
   window.garajimCheckAction = checkWidgetAction;
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkWidgetAction(); });
+  if (!window.__garajimActionPoll) window.__garajimActionPoll = setInterval(checkWidgetAction, 1200);
 
   // Dolu depo → dolu depo yöntemiyle L/100 km ve yakıt ₺/100 km (kısmi dolumlar toplanır)
   function fuelStats(v) {
@@ -1570,7 +1658,7 @@
     if (!list.length) st.textContent = on ? 'Henüz yedek yok — ilk kayıtta oluşacak' : 'Kapalı';
     else {
       const last = list[0];
-      st.textContent = `Son otomatik: ${last.date} · ${last.count} araç · ${list.length} kopya saklı`;
+      st.textContent = `Son otomatik: ${last.date} · ${last.count} araç · ${list.length} kopya saklı (yalnızca araç listesi)`;
     }
   }
 
@@ -2772,9 +2860,36 @@
   }
 
   // ---------- EXPORT / IMPORT ----------
-  // Yedek v2: araçlar + kayıtlı sürüşler + park yeri + sürüş ayarları (eski yedekler de açılır)
+  // Yedek v3: araçlar + kayıtlı sürüşler + park/ayarlar + güvenli tercihler + kurtarılabilir sürüş durumu.
+  // Gizli veriler (PIN ve yapay zekâ API anahtarı) özellikle dışa aktarılmaz.
+  function backupReadJson(key) {
+    try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }
+    catch (e) { return null; }
+  }
+  function backupSafePreferences() {
+    const out = {};
+    const theme = localStorage.getItem('garaj_theme');
+    const pack = localStorage.getItem('garaj_pack');
+    const remindDays = Number(localStorage.getItem('garaj_remind_days'));
+    if (theme && ['dark', 'light', 'auto'].includes(theme)) out.theme = theme;
+    if (pack && THEME_PACKS.some(p => p.id === pack)) out.pack = pack;
+    if (Number.isFinite(remindDays) && remindDays >= 1 && remindDays <= 365) out.remindDays = remindDays;
+    return out;
+  }
   function backupBundle() {
-    return { app: 'garajim', version: 2, exportedAt: new Date().toISOString(), vehicles, rides: getAllRides(), parking: parkGet(), rideSettings: rideSettings(), extras: rideExtrasGet() };
+    // Dışa aktarma anında son sürüş noktasını da taslağa yaz; uygulama kapanırsa kurtarma şansı artsın.
+    try { if (typeof ridePersistDraft === 'function') ridePersistDraft(true); } catch (e) {}
+    let pendingRide = backupReadJson('garaj_ride_watch_pending');
+    try {
+      if (ride && ride.pendingSummary && ride.pendingSummary.id && !ride.pendingSummary._previewOnly) pendingRide = ride.pendingSummary;
+    } catch (e) {}
+    return {
+      app: 'garajim', version: 3, exportedAt: new Date().toISOString(),
+      vehicles, rides: getAllRides(), parking: parkGet(), rideSettings: rideSettings(), extras: rideExtrasGet(),
+      preferences: backupSafePreferences(),
+      rideDraft: backupReadJson('garaj_ride_draft'),
+      pendingRide: pendingRide && pendingRide.id ? pendingRide : null
+    };
   }
   async function exportData() {
     const via = await saveFileToast('garajim-yedek-' + todayStr() + '.json', 'application/json', JSON.stringify(backupBundle(), null, 2), 'Yedek');
@@ -2823,8 +2938,40 @@
         if (bundle && raw.extras) rideExtrasMerge(raw.extras);
         if (bundle && raw.parking && typeof raw.parking.lat === 'number' && !parkGet()) { try { localStorage.setItem(PARK_KEY, JSON.stringify(raw.parking)); } catch (x) {} }
         if (bundle && raw.rideSettings && !localStorage.getItem('garaj_ride_settings')) { try { localStorage.setItem('garaj_ride_settings', JSON.stringify(raw.rideSettings)); } catch (x) {} }
+        // Sadece boş cihazda varsayılanları tamamla; mevcut tema/hatırlatma tercihlerini ezme.
+        let restoredPreferences = false;
+        if (bundle && raw.preferences && typeof raw.preferences === 'object') {
+          const pref = raw.preferences;
+          if (!localStorage.getItem('garaj_theme') && ['dark', 'light', 'auto'].includes(pref.theme)) { localStorage.setItem('garaj_theme', pref.theme); restoredPreferences = true; }
+          if (!localStorage.getItem('garaj_pack') && THEME_PACKS.some(p => p.id === pref.pack)) { localStorage.setItem('garaj_pack', pref.pack); restoredPreferences = true; }
+          if (!localStorage.getItem('garaj_remind_days') && Number.isFinite(Number(pref.remindDays)) && Number(pref.remindDays) >= 1 && Number(pref.remindDays) <= 365) { localStorage.setItem('garaj_remind_days', String(Number(pref.remindDays))); restoredPreferences = true; }
+        }
+        // Yarım sürüşü ve bekleyen özeti yalnızca bu cihazda karşılığı yoksa getir; aktif oturumu ezme.
+        let restoredDraft = false, restoredPending = false;
+        if (bundle && raw.rideDraft && raw.rideDraft.startedAt && Array.isArray(raw.rideDraft.pts) && raw.rideDraft.pts.length <= 6000
+            && !ride.running && !ride.startedAt && !localStorage.getItem('garaj_ride_draft')) {
+          const d = raw.rideDraft;
+          const pts = d.pts.filter(p => Array.isArray(p) && p.length >= 2 && Number.isFinite(Number(p[0])) && Number.isFinite(Number(p[1]))
+            && Math.abs(Number(p[0])) <= 90 && Math.abs(Number(p[1])) <= 180).slice(-6000);
+          const safeDraft = { startedAt: d.startedAt, dist: Math.max(0, Number(d.dist) || 0), elapsed: Math.max(0, Number(d.elapsed) || 0),
+            maxSpeed: Math.max(0, Number(d.maxSpeed) || 0), pts, startCoord: d.startCoord || null, running: false, paused: true,
+            vehicleId: d.vehicleId == null ? null : String(d.vehicleId) };
+          try { localStorage.setItem('garaj_ride_draft', JSON.stringify(safeDraft)); restoredDraft = true; } catch (x) {}
+        }
+        if (bundle && raw.pendingRide && raw.pendingRide.id && !localStorage.getItem('garaj_ride_watch_pending')
+            && (!ride.pendingSummary || ride.pendingSummary._previewOnly)) {
+          try {
+            localStorage.setItem('garaj_ride_watch_pending', JSON.stringify(raw.pendingRide));
+            ride.pendingSummary = raw.pendingRide;
+            restoredPending = true;
+          } catch (x) {}
+        }
         persist(); renderList();
-        toast('Geri yükleme tamam' + (rides.length ? ' · ' + rides.length + ' sürüş' : ''));
+        if (restoredPreferences) { try { applyTheme(); } catch (x) {} }
+        if (restoredPending) { try { rideWearPush(); } catch (x) {} }
+        if (restoredDraft) setTimeout(() => { try { rideTryRecover(); } catch (x) {} }, 250);
+        const recovery = [restoredDraft ? 'yarım sürüş taslağı' : '', restoredPending ? 'bekleyen sürüş özeti' : ''].filter(Boolean);
+        toast('Geri yükleme tamam' + (rides.length ? ' · ' + rides.length + ' sürüş' : '') + (recovery.length ? ' · ' + recovery.join(' + ') : ''));
       } catch { alert('Geçersiz dosya'); }
     };
     r.readAsText(file);
@@ -3851,6 +3998,7 @@
     ride.vehicleId = id || null;
     if (id) localStorage.setItem('garaj_ride_vehicle', id);
     else localStorage.removeItem('garaj_ride_vehicle');
+    try { rideWearPush(); } catch (e) {}
   }
   function openVehicleRidePreview(vehicleId, idx) {
     let r = null;
@@ -4229,11 +4377,26 @@
     try {
       const N = window.GarajimNative;
       if (!N || typeof N.pushWearState !== 'function') return;
-      let plate = '';
+      const selectedVehicleId = ride.vehicleId || localStorage.getItem('garaj_ride_vehicle') || currentId || '';
+      const selectedVehicle = vehicles.find(v => String(v.id) === String(selectedVehicleId)) || null;
+      let plate = selectedVehicle ? (selectedVehicle.plate || [selectedVehicle.brand, selectedVehicle.model].filter(Boolean).join(' ')) : '';
       try {
-        const sel = document.getElementById('rideVehicleSelect');
-        if (sel && sel.selectedOptions && sel.selectedOptions[0]) plate = sel.selectedOptions[0].textContent || '';
+        if (!plate) {
+          const sel = document.getElementById('rideVehicleSelect');
+          if (sel && sel.selectedOptions && sel.selectedOptions[0]) plate = sel.selectedOptions[0].textContent || '';
+        }
       } catch (e) {}
+      if (typeof N.pushWearVehicles === 'function') {
+        try {
+          N.pushWearVehicles(JSON.stringify(vehicles.slice(0, 60).map(v => ({
+            id: String(v.id || ''), plate: String(v.plate || ''),
+            name: String(v.name || ''), brand: String(v.brand || ''), model: String(v.model || '')
+          }))));
+        } catch (e) {}
+      }
+      const pendingSummary = ride.pendingSummary || null;
+      const summaryVehicle = pendingSummary && pendingSummary.vehicleId
+        ? vehicles.find(v => String(v.id) === String(pendingSummary.vehicleId)) : selectedVehicle;
       const modeEl = document.getElementById('rideModeChip');
       const lim = Number(rideSettings().speedLimit) || 0;
       const kmh = ride.lastSpeedKmh || 0;
@@ -4259,11 +4422,20 @@
       N.pushWearState(JSON.stringify({
         running: !!ride.running,
         paused: !!ride.paused,
+        gpsReady: !!ride.gotFix,
         kmh: kmh,
         distM: ride.dist || 0,
         elapsedSec: Math.floor(ride.elapsed || 0),
         maxKmh: ride.maxSpeed || 0,
         plate: plate,
+        vehicleId: selectedVehicleId,
+        pendingSummary: !!pendingSummary,
+        summaryId: pendingSummary ? String(pendingSummary.id || '') : '',
+        summaryPlate: pendingSummary && summaryVehicle ? String(summaryVehicle.plate || [summaryVehicle.brand, summaryVehicle.model].filter(Boolean).join(' ')) : (pendingSummary ? plate : ''),
+        summaryDistM: pendingSummary ? Number(pendingSummary.dist || 0) : 0,
+        summaryElapsedSec: pendingSummary ? Math.floor(Number(pendingSummary.time || 0)) : 0,
+        summaryAvgKmh: pendingSummary ? Number(pendingSummary.avg || 0) : 0,
+        summaryMaxKmh: pendingSummary ? Number(pendingSummary.max || 0) : 0,
         mode: modeEl ? (modeEl.textContent || '') : '',
         track: track,
         artist: artist,
@@ -4309,6 +4481,11 @@
   }
 
   function rideToggle() {
+    if (!ride.running && ride.pendingSummary && !ride.pendingSummary._previewOnly) {
+      toast('Önce bekleyen sürüş özetini kaydet veya sil');
+      try { rideWearAlert('info', 'Yeni sürüşten önce bekleyen özeti kaydet veya sil.'); } catch (e) {}
+      return;
+    }
     if (!navigator.geolocation) { toast('Konum desteklenmiyor'); return; }
     if (!ride.gotFix && !ride.last) {
       toast('Önce GPS konumu bekleniyor');
@@ -4374,6 +4551,7 @@
       icon.className = 'fa-solid fa-pause mr-2';
     }
     ridePersistDraft(true);
+    try { rideWearPush(); } catch (e) {} // Başlat/duraklat/devam durumu saatte beklemeden güncellensin.
   }
 
   function rideStopConfirm() {
@@ -4416,7 +4594,7 @@
     return layers;
   }
 
-  function rideFinish() {
+  function rideFinish(fromWatch) {
     if (ride.running && !ride.paused) {
       // timer durdur
       ride.paused = true;
@@ -4457,17 +4635,20 @@
     try { summary = rideFinalizeEpic(summary); } catch (e) {}
     rideGhostStop();
     ride.pendingSummary = summary;
+    // Özeti kalıcı yedekte tut: saatten kaydet/sil kararı verilmeden süreç kapanırsa kaybolmasın.
+    try { localStorage.setItem('garaj_ride_watch_pending', JSON.stringify(summary)); } catch (e) {}
     localStorage.removeItem('garaj_ride_draft');
     // UI reset buttons
     document.getElementById('rideStartTxt').textContent = 'Sürüşe Başla';
     document.querySelector('#rideStartBtn i').className = 'fa-solid fa-play mr-2';
     document.getElementById('rideStopBtn').classList.add('hidden');
-    rideShowSummary(summary);
-    // clear live session metrics after showing
+    if (!fromWatch) rideShowSummary(summary);
+    // clear live session metrics after showing; watch can review/save/discard the pending summary.
     ride.pts = []; ride.dist = 0; ride.maxSpeed = 0; ride.elapsed = 0;
     ride.startedAt = null; ride.startCoord = null; ride.last = null; ride.gap = false;
     if (ride.line) ride.line.setLatLngs([]);
     rideRender(0);
+    try { rideWearPush(); } catch (e) {}
   }
 
   function rideShowSummary(s, preview) {
@@ -4657,11 +4838,12 @@
     if (!s || s._previewOnly) { rideHideSummary(); return; }
     ride.epicUndo = null;
     let msg = 'Sürüş kaydedildi · ' + rideDistTxt(s.dist);
+    let summaryStored = false;
     try {
       if (!s.vehicleId && ride.vehicleId) s.vehicleId = ride.vehicleId;
       let keep = [s].concat(getAllRides()).slice(0, 150);    // eskiden 40'tan sonrası sessizce siliniyordu
       for (;;) {                                               // depolama doluysa en eski kayıtları at
-        try { localStorage.setItem('garaj_rides', JSON.stringify(keep)); break; }
+        try { localStorage.setItem('garaj_rides', JSON.stringify(keep)); summaryStored = true; break; }
         catch (e) { if (keep.length <= 1) throw e; keep = keep.slice(0, Math.max(1, keep.length - 5)); }
       }
       const v = s.vehicleId ? vehicles.find(x => x.id === s.vehicleId) : null;
@@ -4675,14 +4857,22 @@
         if (v.plate) msg += ' · ' + v.plate;
       }
       toast(msg);
-    } catch (e) { toast('Kayıt yazılamadı — depolama dolu olabilir'); }
+    } catch (e) {
+      toast(summaryStored ? 'Sürüş kaydedildi; araç özeti güncellenemedi' : 'Kayıt yazılamadı — depolama dolu olabilir');
+    }
+    // Kayıt ana listede güvenle saklanmadıysa saatten tekrar deneyebilmek için özeti tut.
+    if (!summaryStored) { try { rideWearPush(); } catch (e) {} return; }
+    try { localStorage.removeItem('garaj_ride_watch_pending'); } catch (e) {}
     rideHideSummary();
+    try { rideWearPush(); } catch (e) {}
   }
 
   function rideDiscardSummary() {
     rideEpicRestore();
+    try { localStorage.removeItem('garaj_ride_watch_pending'); } catch (e) {}
     rideHideSummary();
     toast('Sürüş silindi');
+    try { rideWearPush(); } catch (e) {}
   }
 
   function ridePersistDraft(force) {
@@ -6375,9 +6565,21 @@ ${buildGarageContext()}
   renderList();
   syncNative();
   setTimeout(syncNative, 1500);                               // köprü geç yüklenirse tekrar dene
-  // Telefon uygulaması açıldığında saatin ilk durum bilgisini de gönder.
+  // Uygulama yeniden açılırsa, saatten kaydet/sil kararı bekleyen sürüş özetini geri yükle.
+  try {
+    const pendingWatchSummary = JSON.parse(localStorage.getItem('garaj_ride_watch_pending') || 'null');
+    if (pendingWatchSummary && pendingWatchSummary.id && !ride.pendingSummary) ride.pendingSummary = pendingWatchSummary;
+  } catch (e) {}
+  // Telefon uygulaması açıldığında saatin araç listesini ve ilk durum bilgisini de gönder.
   // Böylece saat, ilk sürüş başlatılana kadar "Telefona bağlan" yazısında kalmaz.
   setTimeout(() => { try { rideWearPush(); } catch (e) {} }, 2000);
+  // Saatteki araç seçimi ve bağlantı göstergesi sürüş dışında da güncel kalsın.
+  // Phone WebView çalıştığı sürece 10 saniyede bir durum + araç listesi yayımlanır.
+  if (!window.__garajimWearHeartbeat) {
+    window.__garajimWearHeartbeat = setInterval(() => {
+      try { rideWearPush(); } catch (e) {}
+    }, 10000);
+  }
   setTimeout(checkWidgetAction, 700);                         // widget'tan soğuk açılış
   setTimeout(checkWidgetAction, 2500);
 </script>

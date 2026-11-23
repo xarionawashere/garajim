@@ -61,7 +61,17 @@ public class GarajimNativeBridge {
         String a = MainActivity.pendingAction, v = MainActivity.pendingVehicle;
         MainActivity.pendingAction = null;
         MainActivity.pendingVehicle = null;
-        if (a == null) return "";
+        if (a == null) {
+            android.content.SharedPreferences q = context.getSharedPreferences(MainActivity.WEAR_QUEUE_PREFS, Context.MODE_PRIVATE);
+            a = q.getString("action", null);
+            v = q.getString("vehicle", null);
+            q.edit().remove("action").remove("vehicle").apply();
+        }
+        if (a == null) {
+            String wearCommand = MainActivity.consumeWearCommand(context);
+            if (wearCommand != null && !wearCommand.isEmpty()) return wearCommand;
+            return "";
+        }
         return (v == null || v.isEmpty()) ? a : a + "|" + v;
     }
 
@@ -135,6 +145,12 @@ public class GarajimNativeBridge {
             if (i == null) i = context.getPackageManager().getLaunchIntentForPackage(GarajimMedia.SPOTIFY);
             if (i != null) { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); context.startActivity(i); }
         } catch (Exception ignored) { }
+    }
+
+    /** Saat uygulamasına araç listesini gönder (JSON dizisi: id, plate, name, brand, model). */
+    @JavascriptInterface
+    public void pushWearVehicles(String json) {
+        try { GarajimWearSync.pushVehicles(context, json); } catch (Exception ignored) { }
     }
 
     /** Saat uygulamasına sürüş durumu gönder (JSON). */
