@@ -83,6 +83,13 @@ jobs:
               for act in actions: ET.SubElement(f, 'action', {A+'name': act})
             if meta:
               ET.SubElement(r, 'meta-data', {A+'name': 'android.appwidget.provider', A+'resource': meta})
+          # Wear OS komut dinleyici
+          wear_svc = 'com.garajim.app.GarajimWearListener'
+          services0 = {s.get(A+'name') for s in app.findall('service')}
+          if wear_svc not in services0:
+            ws = ET.SubElement(app, 'service', {A+'name': wear_svc, A+'exported': 'true'})
+            wf = ET.SubElement(ws, 'intent-filter')
+            ET.SubElement(wf, 'action', {A+'name': 'com.google.android.gms.wearable.BIND_LISTENER'})
           # Sürüş arka plan foreground service
           svc_name = 'com.garajim.app.GarajimRideService'
           services = {s.get(A+'name') for s in app.findall('service')}
@@ -156,14 +163,36 @@ jobs:
             echo "build_type=debug" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Wear OS senkron ve saat modulu
+        run: |
+          set -e
+          # Telefon uygulamasına Wearable API
+          APPG=android/app/build.gradle
+          if [ -f "$APPG" ] && ! grep -q play-services-wearable "$APPG"; then
+            printf '\ndependencies {\n    implementation "com.google.android.gms:play-services-wearable:18.1.0"\n}\n' >> "$APPG"
+          fi
+          # Saat modülü (ayrı APK artifact)
+          if [ -d native-wear ]; then
+            mkdir -p android/wear
+            cp -r native-wear/. android/wear/
+            # settings.gradle
+            if [ -f android/settings.gradle ] && ! grep -q ":wear" android/settings.gradle; then
+              echo "include ':wear'" >> android/settings.gradle
+            fi
+            if [ -f android/settings.gradle.kts ] && ! grep -q '":wear"' android/settings.gradle.kts; then
+              echo 'include(":wear")' >> android/settings.gradle.kts
+            fi
+            # root build may need nothing extra for AGP already present
+          fi
+
       - name: APK derle
         run: |
           cd android
           chmod +x gradlew
           if [ "${{ steps.signing.outputs.build_type }}" = "release" ]; then
-            ./gradlew assembleRelease
+            ./gradlew assembleRelease :wear:assembleRelease || ./gradlew assembleRelease
           else
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug :wear:assembleDebug || ./gradlew assembleDebug
           fi
 
       - name: APK yukle
@@ -173,5 +202,7 @@ jobs:
           path: |
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/debug/app-debug.apk
+            android/wear/build/outputs/apk/release/wear-release.apk
+            android/wear/build/outputs/apk/debug/wear-debug.apk
           if-no-files-found: error
           retention-days: 14
