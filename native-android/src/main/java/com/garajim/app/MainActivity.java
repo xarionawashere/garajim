@@ -26,6 +26,11 @@ public class MainActivity extends BridgeActivity {
      * komutları uygulama kapalıyken daha sonra kendiliğinden çalıştırılmak üzere saklanmaz.
      */
     static boolean dispatchWearCommand(Context context, String action, String vehicleId) {
+        // Native arka plan sürüşü başladıysa kaynak tek olsun: JS/WebView eski durumla üzerine yazmasın.
+        if (GarajimRideService.isNativeRideManaged(context)) {
+            GarajimRideService.dispatchWatchCommand(context, action, vehicleId);
+            return true;
+        }
         MainActivity target = active.get();
         boolean canDeliver = target != null && !target.isFinishing()
                 && target.getBridge() != null && target.getBridge().getWebView() != null;
@@ -34,7 +39,13 @@ public class MainActivity extends BridgeActivity {
             return true;
         }
 
-        // Araç seçimi güvenle ertelenebilir; sürüş komutları güvenlik nedeniyle ertelenmez.
+        // Activity/WebView yokken, daha önce görünür ekrandan başlatılmış foreground service komutları alır.
+        if (GarajimRideService.isArmed(context)) {
+            GarajimRideService.dispatchWatchCommand(context, action, vehicleId);
+            return true;
+        }
+
+        // Servis henüz hazırlanmadıysa komutu sessizce kaybetmek yerine dinleyici kullanıcıya uyarı gösterecek.
         if ("wear_select_vehicle".equals(action)) {
             context.getApplicationContext().getSharedPreferences(WEAR_QUEUE_PREFS, Context.MODE_PRIVATE).edit()
                     .putString("action", action)
@@ -42,6 +53,12 @@ public class MainActivity extends BridgeActivity {
                     .apply();
         }
         return false;
+    }
+
+    static boolean hasLiveBridge() {
+        MainActivity target = active.get();
+        return target != null && !target.isFinishing()
+                && target.getBridge() != null && target.getBridge().getWebView() != null;
     }
 
     private static synchronized boolean enqueueWearCommand(Context context, String action, String vehicleId) {
@@ -113,6 +130,8 @@ public class MainActivity extends BridgeActivity {
         capture(getIntent());
         attachNativeBridge();
         notifyJs();
+        // Konum izni verilmişse servis Activity görünürken öne alınır; sonradan ekran kapansa da saatten komut alır.
+        GarajimRideService.armIfPermitted(this);
     }
 
     @Override
@@ -129,12 +148,14 @@ public class MainActivity extends BridgeActivity {
         active = new WeakReference<>(this);
         attachNativeBridge();
         notifyJs();
+        GarajimRideService.armIfPermitted(this);
     }
 
     @Override
     public void onDestroy() {
         MainActivity current = active.get();
         if (current == this) active = new WeakReference<>(null);
+        if (isFinishing()) GarajimRideService.takeOverWebRide(getApplicationContext());
         super.onDestroy();
     }
 

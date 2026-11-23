@@ -157,7 +157,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             }
         }
         // Toggle yerine açık komut kullan: gecikmiş/tekrarlanmış mesaj sürüş durumunu tersine çevirmesin.
-        if (!running) send("start");
+        if (!running) send(selectedVehicleId.isEmpty() ? "start" : "start|" + selectedVehicleId);
         else if (paused) send("resume");
         else send("pause");
     }
@@ -411,6 +411,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private void applyState(DataMap map) {
         final long incomingStateAt = map.getLong("ts", 0L);
+        final boolean incomingNativeMode = map.getBoolean("nativeMode", false);
         final boolean incomingRunning = map.getBoolean("running", false);
         final boolean incomingPaused = map.getBoolean("paused", false);
         final double kmh = map.getDouble("kmh", 0);
@@ -478,9 +479,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             updateVehicleButton();
             updateConnectionUi();
             String st;
-            if (!running) { st = hasSummary ? "Kaydedilecek sürüş var" : "Hazır"; btnToggle.setText("Başlat"); }
-            else if (paused) { st = "Duraklatıldı"; btnToggle.setText("Devam"); }
-            else { st = over ? "Limit üstü" : "Sürüş aktif"; btnToggle.setText("Duraklat"); }
+            if (!running) { st = hasSummary ? "Kaydedilecek sürüş var" : (incomingNativeMode ? "Arka plan sürüşü hazır" : "Hazır"); btnToggle.setText("Başlat"); }
+            else if (paused) { st = incomingNativeMode ? "Duraklatıldı · arka plan" : "Duraklatıldı"; btnToggle.setText("Devam"); }
+            else { st = over ? "Limit üstü" : (incomingNativeMode ? "Sürüş aktif · arka plan" : "Sürüş aktif"); btnToggle.setText("Duraklat"); }
             if (status != null && !st.contentEquals(status.getText())) {
                 status.setAlpha(0.3f); status.setText(st); status.animate().alpha(1f).setDuration(180).start();
             }

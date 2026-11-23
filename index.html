@@ -1154,6 +1154,7 @@
     }
     if (a === 'wear_request_sync') { try { rideWearPush(); } catch (e) {} return; }
     if (a === 'wear_start') {
+      if (vid && !ride.running && vehicles.some(x => String(x.id) === String(vid))) rideSetVehicle(String(vid));
       if (ride.pendingSummary && !ride.running) { try { rideWearAlert('info', 'Önce bekleyen sürüş özetini kaydet veya sil.'); } catch (e) {} return; }
       if (!ride.running && !(ride.vehicleId || localStorage.getItem('garaj_ride_vehicle'))) {
         try { rideWearAlert('info', 'Önce saatten bir araç seç.'); } catch (e) {}
@@ -3995,9 +3996,17 @@
     }
   }
   function rideSetVehicle(id) {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) {
+        toast('Arka plan sürüşü saatte yönetiliyor; araç sürüş sırasında değiştirilemez.');
+        return;
+      }
+    } catch (e) {}
     ride.vehicleId = id || null;
     if (id) localStorage.setItem('garaj_ride_vehicle', id);
     else localStorage.removeItem('garaj_ride_vehicle');
+    try { const N = window.GarajimNative; if (N && N.setRideVehicle && id) N.setRideVehicle(String(id)); } catch (e) {}
     try { rideWearPush(); } catch (e) {}
   }
   function openVehicleRidePreview(vehicleId, idx) {
@@ -4377,6 +4386,8 @@
     try {
       const N = window.GarajimNative;
       if (!N || typeof N.pushWearState !== 'function') return;
+      // Native servis arka plan sürüşünün tek otoritesi; boş WebView durumu saate gönderilmemeli.
+      if (typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) return;
       const selectedVehicleId = ride.vehicleId || localStorage.getItem('garaj_ride_vehicle') || currentId || '';
       const selectedVehicle = vehicles.find(v => String(v.id) === String(selectedVehicleId)) || null;
       let plate = selectedVehicle ? (selectedVehicle.plate || [selectedVehicle.brand, selectedVehicle.model].filter(Boolean).join(' ')) : '';
@@ -4481,6 +4492,13 @@
   }
 
   function rideToggle() {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) {
+        toast('Bu sürüş arka plan servisinde. Kontrolü Galaxy Watch üzerinden yap.');
+        return;
+      }
+    } catch (e) {}
     if (!ride.running && ride.pendingSummary && !ride.pendingSummary._previewOnly) {
       toast('Önce bekleyen sürüş özetini kaydet veya sil');
       try { rideWearAlert('info', 'Yeni sürüşten önce bekleyen özeti kaydet veya sil.'); } catch (e) {}
@@ -4555,6 +4573,13 @@
   }
 
   function rideStopConfirm() {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) {
+        toast('Arka plan sürüşünü saatteki Bitir düğmesiyle tamamla.');
+        return;
+      }
+    } catch (e) {}
     if (ride.dist < 30 && ride.elapsed < 20) {
       if (!confirm('Çok kısa sürüş. Bitirilsin mi?')) return;
     } else if (!confirm('Sürüşü bitirip özeti göster?')) return;
@@ -4595,6 +4620,13 @@
   }
 
   function rideFinish(fromWatch) {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) {
+        toast('Arka plan sürüşünü saatte tamamla.');
+        return;
+      }
+    } catch (e) {}
     if (ride.running && !ride.paused) {
       // timer durdur
       ride.paused = true;
@@ -4638,6 +4670,7 @@
     // Özeti kalıcı yedekte tut: saatten kaydet/sil kararı verilmeden süreç kapanırsa kaybolmasın.
     try { localStorage.setItem('garaj_ride_watch_pending', JSON.stringify(summary)); } catch (e) {}
     localStorage.removeItem('garaj_ride_draft');
+    rideClearNativeSnapshot();
     // UI reset buttons
     document.getElementById('rideStartTxt').textContent = 'Sürüşe Başla';
     document.querySelector('#rideStartBtn i').className = 'fa-solid fa-play mr-2';
@@ -4834,6 +4867,13 @@
   }
 
   function rideKeepSummary() {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) {
+        toast('Bu sürüş özetini saat ekranından kaydet.');
+        return;
+      }
+    } catch (e) {}
     const s = ride.pendingSummary;
     if (!s || s._previewOnly) { rideHideSummary(); return; }
     ride.epicUndo = null;
@@ -4868,6 +4908,13 @@
   }
 
   function rideDiscardSummary() {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) {
+        toast('Bu sürüş özetini saat ekranından sil.');
+        return;
+      }
+    } catch (e) {}
     rideEpicRestore();
     try { localStorage.removeItem('garaj_ride_watch_pending'); } catch (e) {}
     rideHideSummary();
@@ -4879,23 +4926,77 @@
     if (!ride.running && !ride.startedAt) return;
     if (!force && Date.now() - (ride._draftAt || 0) < 10000) return;
     ride._draftAt = Date.now();
+    const pts = ride.pts.slice(-6000);
     try {
       localStorage.setItem('garaj_ride_draft', JSON.stringify({
         startedAt: ride.startedAt,
         dist: ride.dist,
         elapsed: ride.elapsed,
         maxSpeed: ride.maxSpeed,
-        pts: ride.pts.slice(-6000),
+        pts: pts,
         startCoord: ride.startCoord,
         running: ride.running,
         paused: ride.paused,
         vehicleId: ride.vehicleId
       }));
     } catch (e) {}
+
+    // WebView kapanırsa native servis son güvenli taslağı devralabilsin. Noktalar delta olarak gönderilir.
+    try {
+      const N = window.GarajimNative;
+      if (!N || typeof N.syncRideSnapshot !== 'function'
+          || (typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged())) return;
+      const selectedVehicleId = String(ride.vehicleId || localStorage.getItem('garaj_ride_vehicle') || currentId || '');
+      const selectedVehicle = vehicles.find(v => String(v.id) === selectedVehicleId) || null;
+      const count = ride.pts.length;
+      const sessionChanged = ride._nativeSnapshotSession !== ride.startedAt;
+      const sourceStart = Math.max(0, count - 6000);
+      const previousCount = Number(ride._nativeSnapshotPointCount) || 0;
+      const resetPoints = sessionChanged || sourceStart > previousCount;
+      const pointStart = resetPoints ? sourceStart : previousCount;
+      const delta = ride.pts.slice(pointStart);
+      N.syncRideSnapshot(JSON.stringify({
+        active: true,
+        startedAt: ride.startedAt,
+        running: !!ride.running,
+        paused: !!ride.paused,
+        vehicleId: selectedVehicleId,
+        plate: selectedVehicle ? (selectedVehicle.plate || [selectedVehicle.brand, selectedVehicle.model].filter(Boolean).join(' ')) : '',
+        dist: Number(ride.dist) || 0,
+        elapsed: Number(ride.elapsed) || 0,
+        maxSpeed: Number(ride.maxSpeed) || 0,
+        lastSpeedKmh: Number(ride.lastSpeedKmh) || 0,
+        gotFix: !!ride.gotFix,
+        gap: !!ride.gap,
+        startCoord: ride.startCoord || null,
+        last: ride.last || null,
+        pts: delta,
+        pointStart: pointStart,
+        pointsTotal: count,
+        resetPoints: resetPoints
+      }));
+      ride._nativeSnapshotSession = ride.startedAt;
+      ride._nativeSnapshotPointCount = count;
+    } catch (e) {}
+  }
+
+  function rideClearNativeSnapshot() {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.syncRideSnapshot === 'function') {
+        N.syncRideSnapshot(JSON.stringify({
+          active: false, startedAt: '', running: false, paused: false, vehicleId: '',
+          dist: 0, elapsed: 0, maxSpeed: 0, gotFix: false, gap: false,
+          pts: [], pointStart: 0, pointsTotal: 0, resetPoints: true
+        }));
+      }
+    } catch (e) {}
   }
 
   function rideTryRecover() {
     try {
+      const N = window.GarajimNative;
+      if (N && typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) return;
       if (ride.startedAt || ride.running) return;               // oturum zaten bellekte
       const d = JSON.parse(localStorage.getItem('garaj_ride_draft') || 'null');
       if (!d || !d.startedAt) return;
@@ -6536,6 +6637,79 @@ ${buildGarageContext()}
       </article>`).join('');
   }
 
+  // Saatten seçilmiş aracı, telefon yeniden açıldığında yerel sürüş seçimine geri al.
+  // Native servis bir sürüşü yönetiyorsa seçim kilitli kalır; yerel oturumda eski seçimi ezmeyiz.
+  function syncSelectedVehicleFromNative() {
+    try {
+      const N = window.GarajimNative;
+      if (!N || typeof N.getNativeRideState !== 'function') return;
+      const s = JSON.parse(N.getNativeRideState() || '{}');
+      if (s.nativeMode || s.pendingSummary || !s.vehicleId) return;
+      const id = String(s.vehicleId);
+      if (!vehicles.some(v => String(v.id) === id)) return;
+      ride.vehicleId = id;
+      localStorage.setItem('garaj_ride_vehicle', id);
+    } catch (e) {}
+  }
+
+  // Saat kapalı telefon oturumunda kaydedilen native sürüş özetlerini idempotent biçimde yerel geçmişe aktar.
+  function importNativeRideHandoffs() {
+    const N = window.GarajimNative;
+    if (!N || typeof N.getNativeRideHandoffs !== 'function' || typeof N.ackNativeRideHandoffs !== 'function') return;
+    let handoffs;
+    try { handoffs = JSON.parse(N.getNativeRideHandoffs() || '[]'); } catch (e) { return; }
+    if (!Array.isArray(handoffs) || !handoffs.length) return;
+    try {
+      let rides = getAllRides();
+      const ids = new Set(rides.map(r => String(r && r.id || '')));
+      const acknowledge = [];
+      let ridesChanged = false, vehiclesChanged = false;
+      handoffs.forEach(summary => {
+        if (!summary || !summary.id) return;
+        const id = String(summary.id);
+        if (summary.nativeBackground && summary.date) {
+          try {
+            const draft = JSON.parse(localStorage.getItem('garaj_ride_draft') || 'null');
+            const draftStart = draft && draft.startedAt ? Date.parse(draft.startedAt) : NaN;
+            const summaryStart = Date.parse(summary.date);
+            if (Number.isFinite(draftStart) && Number.isFinite(summaryStart) && Math.abs(draftStart - summaryStart) < 5000) {
+              localStorage.removeItem('garaj_ride_draft');
+            }
+          } catch (e) {}
+        }
+        if (!ids.has(id)) {
+          if (!Array.isArray(summary.pts)) summary.pts = [];
+          summary.nativeBackground = true;
+          rides.unshift(summary);
+          ids.add(id);
+          ridesChanged = true;
+        }
+        const vehicle = vehicles.find(v => String(v.id) === String(summary.vehicleId));
+        if (vehicle) {
+          if (!Array.isArray(vehicle.rides)) vehicle.rides = [];
+          if (!vehicle.rides.some(r => String(r && r.id || '') === id)) {
+            vehicle.rides.unshift({ id, date: summary.date, dist: summary.dist, time: summary.time, avg: summary.avg, max: summary.max });
+            vehicle.rides = vehicle.rides.slice(0, 30);
+            const addKm = Math.round((Number(summary.dist) || 0) / 1000);
+            const currentKm = Number(vehicle.km);
+            if (addKm > 0 && vehicle.km !== '' && vehicle.km != null && Number.isFinite(currentKm)) vehicle.km = currentKm + addKm;
+            vehiclesChanged = true;
+          }
+        }
+        acknowledge.push(id);
+      });
+      if (!acknowledge.length) return;
+      if (ridesChanged) localStorage.setItem('garaj_rides', JSON.stringify(rides.slice(0, 150)));
+      if (vehiclesChanged) persist();
+      else if (ridesChanged) { try { syncNative(); runAutoBackup(false); } catch (e) {} }
+      // Handoff yalnızca yerel yazmalar başarıyla bittikten sonra onaylanır; çökme olursa tekrar denenebilir.
+      N.ackNativeRideHandoffs(JSON.stringify(acknowledge));
+      toast('Saatte kaydedilen ' + acknowledge.length + ' sürüş telefon geçmişine aktarıldı.');
+    } catch (e) {
+      toast('Arka plan sürüşü içe aktarılamadı; yedek kayıt korunuyor.');
+    }
+  }
+
   // Init
   document.getElementById('svcCat').innerHTML = Object.entries(cats).map(([k,c]) => `<option value="${k}">${c.n}</option>`).join('');
   ['formModal','kmModal','serviceModal','fuelModal','planModal','composeModal'].forEach(id => {
@@ -6563,8 +6737,15 @@ ${buildGarageContext()}
   checkAndNotify();
   updateAutoBackupUI();
   renderList();
+  syncSelectedVehicleFromNative();
   syncNative();
-  setTimeout(syncNative, 1500);                               // köprü geç yüklenirse tekrar dene
+  importNativeRideHandoffs();
+  setTimeout(() => {
+    // Native arayüz bazen ilk script çalıştıktan sonra bağlanır; önce saat seçimini oku, sonra JS durumunu yayınla.
+    try { syncSelectedVehicleFromNative(); } catch (e) {}
+    try { syncNative(); } catch (e) {}
+    try { importNativeRideHandoffs(); } catch (e) {}
+  }, 1500);
   // Uygulama yeniden açılırsa, saatten kaydet/sil kararı bekleyen sürüş özetini geri yükle.
   try {
     const pendingWatchSummary = JSON.parse(localStorage.getItem('garaj_ride_watch_pending') || 'null');

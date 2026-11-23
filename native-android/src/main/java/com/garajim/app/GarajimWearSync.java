@@ -41,6 +41,7 @@ public final class GarajimWearSync {
             try {
                 JSONObject o = new JSONObject(json);
                 PutDataMapRequest req = PutDataMapRequest.create(PATH_STATE);
+                req.getDataMap().putBoolean("nativeMode", o.optBoolean("nativeMode", false));
                 req.getDataMap().putBoolean("running", o.optBoolean("running", false));
                 req.getDataMap().putBoolean("paused", o.optBoolean("paused", false));
                 req.getDataMap().putBoolean("gpsReady", o.optBoolean("gpsReady", false));

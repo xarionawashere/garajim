@@ -27,9 +27,9 @@ public class GarajimWearListener extends WearableListenerService {
             if ("wear_select_vehicle".equals(action)) {
                 GarajimWearSync.pushAlert(this, "info", "Araç seçimi sıraya alındı. Telefon Garajım oturumu hazır olduğunda uygulanacak.");
             } else if ("wear_request_sync".equals(action)) {
-                GarajimWearSync.pushAlert(this, "info", "Telefon uygulaması arka planda hazır değil. Garajım'ı bir kez açıp tekrar deneyin.");
+                GarajimWearSync.pushAlert(this, "info", "Saat arka plan servisi hazır değil. Telefonu açıp Garajım'ı bir kez başlat ve konum iznini ver.");
             } else {
-                GarajimWearSync.pushAlert(this, "info", "Telefon Garajım oturumu hazır değil. Sürüşü kontrol etmek için telefonu bir kez açıp Garajım'ı başlatın.");
+                GarajimWearSync.pushAlert(this, "info", "Saatten sürüş için Garajım'ı telefonda bir kez açıp arka plan servisini hazırlamalısın.");
             }
         }
     }

@@ -1,0 +1,11 @@
+.github/workflows/build-apk.yml
+index.html
+native-android/src/main/java/com/garajim/app/MainActivity.java
+native-android/src/main/java/com/garajim/app/GarajimNativeBridge.java
+native-android/src/main/java/com/garajim/app/GarajimRideService.java
+native-android/src/main/java/com/garajim/app/GarajimWearListener.java
+native-android/src/main/java/com/garajim/app/GarajimWearSync.java
+native-wear/src/main/java/com/garajim/wear/WearMainActivity.java
+native-wear/build.gradle
+tests/t12_wear_reliability.js
+tests/t13_native_background.js

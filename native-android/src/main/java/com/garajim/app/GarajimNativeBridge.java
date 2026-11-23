@@ -150,13 +150,56 @@ public class GarajimNativeBridge {
     /** Saat uygulamasına araç listesini gönder (JSON dizisi: id, plate, name, brand, model). */
     @JavascriptInterface
     public void pushWearVehicles(String json) {
-        try { GarajimWearSync.pushVehicles(context, json); } catch (Exception ignored) { }
+        try {
+            GarajimRideService.setVehicles(context, json);
+            GarajimWearSync.pushVehicles(context, json);
+        } catch (Exception ignored) { }
     }
 
-    /** Saat uygulamasına sürüş durumu gönder (JSON). */
+    /** JS sürüş seçimini native SharedPreferences'a kaydet; saatten soğuk başlatma bunu kullanır. */
+    @JavascriptInterface
+    public void setRideVehicle(String vehicleId) {
+        try { GarajimRideService.setSelectedVehicle(context, vehicleId); } catch (Exception ignored) { }
+    }
+
+    /** WebView'deki sürüş durumunun dayanıklı kopyası; Activity kapanırsa servis buradan devralabilir. */
+    @JavascriptInterface
+    public void syncRideSnapshot(String json) {
+        try { GarajimRideService.syncWebSnapshot(context, json); } catch (Exception ignored) { }
+    }
+
+    /** Native sürüş aktifken JS'nin eski durumla saatin güncel durumunu ezmesini engeller. */
+    @JavascriptInterface
+    public boolean isNativeRideManaged() {
+        try { return GarajimRideService.isNativeRideManaged(context); } catch (Exception ignored) { return false; }
+    }
+
+    @JavascriptInterface
+    public String getNativeRideState() {
+        try { return GarajimRideService.getNativeStateJson(context); } catch (Exception ignored) { return "{}"; }
+    }
+
+    /** Saatten kaydedilen native sürüş özetleri telefondaki yerel geçmişe güvenli aktarım için bekler. */
+    @JavascriptInterface
+    public String getNativeRideHandoffs() {
+        try { return GarajimRideService.getHandoffsJson(context); } catch (Exception ignored) { return "[]"; }
+    }
+
+    @JavascriptInterface
+    public void ackNativeRideHandoffs(String idsJson) {
+        try { GarajimRideService.ackHandoffs(context, idsJson); } catch (Exception ignored) { }
+    }
+
+    /** Saat uygulamasına sürüş durumu gönder (JSON). Native servis sürüşün sahibiyse JS yayını bastırılır. */
     @JavascriptInterface
     public void pushWearState(String json) {
-        try { GarajimWearSync.pushState(context, json); } catch (Exception ignored) { }
+        try {
+            if (GarajimRideService.isNativeRideManaged(context)) return;
+            JSONObject state = new JSONObject(json == null ? "{}" : json);
+            String vehicleId = state.optString("vehicleId", "");
+            if (!vehicleId.isEmpty()) GarajimRideService.setSelectedVehicle(context, vehicleId);
+            GarajimWearSync.pushState(context, json);
+        } catch (Exception ignored) { }
     }
 
     @JavascriptInterface
