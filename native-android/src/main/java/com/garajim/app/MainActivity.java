@@ -132,7 +132,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         MainActivity current = active.get();
         if (current == this) active = new WeakReference<>(null);
         super.onDestroy();
