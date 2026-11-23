@@ -1,0 +1,25 @@
+Garajım — Wear OS (sırayla eklenen özellikler)
+=============================================
+
+1) Tek dokunuş sürüş
+   - Saatte büyük Başlat / Duraklat / Bitir
+   - Durum metni: Hazır · Sürüş aktif · Duraklatıldı
+
+2) Canlı hız + titreşim uyarı
+   - Hız limitini aşınca kırmızı hız + saat titreşimi
+   - Kör nokta / intel uyarıları saate iletilir
+
+3) Müzik kumandası
+   - ⏮  ⏯  ⏭
+   - Şarkı adı telefonda görünüyorsa saatte de yazılır
+
+4) Tile (saat kartı)
+   - v1.1: uygulama ikonu + ana ekran (Tile API sonraki sürümde)
+   - Şimdilik saatte Garajım uygulamasını açman yeterli
+
+5) Park bulucu
+   - "Arabam nerede?" → mesafe + yön (kuzey, doğu…)
+   - Telefonda kayıtlı park noktası gerekir (Açık Dünya → P)
+
+Kurulum: telefon APK + wear APK (Actions artifact).
+Saat ile telefon bağlı ve Google hesabı aynı olmalı.

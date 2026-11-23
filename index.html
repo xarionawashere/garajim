@@ -1117,6 +1117,46 @@
     }
     const v = vehicles.find(x => x.id === vid) || vehicles[0];   // widget'ta seçili araç
     if (a === 'ride') { openRideForVehicle(v && v.id); return; }
+    if (a === 'ride_toggle' || a === 'toggle') {
+      showTab('ride');
+      try {
+        if (ride.running && !ride.paused) { /* pause via toggle */ rideToggle(); }
+        else if (ride.running && ride.paused) rideToggle();
+        else rideToggle();
+      } catch (e) {}
+      return;
+    }
+    if (a === 'ride_pause' || a === 'pause') {
+      showTab('ride');
+      try { if (ride.running && !ride.paused) rideToggle(); } catch (e) {}
+      return;
+    }
+    if (a === 'ride_stop' || a === 'stop' || a === 'finish') {
+      showTab('ride');
+      try { if (ride.running) rideStopConfirm(); } catch (e) {}
+      return;
+    }
+    if (a === 'music_next' || a === 'next') { try { rideMusic('next'); } catch (e) {} return; }
+    if (a === 'music_prev' || a === 'prev') { try { rideMusic('prev'); } catch (e) {} return; }
+    if (a === 'music_playpause' || a === 'playpause') { try { rideMusic('playpause'); } catch (e) {} return; }
+    if (a === 'park_where') {
+      try {
+        showTab('ride');
+        const p = parkGet();
+        if (!p) { toast('Kayıtlı park yok'); return; }
+        if (ride.last && typeof parkBearing === 'function') {
+          const d = rideHav(ride.last, { lat: p.lat, lng: p.lng });
+          const dir = parkDirTxt(parkBearing(ride.last, { lat: p.lat, lng: p.lng }));
+          const txt = (d >= 1000 ? (d/1000).toFixed(1) + ' km' : Math.round(d) + ' m') + ' · ' + dir;
+          toast('Park: ' + txt);
+          rideWearAlert('park', 'Park ' + txt);
+        } else {
+          parkOpen();
+        }
+        rideWearPush();
+      } catch (e) {}
+      return;
+    }
     if (a === 'park') { if (v) rideSetVehicle(v.id); showTab('ride'); parkSave(); return; }
     if (a === 'alerts') { showTab('garage'); openNotifPanel(); return; }
     if (a === 'open') { showTab('garage'); return; }
@@ -4184,6 +4224,72 @@
     document.getElementById('rideMax').textContent = String(Math.round(max || 0));
   }
 
+
+  function rideWearPush() {
+    try {
+      const N = window.GarajimNative;
+      if (!N || typeof N.pushWearState !== 'function') return;
+      let plate = '';
+      try {
+        const sel = document.getElementById('rideVehicleSelect');
+        if (sel && sel.selectedOptions && sel.selectedOptions[0]) plate = sel.selectedOptions[0].textContent || '';
+      } catch (e) {}
+      const modeEl = document.getElementById('rideModeChip');
+      const lim = Number(rideSettings().speedLimit) || 0;
+      const kmh = ride.lastSpeedKmh || 0;
+      const overLimit = lim > 0 && kmh > lim + 2;
+      let track = '', artist = '';
+      try {
+        const t = document.getElementById('rideMusicTitle');
+        const a = document.getElementById('rideMusicArtist');
+        if (t) track = t.textContent || '';
+        if (a) artist = a.textContent || '';
+      } catch (e) {}
+      let parkLat = 0, parkLng = 0, parkDistM = -1, parkDir = '';
+      try {
+        const p = typeof parkGet === 'function' ? parkGet() : null;
+        if (p && p.lat != null && ride.last) {
+          parkLat = p.lat; parkLng = p.lng;
+          parkDistM = rideHav(ride.last, { lat: p.lat, lng: p.lng });
+          if (typeof parkBearing === 'function' && typeof parkDirTxt === 'function') {
+            parkDir = parkDirTxt(parkBearing(ride.last, { lat: p.lat, lng: p.lng }));
+          }
+        }
+      } catch (e) {}
+      N.pushWearState(JSON.stringify({
+        running: !!ride.running,
+        paused: !!ride.paused,
+        kmh: kmh,
+        distM: ride.dist || 0,
+        elapsedSec: Math.floor(ride.elapsed || 0),
+        maxKmh: ride.maxSpeed || 0,
+        plate: plate,
+        mode: modeEl ? (modeEl.textContent || '') : '',
+        track: track,
+        artist: artist,
+        overLimit: overLimit,
+        alert: overLimit ? ('Limit ' + lim + '+') : '',
+        parkLat: parkLat,
+        parkLng: parkLng,
+        parkDistM: parkDistM,
+        parkDir: parkDir
+      }));
+      // limit titreşimi (throttle)
+      if (overLimit && N.pushWearAlert) {
+        const now = Date.now();
+        if (!ride._wearLimitBuzz || now - ride._wearLimitBuzz > 8000) {
+          ride._wearLimitBuzz = now;
+          N.pushWearAlert('limit', 'Hız limiti aşıldı · ' + Math.round(kmh) + ' km/sa');
+        }
+      }
+    } catch (e) {}
+  }
+  function rideWearAlert(kind, msg) {
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.pushWearAlert === 'function') N.pushWearAlert(kind || 'info', msg || '');
+    } catch (e) {}
+  }
   function rideTick() {
     if (!ride.running || ride.paused) return;
     const now = Date.now();
@@ -4192,6 +4298,7 @@
     rideRender(ride.lastSpeedKmh);
     try { rideGhostUpdate(); } catch (e) {}
     if (Math.floor(ride.elapsed) % 10 === 0) ridePersistDraft();
+    try { rideWearPush(); } catch (e) {}
   }
 
   async function rideWake(on) {

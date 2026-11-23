@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="14dp">
+
+        <!-- Logo + marka -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_header_chip"
+            android:paddingLeft="10dp"
+            android:paddingRight="12dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_garajim_logo"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/app_name"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="7dp"
+                android:text="Garajım"
+                android:textColor="@color/accent"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:letterSpacing="0.04"/>
+        </LinearLayout>
+
+        <!-- Hız kartı -->
+        <FrameLayout
+            android:id="@+id/wearSpeedRing"
+            android:layout_width="112dp"
+            android:layout_height="112dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_speed_ring">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/wearSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/text"
+                    android:textStyle="bold"
+                    android:textSize="40sp"
+                    android:includeFontPadding="false"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="km/sa"
+                    android:textColor="@color/muted"
+                    android:textSize="10sp"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.08"/>
+            </LinearLayout>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/wearMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="0.00 km  ·  0:00"
+            android:textColor="#CBD5E1"
+            android:textSize="11sp"/>
+
+        <TextView
+            android:id="@+id/wearStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:background="@drawable/bg_card"
+            android:text="Telefona bağlan…"
+            android:textColor="@color/muted"
+            android:textSize="10sp"/>
+
+        <TextView
+            android:id="@+id/wearAlert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:visibility="gone"
+            android:textColor="#FBBF24"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <!-- Müzik kartı -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="10dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MÜZİK"
+                android:textColor="#64748B"
+                android:textSize="9sp"
+                android:letterSpacing="0.12"/>
+            <TextView
+                android:id="@+id/wearTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Spotify hazır"
+                android:textColor="#E2E8F0"
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <Button android:id="@+id/btnPrev" android:layout_width="0dp" android:layout_height="36dp"
+                    android:layout_weight="1" android:layout_marginEnd="4dp"
+                    android:text="⏮" android:textAllCaps="false" android:textSize="14sp"
+                    android:background="@drawable/btn_music" android:textColor="#FFFFFF"/>
+                <Button android:id="@+id/btnPlay" android:layout_width="0dp" android:layout_height="36dp"
+                    android:layout_weight="1" android:layout_marginHorizontal="4dp"
+                    android:text="⏯" android:textAllCaps="false" android:textSize="14sp"
+                    android:background="@drawable/btn_music" android:textColor="#FFFFFF"/>
+                <Button android:id="@+id/btnNext" android:layout_width="0dp" android:layout_height="36dp"
+                    android:layout_weight="1" android:layout_marginStart="4dp"
+                    android:text="⏭" android:textAllCaps="false" android:textSize="14sp"
+                    android:background="@drawable/btn_music" android:textColor="#FFFFFF"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Sürüş kontrolleri -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+            <Button android:id="@+id/btnToggle" android:layout_width="0dp" android:layout_height="44dp"
+                android:layout_weight="1.2" android:layout_marginEnd="5dp"
+                android:text="Başlat" android:textAllCaps="false" android:textStyle="bold"
+                android:background="@drawable/btn_primary" android:textColor="#FFFFFF"/>
+            <Button android:id="@+id/btnStop" android:layout_width="0dp" android:layout_height="44dp"
+                android:layout_weight="1" android:layout_marginStart="5dp"
+                android:text="Bitir" android:textAllCaps="false"
+                android:background="@drawable/btn_secondary" android:textColor="#E2E8F0"/>
+        </LinearLayout>
+
+        <Button android:id="@+id/btnPark" android:layout_width="match_parent" android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:text="Arabam nerede?"
+            android:textAllCaps="false"
+            android:background="@drawable/btn_secondary"
+            android:textColor="#93C5FD"/>
+
+        <TextView android:id="@+id/wearPark"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:layout_marginTop="4dp" android:visibility="gone"
+            android:textColor="#93C5FD" android:textSize="11sp"/>
+    </LinearLayout>
+</ScrollView>

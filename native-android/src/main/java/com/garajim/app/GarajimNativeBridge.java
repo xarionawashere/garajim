@@ -136,4 +136,20 @@ public class GarajimNativeBridge {
             if (i != null) { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); context.startActivity(i); }
         } catch (Exception ignored) { }
     }
+
+    /** Saat uygulamasına sürüş durumu gönder (JSON). */
+    @JavascriptInterface
+    public void pushWearState(String json) {
+        try { GarajimWearSync.pushState(context, json); } catch (Exception ignored) { }
+    }
+
+    @JavascriptInterface
+    public void wearCmd(String cmd) {
+        try { GarajimWearSync.sendCmdToWatch(context, cmd == null ? "" : cmd); } catch (Exception ignored) { }
+    }
+
+    @JavascriptInterface
+    public void pushWearAlert(String kind, String msg) {
+        try { GarajimWearSync.pushAlert(context, kind, msg); } catch (Exception ignored) { }
+    }
 }
