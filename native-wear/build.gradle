@@ -1,6 +1,5 @@
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
+
 android {
     namespace 'com.garajim.wear'
     compileSdk 34
@@ -13,12 +12,14 @@ android {
     }
     buildTypes {
         release { minifyEnabled false }
+        debug { minifyEnabled false }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 }
+
 dependencies {
     implementation 'com.google.android.gms:play-services-wearable:18.1.0'
 }
