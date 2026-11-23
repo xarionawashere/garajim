@@ -166,33 +166,23 @@ jobs:
       - name: Wear OS senkron ve saat modulu
         run: |
           set -e
-          # Telefon uygulamasına Wearable API
-          APPG=android/app/build.gradle
-          if [ -f "$APPG" ] && ! grep -q play-services-wearable "$APPG"; then
-            printf '\ndependencies {\n    implementation "com.google.android.gms:play-services-wearable:18.1.0"\n}\n' >> "$APPG"
-          fi
-          # Saat modülü (ayrı APK artifact)
-          if [ -d native-wear ]; then
-            mkdir -p android/wear
-            cp -r native-wear/. android/wear/
-            # settings.gradle
-            if [ -f android/settings.gradle ] && ! grep -q ":wear" android/settings.gradle; then
-              echo "include ':wear'" >> android/settings.gradle
-            fi
-            if [ -f android/settings.gradle.kts ] && ! grep -q '":wear"' android/settings.gradle.kts; then
-              echo 'include(":wear")' >> android/settings.gradle.kts
-            fi
-            # root build may need nothing extra for AGP already present
-          fi
+          echo "=== settings.gradle (once) ==="
+          cat android/settings.gradle 2>/dev/null || true
+          python3 scripts/ci-wear-setup.py
+          echo "=== settings.gradle (sonra) ==="
+          cat android/settings.gradle 2>/dev/null || true
+
 
       - name: APK derle
         run: |
           cd android
           chmod +x gradlew
           if [ "${{ steps.signing.outputs.build_type }}" = "release" ]; then
-            ./gradlew assembleRelease :wear:assembleRelease || ./gradlew assembleRelease
+            ./gradlew assembleRelease
+            ./gradlew :wear:assembleRelease || echo "Wear release atlandi"
           else
-            ./gradlew assembleDebug :wear:assembleDebug || ./gradlew assembleDebug
+            ./gradlew assembleDebug
+            ./gradlew :wear:assembleDebug || echo "Wear debug atlandi"
           fi
 
       - name: APK yukle
