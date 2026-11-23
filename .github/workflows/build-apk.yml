@@ -83,13 +83,19 @@ jobs:
               for act in actions: ET.SubElement(f, 'action', {A+'name': act})
             if meta:
               ET.SubElement(r, 'meta-data', {A+'name': 'android.appwidget.provider', A+'resource': meta})
-          # Wear OS komut dinleyici
+          # Wear OS komut dinleyici: eski BIND_LISTENER yerine yalnızca
+          # /garajim/cmd mesajlarını dinle; bu, WearableBindListener lint hatasını giderir.
           wear_svc = 'com.garajim.app.GarajimWearListener'
-          services0 = {s.get(A+'name') for s in app.findall('service')}
-          if wear_svc not in services0:
+          services0 = {s.get(A+'name'): s for s in app.findall('service')}
+          ws = services0.get(wear_svc)
+          if ws is None:
             ws = ET.SubElement(app, 'service', {A+'name': wear_svc, A+'exported': 'true'})
-            wf = ET.SubElement(ws, 'intent-filter')
-            ET.SubElement(wf, 'action', {A+'name': 'com.google.android.gms.wearable.BIND_LISTENER'})
+          # Mevcut/eski intent filtrelerini kaldırıp dar kapsamlı filtre ekle.
+          for old_filter in list(ws.findall('intent-filter')):
+            ws.remove(old_filter)
+          wf = ET.SubElement(ws, 'intent-filter')
+          ET.SubElement(wf, 'action', {A+'name': 'com.google.android.gms.wearable.MESSAGE_RECEIVED'})
+          ET.SubElement(wf, 'data', {A+'scheme': 'wear', A+'host': '*', A+'pathPrefix': '/garajim/cmd'})
           # Sürüş arka plan foreground service
           svc_name = 'com.garajim.app.GarajimRideService'
           services = {s.get(A+'name') for s in app.findall('service')}
