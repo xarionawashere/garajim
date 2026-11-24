@@ -5,234 +5,113 @@
     android:background="@color/bg"
     android:fillViewport="true"
     android:scrollbars="none">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="12dp">
+        android:padding="8dp">
 
-        <!-- Bağlantı -->
-        <TextView
-            android:id="@+id/wearConnection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="● Telefon aranıyor…"
-            android:textColor="#FBBF24"
-            android:textSize="10sp"
-            android:textStyle="bold"/>
+        <TextView android:id="@+id/wearConnection" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:text="● Telefon aranıyor…" android:textColor="#FBBF24" android:textSize="10sp" android:textStyle="bold"/>
 
-        <!-- Sayfa: Kokpit -->
-        <LinearLayout
-            android:id="@+id/pageCockpit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
+        <Button android:id="@+id/btnVehicle" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="6dp" android:text="Araç seç" android:textAllCaps="false"
+            android:background="@drawable/btn_secondary" android:textColor="#E2E8F0"/>
 
-            <TextView
-                android:id="@+id/wearNavStrip"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:background="@drawable/bg_card"
-                android:padding="6dp"
-                android:text="Rota yok"
-                android:textColor="#93C5FD"
-                android:textSize="11sp"
-                android:maxLines="2"/>
+        <TextView android:id="@+id/wearNavStrip" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:gravity="center" android:background="@drawable/bg_card" android:padding="6dp"
+            android:text="Rota yok" android:textColor="#93C5FD" android:textSize="11sp"/>
 
-            <FrameLayout
-                android:id="@+id/wearSpeedRing"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_speed_ring">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <TextView
-                        android:id="@+id/wearSpeed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/text"
-                        android:textStyle="bold"
-                        android:textSize="42sp"
-                        android:includeFontPadding="false"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="km/sa"
-                        android:textColor="@color/muted"
-                        android:textSize="10sp"/>
-                </LinearLayout>
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/wearLimitTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Limit —"
-                android:textColor="@color/muted"
-                android:textSize="10sp"/>
-
-            <TextView
-                android:id="@+id/wearMeta"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="4dp"
-                android:text="0.00 km  ·  0:00"
-                android:textColor="#CBD5E1"
-                android:textSize="12sp"
-                android:textStyle="bold"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="2dp">
-                <TextView android:id="@+id/wearDistance" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:gravity="center" android:text="0.00 km" android:textColor="#94A3B8" android:textSize="10sp"/>
-                <TextView android:id="@+id/wearDuration" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:gravity="center" android:text="0:00" android:textColor="#94A3B8" android:textSize="10sp"/>
-                <TextView android:id="@+id/wearMaxSpeed" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:gravity="center" android:text="max 0" android:textColor="#94A3B8" android:textSize="10sp"/>
+        <FrameLayout android:id="@+id/wearSpeedRing" android:layout_width="112dp" android:layout_height="112dp"
+            android:layout_marginTop="6dp" android:background="@drawable/bg_speed_ring">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center">
+                <TextView android:id="@+id/wearSpeed" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="0" android:textColor="@color/text" android:textStyle="bold" android:textSize="40sp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="km/sa" android:textColor="@color/muted" android:textSize="10sp"/>
             </LinearLayout>
+        </FrameLayout>
 
-            <TextView
-                android:id="@+id/wearStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingTop="3dp"
-                android:paddingBottom="3dp"
-                android:background="@drawable/bg_card"
-                android:text="Hazır"
-                android:textColor="@color/muted"
-                android:textSize="10sp"/>
+        <TextView android:id="@+id/wearLimitTxt" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Limit —" android:textColor="@color/muted" android:textSize="10sp"/>
 
-            <TextView
-                android:id="@+id/wearGoal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="6dp"
-                android:text="Günlük 0 / 50 km"
-                android:textColor="#A7F3D0"
-                android:textSize="11sp"/>
-
-            <TextView
-                android:id="@+id/wearAlert"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="4dp"
-                android:visibility="gone"
-                android:textColor="#FBBF24"
-                android:textSize="11sp"
-                android:textStyle="bold"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-                <Button android:id="@+id/btnToggle" android:layout_width="0dp" android:layout_height="48dp"
-                    android:layout_weight="1.25" android:layout_marginEnd="4dp"
-                    android:text="Başlat" android:textAllCaps="false" android:textStyle="bold"
-                    android:background="@drawable/btn_primary" android:textColor="#FFFFFF"/>
-                <Button android:id="@+id/btnStop" android:layout_width="0dp" android:layout_height="48dp"
-                    android:layout_weight="1" android:layout_marginStart="4dp"
-                    android:text="Bitir" android:textAllCaps="false"
-                    android:background="@drawable/btn_secondary" android:textColor="#E2E8F0"/>
-            </LinearLayout>
+        <LinearLayout android:id="@+id/wearMetrics" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginTop="4dp">
+            <TextView android:id="@+id/wearDistance" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:gravity="center" android:text="0.00 km" android:textColor="#94A3B8" android:textSize="10sp"/>
+            <TextView android:id="@+id/wearDuration" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:gravity="center" android:text="0:00" android:textColor="#94A3B8" android:textSize="10sp"/>
+            <TextView android:id="@+id/wearMaxSpeed" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:gravity="center" android:text="max 0" android:textColor="#94A3B8" android:textSize="10sp"/>
         </LinearLayout>
 
-        <!-- Sayfa: Daha fazla -->
-        <LinearLayout
-            android:id="@+id/pageMore"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+        <TextView android:id="@+id/wearMeta" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:text="0.00 km  ·  0:00" android:textColor="#CBD5E1" android:textSize="11sp"/>
+        <TextView android:id="@+id/wearStatus" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:text="Hazır" android:textColor="@color/muted" android:textSize="10sp"/>
+        <TextView android:id="@+id/wearGoal" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:text="Günlük 0 / 50 km" android:textColor="#A7F3D0" android:textSize="11sp"/>
+        <TextView android:id="@+id/wearAlert" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:visibility="gone" android:textColor="#FBBF24" android:textSize="11sp" android:textStyle="bold"/>
 
-            <TextView android:id="@+id/wearTrack" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:gravity="center" android:text="Müzik —" android:textColor="#E2E8F0" android:textSize="11sp" android:maxLines="1"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal">
+            <Button android:id="@+id/btnToggle" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1.2"
+                android:layout_marginEnd="4dp" android:text="Başlat" android:textAllCaps="false" android:textStyle="bold"
+                android:background="@drawable/btn_primary" android:textColor="#FFFFFF"/>
+            <Button android:id="@+id/btnStop" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                android:layout_marginStart="4dp" android:text="Bitir" android:textAllCaps="false"
+                android:background="@drawable/btn_secondary" android:textColor="#E2E8F0"/>
+        </LinearLayout>
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="6dp" android:orientation="horizontal">
-                <Button android:id="@+id/btnPrev" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
-                    android:text="⏮" android:textAllCaps="false" android:background="@drawable/btn_music" android:textColor="#FFF"/>
-                <Button android:id="@+id/btnPlay" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
-                    android:layout_marginHorizontal="4dp" android:text="⏯" android:textAllCaps="false" android:background="@drawable/btn_music" android:textColor="#FFF"/>
-                <Button android:id="@+id/btnNext" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
-                    android:text="⏭" android:textAllCaps="false" android:background="@drawable/btn_music" android:textColor="#FFF"/>
-            </LinearLayout>
+        <Button android:id="@+id/btnPendingSummary" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="6dp" android:text="Bekleyen özet" android:textAllCaps="false"
+            android:background="@drawable/btn_secondary" android:textColor="#FDE68A" android:visibility="gone"/>
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:text="Hızlı kayıt" android:textColor="#64748B" android:textSize="9sp" android:letterSpacing="0.1"/>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginTop="4dp">
-                <Button android:id="@+id/btnFuelQuick" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
-                    android:layout_marginEnd="4dp" android:text="Yakıt" android:textAllCaps="false"
-                    android:background="@drawable/btn_secondary" android:textColor="#FDE68A"/>
-                <Button android:id="@+id/btnKmQuick" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
-                    android:layout_marginStart="4dp" android:text="KM" android:textAllCaps="false"
-                    android:background="@drawable/btn_secondary" android:textColor="#FDE68A"/>
-            </LinearLayout>
-
-            <Button android:id="@+id/btnVoicePin" android:layout_width="match_parent" android:layout_height="40dp"
-                android:layout_marginTop="6dp" android:text="Pin / not (ses)" android:textAllCaps="false"
-                android:background="@drawable/btn_secondary" android:textColor="#C4B5FD"/>
-
-            <Button android:id="@+id/btnPark" android:layout_width="match_parent" android:layout_height="40dp"
-                android:layout_marginTop="6dp" android:text="Arabam nerede?" android:textAllCaps="false"
-                android:background="@drawable/btn_secondary" android:textColor="#93C5FD"/>
-            <TextView android:id="@+id/wearPark" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:gravity="center" android:layout_marginTop="2dp" android:visibility="gone" android:textColor="#93C5FD" android:textSize="11sp"/>
-
-            <TextView android:id="@+id/wearBadge" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:gravity="center" android:layout_marginTop="8dp" android:text="" android:textColor="#F9A8D4" android:textSize="11sp" android:visibility="gone"/>
-
-            <TextView android:id="@+id/wearConvoy" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:gravity="center" android:layout_marginTop="4dp" android:text="Konvoy · yakında"
-                android:textColor="#64748B" android:textSize="10sp"/>
-
-            <com.garajim.wear.MiniRouteView
-                android:id="@+id/wearMiniMap"
-                android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:layout_marginTop="8dp"/>
+        <LinearLayout android:id="@+id/wearMapCard" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="8dp" android:background="@drawable/bg_card" android:padding="6dp">
+            <com.garajim.wear.MiniRouteView android:id="@+id/wearMiniMap" android:layout_width="match_parent" android:layout_height="72dp"/>
             <TextView android:id="@+id/wearMapStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:gravity="center" android:text="Mini rota" android:textColor="#64748B" android:textSize="9sp"/>
         </LinearLayout>
 
-        <!-- Sayfa seçici -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
-            <Button android:id="@+id/tabCockpit" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
-                android:layout_marginEnd="4dp" android:text="Kokpit" android:textAllCaps="false" android:textStyle="bold"
-                android:background="@drawable/btn_primary" android:textColor="#FFF"/>
-            <Button android:id="@+id/tabMore" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
-                android:layout_marginStart="4dp" android:text="Daha fazla" android:textAllCaps="false"
-                android:background="@drawable/btn_secondary" android:textColor="#CBD5E1"/>
+        <TextView android:id="@+id/wearTrack" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:gravity="center" android:text="Müzik —" android:textColor="#E2E8F0" android:textSize="11sp" android:maxLines="1"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:orientation="horizontal">
+            <Button android:id="@+id/btnPrev" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                android:text="⏮" android:textAllCaps="false" android:background="@drawable/btn_music" android:textColor="#FFF"
+                android:contentDescription="Önceki parça"/>
+            <Button android:id="@+id/btnPlay" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                android:layout_marginHorizontal="4dp" android:text="⏯" android:textAllCaps="false" android:background="@drawable/btn_music" android:textColor="#FFF"
+                android:contentDescription="Oynat veya duraklat"/>
+            <Button android:id="@+id/btnNext" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                android:text="⏭" android:textAllCaps="false" android:background="@drawable/btn_music" android:textColor="#FFF"
+                android:contentDescription="Sonraki parça"/>
         </LinearLayout>
+
+        <Button android:id="@+id/btnPark" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="8dp" android:text="Arabam nerede?" android:textAllCaps="false"
+            android:background="@drawable/btn_secondary" android:textColor="#93C5FD"/>
+        <TextView android:id="@+id/wearPark" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:visibility="gone" android:textColor="#93C5FD" android:textSize="11sp"/>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:orientation="horizontal">
+            <Button android:id="@+id/btnFuelQuick" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                android:layout_marginEnd="4dp" android:text="Yakıt" android:textAllCaps="false" android:background="@drawable/btn_secondary" android:textColor="#FDE68A"/>
+            <Button android:id="@+id/btnKmQuick" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1"
+                android:layout_marginStart="4dp" android:text="KM" android:textAllCaps="false" android:background="@drawable/btn_secondary" android:textColor="#FDE68A"/>
+        </LinearLayout>
+        <Button android:id="@+id/btnVoicePin" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="6dp" android:text="Pin / not (ses)" android:textAllCaps="false"
+            android:background="@drawable/btn_secondary" android:textColor="#C4B5FD"/>
+        <TextView android:id="@+id/wearBadge" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:visibility="gone" android:textColor="#F9A8D4" android:textSize="11sp"/>
+        <TextView android:id="@+id/wearConvoy" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center" android:text="Konvoy · yakında" android:textColor="#64748B" android:textSize="10sp"/>
+
+        <!-- Gizli sayfa sarmalayıcıları: eski kod null olmasın diye boş view -->
+        <FrameLayout android:id="@+id/pageCockpit" android:layout_width="0dp" android:layout_height="0dp"/>
+        <FrameLayout android:id="@+id/pageMore" android:layout_width="0dp" android:layout_height="0dp"/>
+        <Button android:id="@+id/tabCockpit" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <Button android:id="@+id/tabMore" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
     </LinearLayout>
 </ScrollView>

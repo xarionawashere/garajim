@@ -23,8 +23,9 @@ public final class GarajimWearSync {
     public static final String PATH_LINK = "/garajim/link";
     private static final ExecutorService EX = Executors.newSingleThreadExecutor();
     private static volatile String lastJson = "";
-    private static volatile String sendingStateJson = "";
-    private static volatile long sendingStateAt = 0L;
+    private static volatile String pendingStateJson = "";
+    private static volatile boolean stateDrainScheduled = false;
+    private static volatile Context appCtx = null;
     private static volatile String lastVehiclesJson = "";
     private static volatile String sendingVehiclesJson = "";
     private static volatile long lastPushMs = 0;
@@ -32,69 +33,93 @@ public final class GarajimWearSync {
 
     private GarajimWearSync() {}
 
-    public static synchronized void pushState(Context ctx, String json) {
+    public static void pushState(Context ctx, String json) {
         if (ctx == null || json == null) return;
-        final long now = System.currentTimeMillis();
-        if (json.equals(lastJson) && now - lastPushMs < 1000L) return;
-        if (json.equals(sendingStateJson) && now - sendingStateAt < 1000L) return;
-        sendingStateJson = json;
-        sendingStateAt = now;
-        final Context app = ctx.getApplicationContext();
-        EX.execute(() -> {
-            try {
-                JSONObject o = new JSONObject(json);
-                PutDataMapRequest req = PutDataMapRequest.create(PATH_STATE);
-                req.getDataMap().putBoolean("nativeMode", o.optBoolean("nativeMode", false));
-                req.getDataMap().putBoolean("running", o.optBoolean("running", false));
-                req.getDataMap().putBoolean("paused", o.optBoolean("paused", false));
-                req.getDataMap().putBoolean("gpsReady", o.optBoolean("gpsReady", false));
-                req.getDataMap().putDouble("kmh", o.optDouble("kmh", 0));
-                req.getDataMap().putDouble("distM", o.optDouble("distM", 0));
-                req.getDataMap().putInt("elapsedSec", o.optInt("elapsedSec", 0));
-                req.getDataMap().putDouble("maxKmh", o.optDouble("maxKmh", 0));
-                req.getDataMap().putString("plate", o.optString("plate", ""));
-                req.getDataMap().putString("vehicleId", o.optString("vehicleId", ""));
-                req.getDataMap().putString("mode", o.optString("mode", ""));
-                req.getDataMap().putString("track", o.optString("track", ""));
-                req.getDataMap().putString("artist", o.optString("artist", ""));
-                // En fazla 24 koordinat çifti: harita gerçek sokak karoları indirmez ve yükü küçüktür.
-                req.getDataMap().putString("routeJson", o.optString("routeJson", "[]"));
-                req.getDataMap().putBoolean("overLimit", o.optBoolean("overLimit", false));
-                req.getDataMap().putString("alert", o.optString("alert", ""));
-                req.getDataMap().putBoolean("pendingSummary", o.optBoolean("pendingSummary", false));
-                req.getDataMap().putString("summaryId", o.optString("summaryId", ""));
-                req.getDataMap().putString("summaryPlate", o.optString("summaryPlate", ""));
-                req.getDataMap().putDouble("summaryDistM", o.optDouble("summaryDistM", 0));
-                req.getDataMap().putInt("summaryElapsedSec", o.optInt("summaryElapsedSec", 0));
-                req.getDataMap().putDouble("summaryAvgKmh", o.optDouble("summaryAvgKmh", 0));
-                req.getDataMap().putDouble("summaryMaxKmh", o.optDouble("summaryMaxKmh", 0));
-                // park
-                req.getDataMap().putDouble("parkLat", o.optDouble("parkLat", 0));
-                req.getDataMap().putDouble("parkLng", o.optDouble("parkLng", 0));
-                req.getDataMap().putDouble("parkDistM", o.optDouble("parkDistM", -1));
-                req.getDataMap().putString("parkDir", o.optString("parkDir", ""));
-                req.getDataMap().putString("navText", o.optString("navText", ""));
-                req.getDataMap().putDouble("navDistM", o.optDouble("navDistM", -1));
-                req.getDataMap().putDouble("limitKmh", o.optDouble("limitKmh", 0));
-                req.getDataMap().putDouble("dailyKm", o.optDouble("dailyKm", 0));
-                req.getDataMap().putDouble("dailyGoalKm", o.optDouble("dailyGoalKm", 50));
-                req.getDataMap().putString("badgeText", o.optString("badgeText", ""));
-                req.getDataMap().putString("convoyText", o.optString("convoyText", ""));
-                long seq = ++stateSeq;
-                req.getDataMap().putLong("seq", seq);
-                req.getDataMap().putLong("ts", System.currentTimeMillis());
-                req.setUrgent();
-                Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
-                lastJson = json;
-                lastPushMs = System.currentTimeMillis();
-            } catch (Exception e) {
-                Log.w(TAG, "pushState: " + e.getMessage());
-            } finally {
-                synchronized (GarajimWearSync.class) {
-                    if (json.equals(sendingStateJson)) sendingStateJson = "";
+        synchronized (GarajimWearSync.class) {
+            appCtx = ctx.getApplicationContext();
+            pendingStateJson = json;
+            if (!stateDrainScheduled) {
+                stateDrainScheduled = true;
+                EX.execute(GarajimWearSync::drainPendingState);
+            }
+        }
+    }
+
+    private static void drainPendingState() {
+        final Context app;
+        final String json;
+        synchronized (GarajimWearSync.class) {
+            app = appCtx;
+            json = pendingStateJson;
+            pendingStateJson = "";
+            stateDrainScheduled = false;
+        }
+        if (app == null || json == null || json.isEmpty()) return;
+        if (json.equals(lastJson)) {
+            // Aynı içerik; yine de bekleyen yeni paket varsa dene
+            synchronized (GarajimWearSync.class) {
+                if (!pendingStateJson.isEmpty() && !stateDrainScheduled) {
+                    stateDrainScheduled = true;
+                    EX.execute(GarajimWearSync::drainPendingState);
                 }
             }
-        });
+            return;
+        }
+        try {
+            org.json.JSONObject o = new org.json.JSONObject(json);
+            PutDataMapRequest req = PutDataMapRequest.create(PATH_STATE);
+            req.getDataMap().putBoolean("nativeMode", o.optBoolean("nativeMode", false));
+            req.getDataMap().putBoolean("running", o.optBoolean("running", false));
+            req.getDataMap().putBoolean("paused", o.optBoolean("paused", false));
+            req.getDataMap().putBoolean("gpsReady", o.optBoolean("gpsReady", false));
+            req.getDataMap().putDouble("kmh", o.optDouble("kmh", 0));
+            req.getDataMap().putDouble("distM", o.optDouble("distM", 0));
+            req.getDataMap().putInt("elapsedSec", o.optInt("elapsedSec", 0));
+            req.getDataMap().putDouble("maxKmh", o.optDouble("maxKmh", 0));
+            req.getDataMap().putString("plate", o.optString("plate", ""));
+            req.getDataMap().putString("vehicleId", o.optString("vehicleId", ""));
+            req.getDataMap().putString("mode", o.optString("mode", ""));
+            req.getDataMap().putString("track", o.optString("track", ""));
+            req.getDataMap().putString("artist", o.optString("artist", ""));
+            req.getDataMap().putString("routeJson", o.optString("routeJson", "[]"));
+            req.getDataMap().putBoolean("overLimit", o.optBoolean("overLimit", false));
+            req.getDataMap().putString("alert", o.optString("alert", ""));
+            req.getDataMap().putBoolean("pendingSummary", o.optBoolean("pendingSummary", false));
+            req.getDataMap().putString("summaryId", o.optString("summaryId", ""));
+            req.getDataMap().putString("summaryPlate", o.optString("summaryPlate", ""));
+            req.getDataMap().putDouble("summaryDistM", o.optDouble("summaryDistM", 0));
+            req.getDataMap().putInt("summaryElapsedSec", o.optInt("summaryElapsedSec", 0));
+            req.getDataMap().putDouble("summaryAvgKmh", o.optDouble("summaryAvgKmh", 0));
+            req.getDataMap().putDouble("summaryMaxKmh", o.optDouble("summaryMaxKmh", 0));
+            req.getDataMap().putDouble("parkLat", o.optDouble("parkLat", 0));
+            req.getDataMap().putDouble("parkLng", o.optDouble("parkLng", 0));
+            req.getDataMap().putDouble("parkDistM", o.optDouble("parkDistM", -1));
+            req.getDataMap().putString("parkDir", o.optString("parkDir", ""));
+            req.getDataMap().putBoolean("parkSaved", o.optBoolean("parkSaved", false));
+            req.getDataMap().putString("navText", o.optString("navText", ""));
+            req.getDataMap().putDouble("navDistM", o.optDouble("navDistM", -1));
+            req.getDataMap().putDouble("limitKmh", o.optDouble("limitKmh", 0));
+            req.getDataMap().putDouble("dailyKm", o.optDouble("dailyKm", 0));
+            req.getDataMap().putDouble("dailyGoalKm", o.optDouble("dailyGoalKm", 50));
+            req.getDataMap().putString("badgeText", o.optString("badgeText", ""));
+            req.getDataMap().putString("convoyText", o.optString("convoyText", ""));
+            long seq = ++stateSeq;
+            req.getDataMap().putLong("seq", seq);
+            req.getDataMap().putLong("ts", System.currentTimeMillis());
+            req.setUrgent();
+            Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
+            lastJson = json;
+            lastPushMs = System.currentTimeMillis();
+        } catch (Exception e) {
+            Log.w(TAG, "pushState: " + e.getMessage());
+        } finally {
+            synchronized (GarajimWearSync.class) {
+                if (!pendingStateJson.isEmpty() && !stateDrainScheduled) {
+                    stateDrainScheduled = true;
+                    EX.execute(GarajimWearSync::drainPendingState);
+                }
+            }
+        }
     }
 
     /** Araç listesi ayrı Data Item'da tutulur; hız her saniye değişirken liste gereksiz yere gönderilmez. */
