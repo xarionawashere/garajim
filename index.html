@@ -1591,9 +1591,19 @@
   }
   // onclick gibi HTML özniteliklerinde JS argümanı üretirken hem JS hem HTML katmanını koru.
   function garajimInlineJsArg(value) {
-    const quoted = JSON.stringify(String(value == null ? '' : value))
-      .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-    return garajimHtmlEsc(quoted);
+    // onclick="..." içinde tek tırnaklı JS dizesi: HTML özniteliği kırılmaz, testler 'id' bekler.
+    const raw = String(value == null ? '' : value);
+    const js = "'" + raw
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n')
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029')
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e') + "'";
+    // Çift tırnaklı öznitelik içinde tek tırnak güvenli; yalnızca & kaçır.
+    return js.replace(/&/g, '&amp;');
   }
   function garajimSafeImageSrc(value) {
     const src = String(value == null ? '' : value).trim();
