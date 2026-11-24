@@ -4,10 +4,11 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
 import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 /**
  * Saatten gelen komutlar. Saat JSON zarf gönderir: {"id":"...","cmd":"start","arg":"..."}.
- * Eski düz metin komutlar da desteklenir. Her komuta Data Layer ACK döner.
+ * Eski JSON ve düz metin komutlar da desteklenir. Her komuta Data Layer ACK döner.
  */
 public class GarajimWearListener extends WearableListenerService {
     @Override
@@ -24,9 +25,8 @@ public class GarajimWearListener extends WearableListenerService {
             if (raw.startsWith("{")) {
                 JSONObject o = new JSONObject(raw);
                 ackId = o.optString("id", "");
-                cmd = o.optString("cmd", o.optString("action", "")).trim();
-                if (o.has("arg") && !o.isNull("arg")) arg = o.optString("arg", null);
-                else if (o.has("vehicle") && !o.isNull("vehicle")) arg = o.optString("vehicle", null);
+                cmd = firstNonBlank(o, "cmd", "command", "action", "type", "event", "name");
+                arg = firstNonBlank(o, "arg", "vehicle", "vehicleId", "vehicle_id", "summaryId", "summary_id");
             } else {
                 int sep = raw.indexOf('|');
                 if (sep >= 0) {
@@ -39,9 +39,19 @@ public class GarajimWearListener extends WearableListenerService {
             return;
         }
 
+        // Eski saat sürümleri, JSON zarfı içinde de "select_vehicle|ID" veya "start|ID" gönderebilir.
+        // Komut adını ve kimliği ayırarak hem eski hem de yeni saat sürümleriyle uyumlu çalış.
+        int packedSeparator = cmd.indexOf('|');
+        if (packedSeparator >= 0) {
+            String packedArgument = cmd.substring(packedSeparator + 1).trim();
+            cmd = cmd.substring(0, packedSeparator).trim();
+            if (arg == null || arg.trim().isEmpty()) arg = packedArgument;
+        }
+        cmd = cmd.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
+
         String action = mapCmd(cmd);
         if (action.isEmpty()) {
-            GarajimWearSync.pushAck(this, ackId, false, "Bilinmeyen komut");
+            GarajimWearSync.pushAck(this, ackId, false, "Bilinmeyen komut: " + cmd);
             return;
         }
 
@@ -66,16 +76,27 @@ public class GarajimWearListener extends WearableListenerService {
         }
     }
 
+    private static String firstNonBlank(JSONObject object, String... keys) {
+        for (String key : keys) {
+            if (object == null || !object.has(key) || object.isNull(key)) continue;
+            String value = object.optString(key, "").trim();
+            if (!value.isEmpty()) return value;
+        }
+        return "";
+    }
+
     private static String mapCmd(String cmd) {
         if (cmd == null) return "";
-        switch (cmd.toLowerCase().trim()) {
+        switch (cmd.toLowerCase(Locale.ROOT).trim()) {
             case "start": return "wear_start";
             case "resume": return "wear_resume";
             case "toggle": return "wear_toggle";
             case "pause": return "wear_pause";
             case "stop":
             case "finish": return "wear_stop_request";
-            case "stop_confirmed": return "wear_finish_confirmed";
+            case "stop_confirmed":
+            case "finish_confirmed":
+            case "finish_ride": return "wear_finish_confirmed";
             case "select_vehicle": return "wear_select_vehicle";
             case "summary_save": return "wear_summary_save";
             case "summary_discard": return "wear_summary_discard";
@@ -92,8 +113,9 @@ public class GarajimWearListener extends WearableListenerService {
             case "wear_finish_confirmed": case "wear_select_vehicle":
             case "wear_summary_save": case "wear_summary_discard": case "wear_request_sync":
             case "wear_music_next": case "wear_music_prev": case "wear_music_playpause":
-            case "wear_park_where": case "wear_fuel_quick": case "wear_km_quick": case "wear_voice_pin": case "wear_start": case "wear_resume":
-                return cmd.toLowerCase().trim();
+            case "wear_park_where": case "wear_fuel_quick": case "wear_km_quick":
+            case "wear_voice_pin": case "wear_start": case "wear_resume":
+                return cmd.toLowerCase(Locale.ROOT).trim();
             default: return "";
         }
     }
