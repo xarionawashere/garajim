@@ -212,6 +212,11 @@
   body #bottomNav .tab-btn.active { background: linear-gradient(180deg, rgba(var(--accent-rgb),.17), rgba(var(--accent-rgb),.04)); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),.3); }
   body #bottomNav .tab-btn.active i { filter: drop-shadow(0 0 10px rgba(var(--accent-rgb),.65)); }
   body #bottomNav .tab-btn.active span { font-weight: 700; }
+  body.tab-ride #listView, body.tab-ride #socialView, body.tab-ride #assistantView, body.tab-ride #detailView {
+    display: none !important; visibility: hidden !important; pointer-events: none !important;
+  }
+  body.tab-ride #rideView { display: block !important; visibility: visible !important; z-index: 55 !important; }
+
   body .modal-bg { backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); }
   body .rounded-t-3xl.slide-up { border-top: 1px solid rgba(255,255,255,.14); box-shadow: 0 -24px 60px -24px rgba(0,0,0,.9); }
   body .rounded-t-3xl.slide-up::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.2); margin: -8px auto 14px; }
@@ -369,8 +374,15 @@
 </div>
 
 <!-- SÜRÜŞ (HARİTA) -->
-<div id="rideView" class="hidden fixed left-0 right-0 top-0 z-40" style="bottom:calc(72px + env(safe-area-inset-bottom));background:#0a0a0a">
+<div id="rideView" class="hidden fixed left-0 right-0 top-0 z-[55]" style="bottom:calc(72px + env(safe-area-inset-bottom));background:#0a0a0a">
   <div id="rideMap" style="position:absolute;inset:0"></div>
+  <canvas id="rideWeatherFx" class="absolute inset-0 z-[50] pointer-events-none" style="width:100%;height:100%"></canvas>
+  <div id="rideWeatherChip" class="hidden absolute left-3 z-[520] pointer-events-none" style="top:calc(4.5rem + env(safe-area-inset-top))">
+    <div class="inline-flex items-center gap-1.5 rounded-full bg-black/70 border border-white/15 backdrop-blur-xl px-2.5 py-1 text-[11px] text-white">
+      <span id="rideWeatherIcon">🌦</span>
+      <span id="rideWeatherTxt">Hava…</span>
+    </div>
+  </div>
 
   <!-- Konum izni / yükleme örtüsü -->
   <div id="rideGate" class="absolute inset-0 z-[600] hidden flex flex-col items-center justify-center px-8 text-center bg-black/85 backdrop-blur-md">
@@ -390,6 +402,9 @@
         <span class="w-px h-3 bg-white/15"></span>
         <span id="rideGpsDot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
         <span id="rideGpsTxt" class="text-[10px] text-slate-400 truncate">GPS…</span>
+        <span class="w-px h-3 bg-white/15 shrink-0"></span>
+        <span id="rideWearDot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0" title="Saat bağlantısı"></span>
+        <span id="rideWearTxt" class="text-[10px] text-slate-400 truncate max-w-[4.5rem]">Saat…</span>
         <span class="w-px h-3 bg-white/15"></span>
         <select id="rideVehicleSelect" onchange="rideSetVehicle(this.value)" class="bg-transparent text-[10px] text-white max-w-[110px] outline-none border-0 truncate">
           <option value="">Araç seç</option>
@@ -1169,6 +1184,32 @@
       return;
     }
     if (a === 'wear_request_sync') { try { rideWearPush(); } catch (e) {} return; }
+    if (a === 'wear_fuel_quick') {
+      try {
+        showTab('garage');
+        if (vid || (v && v.id)) { currentId = vid || v.id; openDetail(currentId); }
+        if (typeof openFuelModal === 'function') openFuelModal();
+        toast('Saatten yakıt kaydı · tutarı gir');
+      } catch (e) {}
+      return;
+    }
+    if (a === 'wear_km_quick') {
+      try {
+        showTab('garage');
+        if (vid || (v && v.id)) { currentId = vid || v.id; openDetail(currentId); }
+        if (typeof openKmModal === 'function') openKmModal();
+        toast('Saatten KM kaydı · değeri gir');
+      } catch (e) {}
+      return;
+    }
+    if (a === 'wear_voice_pin') {
+      try {
+        showTab('ride');
+        if (typeof ridePinPrompt === 'function') ridePinPrompt();
+        else toast('Pin için Açık Dünya açık olsun');
+      } catch (e) {}
+      return;
+    }
     if (a === 'wear_start') {
       if (vid && !ride.running && vehicles.some(x => String(x.id) === String(vid))) rideSetVehicle(String(vid));
       if (ride.pendingSummary && !ride.running) { try { rideWearAlert('info', 'Önce bekleyen sürüş özetini kaydet veya sil.'); } catch (e) {} return; }
@@ -1274,6 +1315,27 @@
   function setWidgetVehicle(id) {
     try { const N = window.GarajimNative; if (N && N.setWidgetVehicle) { N.setWidgetVehicle(id); toast('Widget artık bu aracı gösteriyor'); } } catch (e) {}
   }
+
+  let wearBridgeTimer = null;
+  function wearBridgeKeepalive(on) {
+    if (wearBridgeTimer) { clearInterval(wearBridgeTimer); wearBridgeTimer = null; }
+    if (!on) return;
+    wearBridgeTimer = setInterval(() => {
+      try { checkWidgetAction(); } catch (e) {}
+      try { rideWearStatusRefresh(false); } catch (e) {}
+      try {
+        // Sürüş veya ride sekmesindeyken saati taze tut
+        const rv = document.getElementById('rideView');
+        if (rv && !rv.classList.contains('hidden')) rideWearPush();
+      } catch (e) {}
+    }, 1500);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      try { checkWidgetAction(); rideWearPush(); } catch (e) {}
+      wearBridgeKeepalive(true);
+    }
+  });
   function checkWidgetAction() {
     try {
       const N = window.GarajimNative;
@@ -3599,7 +3661,8 @@
     // Açık Dünya "oha" özellikleri
     corners: [], cornerActive: null, asphaltHits: [], blackbox: [],
     motionAvg: 0, lastMemoryAsk: 0, ghostLayer: null, asphaltLayers: [],
-    goldenOn: false, sessionRough: 0, impactLocked: false
+    goldenOn: false, sessionRough: 0, impactLocked: false,
+    weather: { code: null, mode: 'clear', label: '', temp: null, lastFetch: 0, lastLat: null, lastLng: null, particles: [], raf: 0, enabled: true }
   };
 
   function getAllRides() {
@@ -4118,6 +4181,153 @@
   function rideEsc(t) { return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   const rideVisible = () => !document.getElementById('rideView').classList.contains('hidden');
 
+
+  // —— Snapchat tarzı bölge/hava efektleri (Open-Meteo, ücretsiz) ——
+  function rideWeatherModeFromCode(code) {
+    const c = Number(code);
+    if (!isFinite(c)) return 'clear';
+    if (c === 71 || c === 73 || c === 75 || c === 77 || c === 85 || c === 86) return 'snow';
+    if (c >= 95) return 'storm';
+    if (c === 61 || c === 63 || c === 65 || c === 66 || c === 67 || c === 80 || c === 81 || c === 82 || c === 51 || c === 53 || c === 55 || c === 56 || c === 57) return 'rain';
+    if (c === 45 || c === 48) return 'fog';
+    if (c === 1 || c === 2 || c === 3) return 'cloud';
+    return 'clear';
+  }
+  function rideWeatherLabel(mode, temp) {
+    const t = (temp != null && isFinite(temp)) ? (' · ' + Math.round(temp) + '°') : '';
+    return ({ clear: 'Açık', cloud: 'Bulutlu', fog: 'Sis', rain: 'Yağmur', snow: 'Kar', storm: 'Fırtına' }[mode] || mode) + t;
+  }
+  function rideWeatherIcon(mode) {
+    return ({ clear: '☀️', cloud: '☁️', fog: 'fog', rain: '🌧️', snow: '❄️', storm: '⛈️' }[mode] || '🌤').replace('fog', '🌫️');
+  }
+  function rideWeatherEnsureCanvas() {
+    const c = document.getElementById('rideWeatherFx');
+    if (!c) return null;
+    const w = c.clientWidth || c.offsetWidth || 1;
+    const h = c.clientHeight || c.offsetHeight || 1;
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    return c;
+  }
+  function rideWeatherSpawn(mode, n) {
+    const c = rideWeatherEnsureCanvas();
+    if (!c) return;
+    const pts = ride.weather.particles || [];
+    for (let i = 0; i < n; i++) {
+      if (mode === 'snow') {
+        pts.push({ x: Math.random() * c.width, y: Math.random() * c.height - c.height, v: 0.6 + Math.random() * 1.4, r: 1.2 + Math.random() * 2.2, drift: -0.4 + Math.random() * 0.8, kind: 'snow' });
+      } else if (mode === 'rain' || mode === 'storm') {
+        pts.push({ x: Math.random() * c.width, y: Math.random() * c.height - c.height, v: 9 + Math.random() * 12, len: 8 + Math.random() * 14, kind: 'rain' });
+      }
+    }
+    ride.weather.particles = pts.slice(-420);
+  }
+  function rideWeatherTick() {
+    const mode = ride.weather.mode;
+    const c = rideWeatherEnsureCanvas();
+    if (!c) { ride.weather.raf = 0; return; }
+    const ctx = c.getContext('2d');
+    if (!ctx) { ride.weather.raf = 0; return; }
+    ctx.clearRect(0, 0, c.width, c.height);
+    if (!ride.weather.enabled || mode === 'clear' || mode === 'cloud') {
+      if (mode === 'cloud' || mode === 'fog') {
+        ctx.fillStyle = mode === 'fog' ? 'rgba(180,190,200,0.14)' : 'rgba(30,40,60,0.08)';
+        ctx.fillRect(0, 0, c.width, c.height);
+      }
+      ride.weather.raf = requestAnimationFrame(rideWeatherTick);
+      return;
+    }
+    if (mode === 'fog') {
+      ctx.fillStyle = 'rgba(170,180,190,0.16)';
+      ctx.fillRect(0, 0, c.width, c.height);
+    }
+    if (mode === 'storm') {
+      if (Math.random() < 0.012) {
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.fillRect(0, 0, c.width, c.height);
+      }
+    }
+    if ((ride.weather.particles || []).length < 180) rideWeatherSpawn(mode === 'storm' ? 'rain' : mode, 12);
+    const pts = ride.weather.particles || [];
+    for (let i = pts.length - 1; i >= 0; i--) {
+      const p = pts[i];
+      if (p.kind === 'snow') {
+        p.y += p.v; p.x += p.drift;
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        p.y += p.v;
+        ctx.strokeStyle = mode === 'storm' ? 'rgba(180,200,255,0.45)' : 'rgba(160,190,255,0.4)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - 1.2, p.y + p.len);
+        ctx.stroke();
+      }
+      if (p.y > c.height + 20) {
+        p.y = -10;
+        p.x = Math.random() * c.width;
+      }
+    }
+    ride.weather.raf = requestAnimationFrame(rideWeatherTick);
+  }
+  function rideWeatherStartLoop() {
+    if (ride.weather.raf) return;
+    ride.weather.raf = requestAnimationFrame(rideWeatherTick);
+  }
+  function rideWeatherStopLoop() {
+    if (ride.weather.raf) cancelAnimationFrame(ride.weather.raf);
+    ride.weather.raf = 0;
+    const c = document.getElementById('rideWeatherFx');
+    if (c) {
+      const ctx = c.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+    }
+  }
+  function rideWeatherApply(mode, temp, code) {
+    ride.weather.mode = mode || 'clear';
+    ride.weather.temp = temp;
+    ride.weather.code = code;
+    ride.weather.label = rideWeatherLabel(ride.weather.mode, temp);
+    ride.weather.particles = [];
+    const chip = document.getElementById('rideWeatherChip');
+    const ic = document.getElementById('rideWeatherIcon');
+    const tx = document.getElementById('rideWeatherTxt');
+    if (chip) chip.classList.toggle('hidden', false);
+    if (ic) ic.textContent = rideWeatherIcon(ride.weather.mode);
+    if (tx) tx.textContent = ride.weather.label;
+    if (ride.weather.mode === 'rain' || ride.weather.mode === 'snow' || ride.weather.mode === 'storm') {
+      rideWeatherSpawn(ride.weather.mode === 'storm' ? 'rain' : ride.weather.mode, 80);
+    }
+    rideWeatherStartLoop();
+  }
+  function rideWeatherFetch(lat, lng, force) {
+    if (!ride.weather.enabled) return;
+    if (lat == null || lng == null || !isFinite(lat) || !isFinite(lng)) return;
+    const now = Date.now();
+    if (!force && ride.weather.lastFetch && now - ride.weather.lastFetch < 12 * 60 * 1000) {
+      const dlat = Math.abs((ride.weather.lastLat || 0) - lat);
+      const dlng = Math.abs((ride.weather.lastLng || 0) - lng);
+      if (dlat < 0.08 && dlng < 0.08) return; // ~8–10 km
+    }
+    ride.weather.lastFetch = now;
+    ride.weather.lastLat = lat;
+    ride.weather.lastLng = lng;
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) +
+      '&longitude=' + encodeURIComponent(lng) +
+      '&current=weather_code,temperature_2m,precipitation&timezone=auto';
+    fetch(url).then(r => r.json()).then(data => {
+      const cur = data && data.current;
+      if (!cur) return;
+      const code = cur.weather_code;
+      const mode = rideWeatherModeFromCode(code);
+      rideWeatherApply(mode, cur.temperature_2m, code);
+    }).catch(() => {
+      // sessiz: çevrimdışı / ağ yok
+    });
+  }
+
   function rideOpen() {
     const s = rideSettings();
     if (!ride.running && !ride.startedAt) ride.cam = s.cam || 'follow';
@@ -4142,10 +4352,17 @@
     rideRequestPermission();
     rideTryRecover();
     musInit();
+    try {
+      const ll = ride.last || (ride.map && ride.map.getCenter && { lat: ride.map.getCenter().lat, lng: ride.map.getCenter().lng });
+      if (ll) rideWeatherFetch(ll.lat, ll.lng, false);
+      rideWeatherStartLoop();
+    } catch (e) {}
+    try { rideWearStatusRefresh(false); } catch (e) {}
   }
 
   // Sürüş yokken sekmeden çıkınca GPS'i kapat (pil)
   function rideLeave() {
+    try { rideWeatherStopLoop(); } catch (e) {}
     musStop(); musClose();
     if (!ride.running && !ride.startedAt && !nv.active && ride.watchId != null) {
       try { navigator.geolocation.clearWatch(ride.watchId); } catch (e) {}
@@ -4355,6 +4572,11 @@
     ride.lastSpeedKmh = kmh;
     rideRender(kmh);
     ridePersistDraft();
+    try {
+      if (ride.running || !document.getElementById('rideView').classList.contains('hidden')) {
+        if (Math.floor((ride.elapsed || 0)) % 90 === 0) rideWeatherFetch(cur.lat, cur.lng, false);
+      }
+    } catch (e) {}
   }
 
   function rideHav(a, b) {
@@ -4420,9 +4642,48 @@
   }
 
 
+
+  let wearLinkKnown = null; // null | true | false
+  function rideWearStatusRefresh(forceToast) {
+    try {
+      const N = window.GarajimNative;
+      const dot = document.getElementById('rideWearDot');
+      const txt = document.getElementById('rideWearTxt');
+      if (!dot || !txt) return;
+      if (!N || typeof N.getWearStatus !== 'function') {
+        dot.className = 'w-2 h-2 rounded-full bg-slate-500 shrink-0';
+        txt.textContent = 'Saat —';
+        txt.className = 'text-[10px] text-slate-500 truncate max-w-[4.5rem]';
+        return;
+      }
+      let s = {};
+      try { s = JSON.parse(N.getWearStatus() || '{}'); } catch (e) { s = {}; }
+      const on = !!s.connected;
+      const name = (s.name || '').trim();
+      if (on) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,.7)]';
+        txt.textContent = name ? ('Saat · ' + name) : 'Saat bağlı';
+        txt.className = 'text-[10px] text-emerald-300/90 truncate max-w-[5.5rem]';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-rose-400 shrink-0';
+        txt.textContent = 'Saat yok';
+        txt.className = 'text-[10px] text-rose-300/90 truncate max-w-[4.5rem]';
+      }
+      if (wearLinkKnown === true && !on) {
+        try { toast('⌚ Saat bağlantısı kesildi'); } catch (e) {}
+        try { if (typeof rideWearAlert === 'function') rideWearAlert('info', 'Saat bağlantısı kesildi'); } catch (e) {}
+      } else if (wearLinkKnown === false && on) {
+        try { toast('⌚ Saat bağlandı' + (name ? (': ' + name) : '')); } catch (e) {}
+      } else if (forceToast && on) {
+        try { toast('⌚ Saat bağlı'); } catch (e) {}
+      }
+      wearLinkKnown = on;
+    } catch (e) {}
+  }
   function rideWearPush() {
     try {
       const N = window.GarajimNative;
+      try { if (N && typeof N.pushWearLink === "function") N.pushWearLink(true, "web"); } catch (e) {}
       if (!N || typeof N.pushWearState !== 'function') return;
       // Native servis arka plan sürüşünün tek otoritesi; boş WebView durumu saate gönderilmemeli.
       if (typeof N.isNativeRideManaged === 'function' && N.isNativeRideManaged()) return;
@@ -4473,6 +4734,7 @@
         }
       } catch (e) {}
       N.pushWearState(JSON.stringify({
+        seq: Date.now(),
         running: !!ride.running,
         paused: !!ride.paused,
         gpsReady: !!ride.gotFix,
@@ -4498,7 +4760,19 @@
         parkLng: parkLng,
         parkSaved: parkSaved,
         parkDistM: parkDistM,
-        parkDir: parkDir
+        parkDir: parkDir,
+        navText: (function(){ try { const m = document.getElementById('rideNavMain'); return m ? (m.textContent || '') : ''; } catch(e){ return ''; } })(),
+        navDistM: (function(){ try { return (typeof nv !== 'undefined' && nv && nv.active && nv.remainingM != null) ? Number(nv.remainingM) : -1; } catch(e){ return -1; } })(),
+        limitKmh: lim,
+        dailyKm: (function(){
+          try {
+            const day = new Date().toISOString().slice(0,10);
+            return getAllRides().filter(r => (r.date || '').slice(0,10) === day).reduce((s,r)=>s+(r.dist||0),0)/1000;
+          } catch(e){ return 0; }
+        })(),
+        dailyGoalKm: (function(){ try { const g = Number(rideSettings().dailyGoalKm); return (isFinite(g) && g > 0) ? g : 50; } catch(e){ return 50; } })(),
+        badgeText: (function(){ try { return ride._wearBadge || ''; } catch(e){ return ''; } })(),
+        convoyText: ''
       }));
       // limit titreşimi (throttle)
       if (overLimit && N.pushWearAlert) {
@@ -6094,14 +6368,27 @@
   document.getElementById('odoFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) odoRun(f); });
 
   function showTab(tab) {
-    document.getElementById('detailView').classList.add('hidden');
+    const detail = document.getElementById('detailView');
+    if (detail) { detail.classList.add('hidden'); detail.style.display = 'none'; }
     const bn = document.getElementById('bottomNav');
-    if (bn) bn.classList.remove('hidden');
+    if (bn) { bn.classList.remove('hidden'); bn.style.display = ''; }
     const views = { garage: 'listView', social: 'socialView', assistant: 'assistantView', ride: 'rideView' };
-    Object.values(views).forEach(id => {
+    Object.entries(views).forEach(([k, id]) => {
       const el = document.getElementById(id);
-      if (el) el.classList.toggle('hidden', views[tab] !== id);
+      if (!el) return;
+      if (k === tab) {
+        el.classList.remove('hidden');
+        el.style.display = '';
+        el.style.visibility = '';
+        el.style.pointerEvents = '';
+      } else {
+        el.classList.add('hidden');
+        el.style.display = 'none';
+        el.style.visibility = 'hidden';
+        el.style.pointerEvents = 'none';
+      }
     });
+    document.body.classList.toggle('tab-ride', tab === 'ride');
     const tabs = { garage: 'tabGarage', social: 'tabSocial', assistant: 'tabAssistant', ride: 'tabRide' };
     Object.entries(tabs).forEach(([k, id]) => {
       const el = document.getElementById(id);

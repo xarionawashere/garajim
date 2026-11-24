@@ -49,6 +49,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final String PATH_ALERT = "/garajim/alert";
     private static final String PATH_CMD = "/garajim/cmd";
     private static final String PATH_ACK = "/garajim/ack";
+    private static final String PATH_LINK = "/garajim/link";
     private static final String PENDING_PREFS = "garajim_wear_pending_command";
     private static final String KEY_PENDING_ID = "id";
     private static final String KEY_PENDING_TEXT = "command";
@@ -57,7 +58,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final long PENDING_RESTORE_TTL_MS = 120_000L;
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
 
-    private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus;
+    private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus, navStrip, limitTxt, goalTxt, badgeTxt, convoyTxt;
+    private android.view.View pageCockpit, pageMore;
     private MiniRouteView miniMap;
     private Button btnToggle, btnVehicle, btnPendingSummary;
     private View speedRing;
@@ -74,6 +76,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private int lastShownSpeed = -1;
     private boolean entered;
     private boolean phoneConnected = false;
+    private Boolean lastPhoneLinkUi = null; // toast için önceki durum
     private boolean connectionChecked = false;
     private boolean gpsReady = false;
     private volatile long lastStateAt = 0L;
@@ -128,6 +131,17 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         maxSpeedView = findViewById(R.id.wearMaxSpeed);
         status = findViewById(R.id.wearStatus);
         connection = findViewById(R.id.wearConnection);
+        navStrip = findViewById(R.id.wearNavStrip);
+        limitTxt = findViewById(R.id.wearLimitTxt);
+        goalTxt = findViewById(R.id.wearGoal);
+        badgeTxt = findViewById(R.id.wearBadge);
+        convoyTxt = findViewById(R.id.wearConvoy);
+        pageCockpit = findViewById(R.id.pageCockpit);
+        pageMore = findViewById(R.id.pageMore);
+        distanceView = findViewById(R.id.wearDistance);
+        durationView = findViewById(R.id.wearDuration);
+        maxSpeedView = findViewById(R.id.wearMaxSpeed);
+
         alert = findViewById(R.id.wearAlert);
         track = findViewById(R.id.wearTrack);
         parkInfo = findViewById(R.id.wearPark);
@@ -152,6 +166,28 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         wirePress(btnPendingSummary, v -> showPendingSummaryDialog());
         if (status != null) status.setText("Hazır");
         updateConnectionUi();
+        View fuelQ = findViewById(R.id.btnFuelQuick);
+        if (fuelQ != null) wirePress(fuelQ, v -> send("fuel_quick"));
+        View kmQ = findViewById(R.id.btnKmQuick);
+        if (kmQ != null) wirePress(kmQ, v -> send("km_quick"));
+        View voice = findViewById(R.id.btnVoicePin);
+        if (voice != null) wirePress(voice, v -> {
+            try {
+                android.content.Intent si = new android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                si.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                si.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Pin notu söyle");
+                startActivityForResult(si, 4401);
+            } catch (Exception e) {
+                send("voice_pin");
+                Toast.makeText(this, "Ses yok · pin komutu telefona gitti", Toast.LENGTH_SHORT).show();
+            }
+        });
+        View tabC = findViewById(R.id.tabCockpit);
+        View tabM = findViewById(R.id.tabMore);
+        if (tabC != null) tabC.setOnClickListener(v -> showWearPage(true));
+        if (tabM != null) tabM.setOnClickListener(v -> showWearPage(false));
+        showWearPage(true);
+
 
         playEnter();
     }
@@ -438,6 +474,16 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         super.onPause();
     }
 
+    @Override protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 4401 && resultCode == RESULT_OK && data != null) {
+            java.util.ArrayList<String> list = data.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
+            String said = (list != null && !list.isEmpty()) ? list.get(0) : "";
+            send("voice_pin");
+            Toast.makeText(this, said.isEmpty() ? "Pin isteği gönderildi" : ("Pin: " + said), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override protected void onDestroy() {
         mainHandler.removeCallbacks(connectionTicker);
         if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
@@ -537,6 +583,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 if (PATH_STATE.equals(path)) applyState(map);
                 else if (PATH_VEHICLES.equals(path)) applyVehicles(map.getString("json", "[]"));
                 else if (PATH_ALERT.equals(path)) applyAlert(map);
+                    else if (PATH_LINK.equals(path)) { phoneConnected = map.getBoolean("online", true); runOnUiThread(this::updateConnectionUi); }
                 else if (path.startsWith(PATH_ACK + "/")) {
                     processAck(map.getString("id", ""), map.getBoolean("accepted", false),
                             map.getString("message", "Telefon yanıt verdi."));
@@ -578,15 +625,60 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         final int sumSec = map.getInt("summaryElapsedSec", 0);
         final double sumAvg = map.getDouble("summaryAvgKmh", 0);
         final double sumMax = map.getDouble("summaryMaxKmh", 0);
+        final String navText = map.getString("navText", "");
+        final double navDistM = map.getDouble("navDistM", -1);
+        final double limitKmh = map.getDouble("limitKmh", 0);
+        final double dailyKm = map.getDouble("dailyKm", 0);
+        final double dailyGoalKm = map.getDouble("dailyGoalKm", 50);
+        final String badgeText = map.getString("badgeText", "");
+        final String convoyText = map.getString("convoyText", "");
         final int shown = (int) Math.round(kmh);
 
         runOnUiThread(() -> {
             if (incomingStateAt > 0 && lastStateAt > 0 && incomingStateAt < lastStateAt) return;
             lastStateAt = incomingStateAt > 0 ? incomingStateAt : System.currentTimeMillis();
+            phoneConnected = true;
+            try { updateConnectionUi(); } catch (Exception ignored) {}
             boolean stateTransition = haveInitialState && (lastStateRunning != incomingRunning || lastStatePaused != incomingPaused);
             running = incomingRunning;
             paused = incomingPaused;
             gpsReady = incomingGpsReady;
+            if (navStrip != null) {
+                if (navText != null && !navText.isEmpty()) {
+                    String nd = navDistM >= 0 ? (navDistM >= 1000 ? String.format(java.util.Locale.US, " · %.1f km", navDistM/1000.0) : String.format(java.util.Locale.US, " · %.0f m", navDistM)) : "";
+                    navStrip.setText("➤ " + navText + nd);
+                    navStrip.setVisibility(View.VISIBLE);
+                } else navStrip.setText("Rota yok");
+            }
+            if (limitTxt != null) {
+                if (limitKmh > 0) {
+                    limitTxt.setText(over ? ("Limit " + (int)limitKmh + "+  · AŞILDI") : ("Limit " + (int)limitKmh + " km/sa"));
+                    limitTxt.setTextColor(over ? 0xFFEF4444 : 0xFF94A3B8);
+                    if (over) buzz(2);
+                } else limitTxt.setText("Limit kapalı");
+            }
+            if (goalTxt != null) {
+                int pct = dailyGoalKm > 0 ? (int)Math.min(100, Math.round(100.0 * dailyKm / dailyGoalKm)) : 0;
+                goalTxt.setText(String.format(java.util.Locale.US, "Günlük %.1f / %.0f km · %%%d", dailyKm, dailyGoalKm, pct));
+            }
+            if (badgeTxt != null) {
+                if (badgeText != null && !badgeText.isEmpty()) {
+                    badgeTxt.setVisibility(View.VISIBLE);
+                    badgeTxt.setText(badgeText);
+                    Toast.makeText(this, badgeText, Toast.LENGTH_SHORT).show();
+                    buzz(1);
+                }
+            }
+            if (convoyTxt != null) {
+                convoyTxt.setText((convoyText != null && !convoyText.isEmpty()) ? convoyText : "Konvoy · yakında");
+            }
+            if (distanceView != null) distanceView.setText(String.format(java.util.Locale.US, "%.2f km", distM / 1000.0));
+            if (durationView != null) {
+                int m = sec / 60, s = sec % 60;
+                durationView.setText(String.format(java.util.Locale.US, "%d:%02d", m, s));
+            }
+            if (maxSpeedView != null) maxSpeedView.setText("max " + shown);
+
             lastStateRunning = incomingRunning;
             lastStatePaused = incomingPaused;
             if (!haveInitialState) haveInitialState = true;
@@ -734,6 +826,19 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         }
     }
 
+    private void showWearPage(boolean cockpit) {
+        if (pageCockpit != null) pageCockpit.setVisibility(cockpit ? View.VISIBLE : View.GONE);
+        if (pageMore != null) pageMore.setVisibility(cockpit ? View.GONE : View.VISIBLE);
+        View tabC = findViewById(R.id.tabCockpit);
+        View tabM = findViewById(R.id.tabMore);
+        if (tabC instanceof android.widget.Button) {
+            ((android.widget.Button) tabC).setText(cockpit ? "● Kokpit" : "Kokpit");
+        }
+        if (tabM instanceof android.widget.Button) {
+            ((android.widget.Button) tabM).setText(!cockpit ? "● Daha fazla" : "Daha fazla");
+        }
+    }
+
     private void updateConnectionUi() {
         if (connection == null) return;
         long age = lastStateAt > 0 ? Math.max(0L, System.currentTimeMillis() - lastStateAt) : Long.MAX_VALUE;
@@ -763,6 +868,14 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         } else {
             connection.setTextColor(color);
         }
+        // Bağlantı değişim bildirimi (bir kez)
+        boolean linked = phoneConnected && connectionChecked;
+        if (lastPhoneLinkUi != null && lastPhoneLinkUi != linked) {
+            if (linked) Toast.makeText(this, "Telefon bağlandı", Toast.LENGTH_SHORT).show();
+            else Toast.makeText(this, "Telefon bağlantısı kesildi", Toast.LENGTH_SHORT).show();
+            buzz(linked ? 1 : 2);
+        }
+        if (connectionChecked) lastPhoneLinkUi = linked;
     }
 
     private void showPark() {

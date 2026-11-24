@@ -19,6 +19,8 @@ public final class GarajimWearSync {
     public static final String PATH_VEHICLES = "/garajim/vehicles";
     public static final String PATH_CMD = "/garajim/cmd";
     public static final String PATH_ALERT = "/garajim/alert";
+    public static final String PATH_ACK = "/garajim/ack";
+    public static final String PATH_LINK = "/garajim/link";
     private static final ExecutorService EX = Executors.newSingleThreadExecutor();
     private static volatile String lastJson = "";
     private static volatile String sendingStateJson = "";
@@ -26,6 +28,7 @@ public final class GarajimWearSync {
     private static volatile String lastVehiclesJson = "";
     private static volatile String sendingVehiclesJson = "";
     private static volatile long lastPushMs = 0;
+    private static volatile long stateSeq = 0;
 
     private GarajimWearSync() {}
 
@@ -70,6 +73,15 @@ public final class GarajimWearSync {
                 req.getDataMap().putDouble("parkLng", o.optDouble("parkLng", 0));
                 req.getDataMap().putDouble("parkDistM", o.optDouble("parkDistM", -1));
                 req.getDataMap().putString("parkDir", o.optString("parkDir", ""));
+                req.getDataMap().putString("navText", o.optString("navText", ""));
+                req.getDataMap().putDouble("navDistM", o.optDouble("navDistM", -1));
+                req.getDataMap().putDouble("limitKmh", o.optDouble("limitKmh", 0));
+                req.getDataMap().putDouble("dailyKm", o.optDouble("dailyKm", 0));
+                req.getDataMap().putDouble("dailyGoalKm", o.optDouble("dailyGoalKm", 50));
+                req.getDataMap().putString("badgeText", o.optString("badgeText", ""));
+                req.getDataMap().putString("convoyText", o.optString("convoyText", ""));
+                long seq = ++stateSeq;
+                req.getDataMap().putLong("seq", seq);
                 req.getDataMap().putLong("ts", System.currentTimeMillis());
                 req.setUrgent();
                 Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
@@ -139,5 +151,87 @@ public final class GarajimWearSync {
                 Log.w(TAG, "sendCmd: " + e.getMessage());
             }
         });
+    }
+
+    /** Saate komut onayı — path: /garajim/ack/{id} */
+    public static void pushAck(Context ctx, String id, boolean accepted, String message) {
+        if (ctx == null) return;
+        final String ackId = (id == null || id.trim().isEmpty()) ? ("na-" + System.currentTimeMillis()) : id.trim();
+        final Context app = ctx.getApplicationContext();
+        final boolean ok = accepted;
+        final String msg = message == null ? "" : message;
+        EX.execute(() -> {
+            try {
+                PutDataMapRequest req = PutDataMapRequest.create(PATH_ACK + "/" + ackId);
+                req.getDataMap().putString("id", ackId);
+                req.getDataMap().putBoolean("accepted", ok);
+                req.getDataMap().putString("message", msg);
+                req.getDataMap().putLong("ts", System.currentTimeMillis());
+                req.setUrgent();
+                try {
+                    Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
+                } catch (Exception first) {
+                    try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                    Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
+                }
+                // Hızlı kanal: MessageClient ile de dene
+                try {
+                    org.json.JSONObject o = new org.json.JSONObject();
+                    o.put("id", ackId);
+                    o.put("accepted", ok);
+                    o.put("message", msg);
+                    byte[] data = o.toString().getBytes(StandardCharsets.UTF_8);
+                    for (Node n : Tasks.await(Wearable.getNodeClient(app).getConnectedNodes())) {
+                        Wearable.getMessageClient(app).sendMessage(n.getId(), PATH_ACK, data);
+                    }
+                } catch (Exception ignored) { }
+            } catch (Exception e) {
+                Log.w(TAG, "pushAck: " + e.getMessage());
+            }
+        });
+    }
+
+    /** Bağlantı nabzı — saatin "telefon çevrimiçi" göstermesi için. */
+    public static void pushLink(Context ctx, boolean online, String detail) {
+        if (ctx == null) return;
+        final Context app = ctx.getApplicationContext();
+        EX.execute(() -> {
+            try {
+                PutDataMapRequest req = PutDataMapRequest.create(PATH_LINK);
+                req.getDataMap().putBoolean("online", online);
+                req.getDataMap().putString("detail", detail == null ? "" : detail);
+                req.getDataMap().putLong("ts", System.currentTimeMillis());
+                req.setUrgent();
+                Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
+            } catch (Exception e) {
+                Log.w(TAG, "pushLink: " + e.getMessage());
+            }
+        });
+    }
+
+    /** Telefonun gördüğü Wear düğüm özeti (JS durum çipi için). */
+    public static String getStatusJson(Context ctx) {
+        if (ctx == null) return "{\"connected\":false,\"count\":0,\"nearby\":0}";
+        try {
+            java.util.List<Node> nodes = Tasks.await(Wearable.getNodeClient(ctx.getApplicationContext()).getConnectedNodes());
+            int count = nodes == null ? 0 : nodes.size();
+            int nearby = 0;
+            String name = "";
+            if (nodes != null) {
+                for (Node n : nodes) {
+                    if (n.isNearby()) nearby++;
+                    if (name.isEmpty()) name = n.getDisplayName() == null ? "" : n.getDisplayName();
+                }
+            }
+            org.json.JSONObject o = new org.json.JSONObject();
+            o.put("connected", count > 0);
+            o.put("count", count);
+            o.put("nearby", nearby);
+            o.put("name", name);
+            o.put("ts", System.currentTimeMillis());
+            return o.toString();
+        } catch (Exception e) {
+            return "{\"connected\":false,\"count\":0,\"nearby\":0,\"error\":true}";
+        }
     }
 }

@@ -211,4 +211,14 @@ public class GarajimNativeBridge {
     public void pushWearAlert(String kind, String msg) {
         try { GarajimWearSync.pushAlert(context, kind, msg); } catch (Exception ignored) { }
     }
+
+    @JavascriptInterface
+    public void pushWearLink(boolean online, String detail) {
+        try { GarajimWearSync.pushLink(context, online, detail); } catch (Exception ignored) { }
+    }
+
+    @JavascriptInterface
+    public String getWearStatus() {
+        try { return GarajimWearSync.getStatusJson(context); } catch (Exception e) { return "{\"connected\":false}"; }
+    }
 }
