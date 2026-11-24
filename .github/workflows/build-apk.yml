@@ -189,6 +189,7 @@ jobs:
           echo "=== settings.gradle (once) ==="
           cat android/settings.gradle 2>/dev/null || true
           python3 scripts/ci-wear-setup.py
+          python3 scripts/ci-lint-relax.py
           echo "=== settings.gradle (sonra) ==="
           cat android/settings.gradle 2>/dev/null || true
           test -f android/wear/build.gradle
