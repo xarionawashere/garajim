@@ -3796,6 +3796,8 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   function rideAsphaltGet() { try { return JSON.parse(localStorage.getItem(RIDE_ASPHALT_KEY) || '[]'); } catch { return []; } }
   function rideAsphaltSave(list) { try { localStorage.setItem(RIDE_ASPHALT_KEY, JSON.stringify(list.slice(-400))); } catch (e) {} }
   function rideDnaGet() { try { return JSON.parse(localStorage.getItem(RIDE_DNA_KEY) || 'null'); } catch { return null; } }
+  // Sürüş DNA etiketlerini kutlama, yol kartları ve koleksiyon aynı kaynaktan kullanır.
+  function rideDnaLabels() { return ACHIEVEMENT_DNA_LABELS; }
   function rideDnaSave(d) { try { localStorage.setItem(RIDE_DNA_KEY, JSON.stringify(d)); } catch (e) {} }
   function rideSegGet() { try { return JSON.parse(localStorage.getItem(RIDE_SEGMENT_KEY) || '{}'); } catch { return {}; } }
   function rideSegSave(o) { try { localStorage.setItem(RIDE_SEGMENT_KEY, JSON.stringify(o)); } catch (e) {} }
@@ -3949,7 +3951,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     }
     prev.visitedCells = Array.from(new Set(prev.visitedCells.concat(Array.from(routeCells)))).slice(-6000);
     prev.lastQualified = qualified;
-    const labels = { virajci: 'Viraj avcısı', sehir: 'Şehir akışkanı', gece: 'Gece kuşu', otoyol: 'Otoyol makinesi', turcu: 'Sakin turcu' };
+    const labels = rideDnaLabels();
     prev.primary = ranked[0] ? ranked[0][0] : 'turcu';
     prev.label = labels[prev.primary] || 'Sürücü';
     prev.updated = new Date().toISOString();
