@@ -6,7 +6,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
 import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.VibrationAttributes;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.util.Log;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
@@ -20,7 +25,7 @@ public final class GarajimWearCelebrationListener extends WearableListenerServic
     private static final String TAG = "GarajimCelebration";
     private static final String PATH_ACHIEVEMENT = "/garajim/achievement";
     private static final String PATH_ALERT = "/garajim/alert";
-    private static final String CHANNEL_PREFIX = "garajim_achievement_";
+    private static final String CHANNEL_PREFIX = "garajim_achievement_v2_";
 
     @Override public void onMessageReceived(MessageEvent event) {
         super.onMessageReceived(event);
@@ -91,6 +96,10 @@ public final class GarajimWearCelebrationListener extends WearableListenerServic
         if (nm == null) return;
         int notificationId = Math.abs(("garajim:" + eventId).hashCode() % 1000000) + 8500;
         nm.notify(notificationId, builder.build());
+        // Bildirim kanalı titreşimi bazı saatlerde/önceki kurulumlarda sessize alınmış
+        // olabiliyor. Bildirim geldikten sonra başarı titreşimini saat servisinden
+        // doğrudan da tetikle; kanal titreşimi kapalı olduğundan çift titreşim olmaz.
+        vibrateAchievementRarity(rarity);
     }
 
     private void ensureChannel(String channelId, String rarity) {
@@ -98,11 +107,46 @@ public final class GarajimWearCelebrationListener extends WearableListenerServic
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null || nm.getNotificationChannel(channelId) != null) return;
         NotificationChannel channel = new NotificationChannel(channelId, "Garajım · " + rarityLabel(rarity), NotificationManager.IMPORTANCE_HIGH);
-        channel.setDescription("Yeni başarım ve Sürüş DNA kutlamaları");
-        channel.enableVibration(true);
-        channel.setVibrationPattern(vibrationPattern(rarity));
+        channel.setDescription("Yeni başarım ve Sürüş DNA kutlamaları; titreşim uygulama tarafından tetiklenir");
+        // Titreşimi aşağıdaki service-side haptic çağrısı üretir. Kanalı da titreşimli
+        // bırakmak bazı Wear OS sürümlerinde aynı mesaj için iki kez titreşim üretebilir.
+        channel.enableVibration(false);
         channel.setShowBadge(false);
         nm.createNotificationChannel(channel);
+    }
+
+
+    private void vibrateAchievementRarity(String rarity) {
+        try {
+            long[] pattern = vibrationPattern(rarity);
+            Vibrator vibrator;
+            if (Build.VERSION.SDK_INT >= 31) {
+                VibratorManager manager = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+                vibrator = manager != null ? manager.getDefaultVibrator() : null;
+            } else {
+                vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            }
+            if (vibrator == null || !vibrator.hasVibrator()) {
+                Log.w(TAG, "Saat titreşim motoru bulunamadı");
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= 26) {
+                VibrationEffect effect = VibrationEffect.createWaveform(pattern, -1);
+                if (Build.VERSION.SDK_INT >= 33) {
+                    vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_NOTIFICATION));
+                } else {
+                    // API 26–32: specify notification usage so a background service can vibrate.
+                    AudioAttributes attributes = new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                            .build();
+                    vibrator.vibrate(effect, attributes);
+                }
+            } else {
+                vibrator.vibrate(pattern, -1);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Başarım titreşimi başlatılamadı: " + e.getMessage());
+        }
     }
 
     private String safeRarity(String rarity) {

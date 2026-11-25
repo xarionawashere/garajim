@@ -1,3 +1,32 @@
+## 1.4.2 — Navigasyon güvenilirliği ve sade Açık Dünya arayüzü
+
+- Navigasyon açık dünya sürüş kaydından bağımsız arka plan konum izleme desteğiyle güçlendirildi; ortak konum izleyicisi navigasyon sürerken yanlışlıkla kapatılmaz.
+- GPS doğruluğu dikkate alınarak rota dışı algılama uyarlanabilir hale getirildi; zayıf konumda gereksiz yeniden hesaplama ve sesli talimatlar bastırılır.
+- Yeniden rota isteklerine bekleme süresi eklendi; büyük konum sıçramasında rota boyunca tam tarama ile konum eşleme yapılır.
+- Aktif hedef ve rota ilerlemesi 12 saatlik sınırla kaydedilir; uygulama yeniden açıldığında kullanıcı isterse yolculuğa devam edebilir.
+- Nominatim adres sonuçları önbelleğe alınır ve canlı istekler arasında en az 1,1 saniye bırakılır.
+- OSM standart karo sunucusundan toplu/çevrimdışı ön indirme kaldırıldı; internet/rota durumu doğru anlatılır ve harita lisans atfı görünür.
+- Açık Dünya ekranındaki kalıcı butonlar 12+ görünür kontrol yerine konum + navigasyon ve tek araçlar menüsüne indirildi; nadir araçlar açılır panelde toplandı.
+- Telefon APK versionCode 14 / versionName 1.4.2; Wear OS versionCode 16 / versionName 1.4.2.
+
+## 1.4.1 — Sürüş DNA motoru ve profil panosu
+
+- Sekiz DNA profili de ölçülebilir sinyallerden ayrı puan ve veri yeterliliği alır.
+- Gece profili başlangıç saatine tek başına bakmak yerine sürüş süresinin gece oranını örnekler.
+- Otoyol profili yüksek tepe hızı ödüllendirmez; aşırı tepe hız puanı düşürür ve profil şartını sağlamaz.
+- Yinelenen sürüşlerin DNA toplamını/sayaçlarını ikinci kez artırması engellendi.
+- Yeni DNA profilleri tekrarlanan nitelikli sürüşlerle doğrulanır; eski DNA ve kazanılmış kilitler korunur.
+- Başarım ekranına sekiz profilli puan/veri yeterliliği panosu ve son analiz geçmişi eklendi.
+- Gizli kutlama test menüsüne, kalıcı sürüş/DNA kaydı oluşturmayan sekiz profilli DNA simülatörü eklendi.
+- Sürüm adı 1.4.1; telefon versionCode 13, Wear OS versionCode 15.
+
+## 1.4.0 — Wear OS başarım titreşimi düzeltmesi
+- Arka planda başarım bildirimi geldiğinde WearableListenerService artık nadirliğe uygun titreşimi doğrudan tetikler.
+- Eski, titreşim ayarı kilitlenmiş bildirim kanallarından ayrılmak için yeni `garajim_achievement_v2_*` kanal kimlikleri kullanılır.
+- Bildirim kanalı ve doğrudan haptik çift titreşim yaratmayacak şekilde ayrıldı.
+- Telefon APK versionCode 12; Wear OS APK versionCode 14; sürüm adı 1.4.0.
+- `tests/t29_wear_achievement_haptics.js` statik regresyon kontrolleri eklendi.
+
 # Garajım Değişiklik Günlüğü
 
 ## 1.3.9 — Başarım kutlaması, Wear OS ve garaj ana ekranı

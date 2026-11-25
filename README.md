@@ -10,6 +10,8 @@
 
 ---
 
+**Kaynak sürümü: 1.4.2** · Navigasyon güvenilirliği ve sadeleştirilmiş Açık Dünya arayüzü.
+
 ## Garajım nedir?
 
 Garajım, araç sahiplerinin günlük araç yönetimini tek yerde toplamak için tasarlanmış bir uygulamadır. Araç ve plaka bilgilerini kaydetmekle başlayabilir; muayene ve sigorta tarihlerini takip edebilir, yakıt fişlerini işleyebilir, bakım masraflarını karşılaştırabilir ve gerçek sürüşlerini GPS üzerinden kaydedebilirsin. Uyumlu bir Wear OS saatiyle sürüşün temel kontrollerini bileğinden yönetmek de mümkün.
@@ -312,7 +314,7 @@ Araçlarını kaydet, bakım ve sigorta tarihlerini takip et, yakıt fişlerini 
 
 Saat arayüzü; hız, seçili araç, mesafe, geçen süre, maksimum hız ve GPS rota önizlemesini tek akışta sunar. Telefonun sürüş hizmetinden gelen sınırlı rota örnekleri Wearable Data Layer üzerinden aktarılır; saat, rota çizgisini yerel olarak işler ve gerçek sokak haritası varmış gibi davranmaz. Bağlantı, GPS bekleme ve eski veri durumları ayrıca gösterilir.
 
-Bu tam kaynak paketi `1.3.9` sürümünü kullanır. Rozet koleksiyonu, gizli test menüsü, Wear OS kutlama mesajı/titreşimi ve garaj ana ekranı yerleşim düzeltmeleri dahildir. Derleme sonucu ve gerçek cihaz davranışı GitHub Actions ile ayrıca doğrulanmalıdır.
+Bu tam kaynak paketi `1.4.2` sürümünü kullanır. Rozet koleksiyonu, gizli kutlama testi, sekiz profilli Sürüş DNA motoru/panosu ve Wear OS başarım kutlaması dahildir. Derleme sonucu ve gerçek cihaz davranışı GitHub Actions ile ayrıca doğrulanmalıdır.
 
 ### 1.3.4 — Senkronizasyon ve kullanım güvenilirliği
 
@@ -333,7 +335,7 @@ Bu tam kaynak paketi `1.3.9` sürümünü kullanır. Rozet koleksiyonu, gizli te
 
 ## Yayın öncesi doğrulama
 
-1.3.5 ve 1.3.6 listeleri geçmiş iterasyonları kapsar. 1.3.8 kontrol listesi tarihsel teslim içindir; bu kaynak paketi 1.3.9 sürümündedir. Yeni başarım/arayüz kontrolleri `tests/t26_wear_achievement_celebration.js`, `tests/t27_wear_achievement_test_menu.js` ve `tests/t28_garage_compact_layout.js` dosyalarındadır. Statik kontrolleri Android derlemesi veya gerçek cihaz testi yerine sayma.
+1.3.5 ve 1.3.6 listeleri geçmiş iterasyonları kapsar. 1.3.8 kontrol listesi tarihsel teslim içindir; bu kaynak paketi 1.3.9 sürümündedir. Yeni başarım/arayüz kontrolleri `tests/t26_wear_achievement_celebration.js`, `tests/t27_wear_achievement_test_menu.js`, `tests/t28_garage_compact_layout.js` ve `tests/t29_wear_achievement_haptics.js` dosyalarındadır. Statik kontrolleri Android derlemesi veya gerçek cihaz testi yerine sayma.
 
 
 ### 1.3.6 — Wear OS kokpit ergonomisi
@@ -356,3 +358,19 @@ Bu tam kaynak paketi `1.3.9` sürümünü kullanır. Rozet koleksiyonu, gizli te
 - Araç/fiş/sosyal görsel kaynaklarında desteklenen biçimler base64 PNG/JPEG/GIF/WebP ve HTTPS'tir. Bu, uygulamanın her HTML render noktasının tamamını denetlediğimiz anlamına gelmez; kalan noktalar yol haritasında tutulur.
 - `tests/t23_import_render_safety.js` güvenlik yardımcılarını kötü niyetli metin ve URL örnekleriyle test eder.
 - Bu paket kaynak kod paketidir, hazır APK içermez. Güncel sürüm 1.3.9’dur; tarihsel 1.3.8 checklist’i yalnızca eski teslimi belgelemektedir.
+
+
+### Sürüş DNA 1.4.1
+
+Sürüş DNA artık sekiz profili (Viraj Avcısı, Şehir Akışkanı, Gece Kuşu, Otoyol Makinesi, Sakin Turcu, Uzun Yol Yolcusu, Yumuşak Sürüş ve Rota Kâşifi) ayrı ayrı puanlar. Ana profil; puan, veri yeterliliği, tekrar eden gözlemler ve tekrarlanan nitelikli sürüşlere göre belirlenir. İlk analizlerde kesin bir sürücü etiketi iddia edilmez. Tekrarlanan aynı sürüş ikinci kez sayılmaz ve sürüm alanı eksik olanlar dahil eski DNA kayıtları/kazanılmış profiller korunur. Gece profilinde yeterli GPS örneği; otoyol ve turcu profillerinde yeterli hız örneği aranır. Kâşif hesabı ham GPS izi yerine yaklaşık kilometrelik konum hücreleri kullanır.
+
+Başarım koleksiyonunun gizli test menüsündeki **Sürüş DNA simülatörü**, sekiz senaryo için puan, veri yeterliliği ve nitelik sonucunu gösterir; kalıcı DNA, sürüş veya rozet verisine yazmaz. DNA puanları GPS hız/rota/süre ve uygulamada bulunan sinyallerden türetilen eğilimlerdir; yol sınıfını kesin tanımaz ve araç ECU/OBD verisi değildir.
+
+
+### Navigasyon güvenilirliği 1.4.2
+- GPS doğruluğuna göre rota dışı algılama, rota dışı yeniden hesaplama bekleme süresi ve rota boyunca yeniden eşleme.
+- Navigasyon oturumunu yerel kaydetme ve uygulama yeniden açıldığında açık kullanıcı onayıyla devam etme.
+- Arka plan navigasyonu için ortak konum izleyicisi/ön plan bildirimi yaşam döngüsünü sürüş kaydından ayırmadan yönetme.
+- Nominatim sorgu önbelleği ve hız sınırlama.
+- Standart OSM tile servisinde toplu çevrimdışı indirmeyi kaldırma; açık kaynak atfı ekleme.
+- Açık Dünya ekranındaki harita kontrollerini iki ana buton ve tek bir araçlar sheet'i etrafında sadeleştirme.
