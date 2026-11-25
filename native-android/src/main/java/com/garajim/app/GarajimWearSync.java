@@ -145,6 +145,34 @@ public final class GarajimWearSync {
         });
     }
 
+    /**
+     * Tek seferlik canlı uyarı: yalnızca o anda bağlı cihazlara MessageClient ile yollar.
+     * DataItem oluşturmadığı için saat bağlantısı yokken eski kutlama sonradan görünmez.
+     */
+    public static void pushAlertLive(Context ctx, String kind, String msg) {
+        if (ctx == null) return;
+        final Context app = ctx.getApplicationContext();
+        final String alertKind = kind == null ? "info" : kind;
+        final String alertMsg = msg == null ? "" : msg;
+        EX.execute(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(app).getConnectedNodes());
+                if (nodes == null || nodes.isEmpty()) return;
+                JSONObject payload = new JSONObject();
+                payload.put("kind", alertKind);
+                payload.put("msg", alertMsg);
+                payload.put("ts", System.currentTimeMillis());
+                byte[] data = payload.toString().getBytes(StandardCharsets.UTF_8);
+                for (Node node : nodes) {
+                    try { Tasks.await(Wearable.getMessageClient(app).sendMessage(node.getId(), PATH_ALERT, data)); }
+                    catch (Exception e) { Log.w(TAG, "pushAlertLive node: " + e.getMessage()); }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "pushAlertLive: " + e.getMessage());
+            }
+        });
+    }
+
     /** Anlık titreşim uyarısı (limit / park / iletişim durumu). */
     public static void pushAlert(Context ctx, String kind, String msg) {
         if (ctx == null) return;

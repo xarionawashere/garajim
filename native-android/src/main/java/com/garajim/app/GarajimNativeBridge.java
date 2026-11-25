@@ -212,6 +212,13 @@ public class GarajimNativeBridge {
         try { GarajimWearSync.pushAlert(context, kind, msg); } catch (Exception ignored) { }
     }
 
+    /** DNA kutlaması yalnızca o anda bağlı saata iletilir; bağlantı yoksa bekletilmez. */
+    @JavascriptInterface
+    public void pushWearDnaCelebration(String msg) {
+        try { GarajimWearSync.pushAlertLive(context, "dna", msg == null ? "🎉 Yeni sürüş DNA'sı kazandın" : msg); }
+        catch (Exception ignored) { }
+    }
+
     @JavascriptInterface
     public void pushWearLink(boolean online, String detail) {
         try { GarajimWearSync.pushLink(context, online, detail); } catch (Exception ignored) { }
