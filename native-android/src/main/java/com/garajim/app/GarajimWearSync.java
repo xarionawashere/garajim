@@ -19,6 +19,7 @@ public final class GarajimWearSync {
     public static final String PATH_VEHICLES = "/garajim/vehicles";
     public static final String PATH_CMD = "/garajim/cmd";
     public static final String PATH_ALERT = "/garajim/alert";
+    public static final String PATH_ACHIEVEMENT = "/garajim/achievement";
     public static final String PATH_ACK = "/garajim/ack";
     public static final String PATH_LINK = "/garajim/link";
     private static final ExecutorService EX = Executors.newSingleThreadExecutor();
@@ -141,6 +142,38 @@ public final class GarajimWearSync {
                 Log.w(TAG, "pushVehicles: " + e.getMessage());
             } finally {
                 if (clean.equals(sendingVehiclesJson)) sendingVehiclesJson = "";
+            }
+        });
+    }
+
+    /**
+     * Yeni kazanılmış başarı paketini bağlı Wear düğümlerine canlı mesaj olarak gönderir.
+     * MessageClient, saatteki WearableListenerService tarafından uygulama ekranı kapalıyken de alınır.
+     * Bağlantı yoksa saklanmaz; geçmiş kazanımlar daha sonra yanlışlıkla kutlama üretmez.
+     */
+    public static void pushAchievements(Context ctx, String json) {
+        if (ctx == null || json == null || json.trim().isEmpty()) return;
+        final Context app = ctx.getApplicationContext();
+        final String payload = json;
+        EX.execute(() -> {
+            try {
+                JSONObject parsed = new JSONObject(payload);
+                if (parsed.optJSONArray("items") == null || parsed.optJSONArray("items").length() == 0) return;
+                byte[] data = parsed.toString().getBytes(StandardCharsets.UTF_8);
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(app).getConnectedNodes());
+                if (nodes == null || nodes.isEmpty()) {
+                    Log.d(TAG, "pushAchievements: bağlı saat yok; kutlama kuyruğa alınmadı");
+                    return;
+                }
+                for (Node node : nodes) {
+                    try {
+                        Tasks.await(Wearable.getMessageClient(app).sendMessage(node.getId(), PATH_ACHIEVEMENT, data));
+                    } catch (Exception e) {
+                        Log.w(TAG, "pushAchievements node " + node.getDisplayName() + ": " + e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "pushAchievements: " + e.getMessage());
             }
         });
     }

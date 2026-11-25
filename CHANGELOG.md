@@ -1,5 +1,14 @@
 # Garajım Değişiklik Günlüğü
 
+## 1.3.9 — Başarım kutlaması, Wear OS ve garaj ana ekranı
+
+- 51 rozetlik başarım kataloğu ve Sürüş DNA hedefleri; telefon ekranında nadirliğe göre kutlama animasyonu ve titreşim.
+- Kazanılan rozetler, Wear Data Layer üzerinden saate gönderilir; saat ekranında başarım katmanı ve nadirliğe göre titreşim gösterilir. Saat uygulaması kapalıyken Wear OS bildirim dinleyicisi bildirim oluşturur.
+- Gizli kutlama test menüsü: Rozetlerim başlığına 4 saniyede 7 dokunuşla açılır; telefon/saat/birlikte testleri gerçek kazanım durumuna yazmaz.
+- Ana garaj ekranındaki “Garaj Özeti” kartı kaldırıldı. Uzun `sticky` başlık kaldırılarak araç listesi kaydırmada ekranı kaplamaz; rozet kartı ve araç kartları sıkıştırıldı, alt gezinme çubuğu için kaydırma boşluğu eklendi.
+- Telefon ve Wear OS kaynak sürümü 1.3.9; otomatik regresyon testleri `t26`, `t27` ve `t28` ile genişletildi.
+- **Doğrulama sınırı:** Kaynak/statik testler derlemeyi veya Galaxy Watch üzerinde gerçek zamanlı davranışı kanıtlamaz; GitHub Actions ve cihaz testiyle doğrulanmalıdır.
+
 ## 1.3.8 — Güvenli metin/görsel render'ı ve ACK kurtarma düzeltmesi
 
 - Telefon arayüzünde içe aktarılmış araç, bildirim ve yerel sosyal akış metinleri HTML kaçışından geçirilir; dinamik kimlikler HTML özniteliğine güvenli JSON dize argümanı olarak yazılır.

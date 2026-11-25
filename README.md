@@ -27,6 +27,7 @@ Garajım'ın yaklaşımı basit: **daha düzenli araç kayıtları, daha görün
 - **Açık Dünya sürüşü:** GPS rotası, hız, mesafe, süre, ortalama/maksimum hız, sürüş geçmişi ve rota tekrarı.
 - **Navigasyon ve park yeri:** Adres arama, rota yönergeleri, kayıtlı park konumu ve yön/mesafe bilgisi.
 - **Wear OS kontrolü:** Saatten araç seçme, sürüşü başlatma/duraklatma/devam ettirme/bitirme ve sürüş özetini yönetme.
+- **Başarım ve Sürüş DNA:** 51 rozet, nadirliğe göre telefon kutlaması, Wear OS saatine başarım iletimi, titreşim ve arka plan bildirimi. Gizli test menüsü, gerçek rozet kazanmadan kutlamaları denemeyi sağlar.
 - **Kişiselleştirme:** 12 renk teması, karanlık/açık görünüm, dört haneli uygulama PIN'i ve ana ekran widget'ı.
 - **Dışa aktarma:** JSON yedekleme/geri yükleme, CSV masraf çıktısı, PDF raporları ve sürüş rotası için GPX çıktısı.
 - **İsteğe bağlı yapay zekâ asistanı:** Kullanıcının kendi Gemini veya OpenAI API anahtarıyla çalışır.
@@ -287,7 +288,7 @@ APK'nın adı imzalama yapılandırmasına göre `app-release.apk` / `wear-relea
 - **PIN şifreleme değildir:** Uygulama içi kilit, yerel veri dosyalarını şifrelemez.
 - **AI anahtarı yerel depolamadadır:** Güvenli sunucu tarafı sır kasası değildir; anahtarın erişilebilir olduğu cihazı koru.
 - **Yedeklerin kapsamı aynı değildir:** Manuel JSON yedeği otomatik yerel yedekten daha kapsamlıdır; ikisi de tüm verileri veya sırları içermez. Yedeğini geri yüklemeyi gerçek bir testle doğrula.
-- **Sürüm bilgisi:** CI telefon APK'sının sürümünü workflow içinde, saat APK'sının sürümünü `native-wear/build.gradle` içinde belirler. `package.json` sürümü de bu pakette `1.3.8` olarak eşitlendi.
+- **Sürüm bilgisi:** CI telefon APK'sının sürümünü workflow içinde, saat APK'sının sürümünü `native-wear/build.gradle` içinde belirler. `package.json` sürümü bu pakette `1.3.9`; telefon ve Wear OS sürüm değerleri kaynak/CI testleriyle kontrol edilir.
 - **Lisans:** Bu pakette henüz kök dizinde `LICENSE` dosyası bulunmuyor. Yeniden dağıtım ve katkı koşulları yayın öncesi ayrıca belirlenmelidir.
 
 ## Güvenli kullanım
@@ -311,7 +312,7 @@ Araçlarını kaydet, bakım ve sigorta tarihlerini takip et, yakıt fişlerini 
 
 Saat arayüzü; hız, seçili araç, mesafe, geçen süre, maksimum hız ve GPS rota önizlemesini tek akışta sunar. Telefonun sürüş hizmetinden gelen sınırlı rota örnekleri Wearable Data Layer üzerinden aktarılır; saat, rota çizgisini yerel olarak işler ve gerçek sokak haritası varmış gibi davranmaz. Bağlantı, GPS bekleme ve eski veri durumları ayrıca gösterilir.
 
-Bu kaynak paketteki telefon ve saat APK sürümleri `1.3.8` için ayarlanmıştır. Derleme sonucu ve gerçek cihaz davranışı GitHub Actions ile ayrıca doğrulanmalıdır.
+Bu tam kaynak paketi `1.3.9` sürümünü kullanır. Rozet koleksiyonu, gizli test menüsü, Wear OS kutlama mesajı/titreşimi ve garaj ana ekranı yerleşim düzeltmeleri dahildir. Derleme sonucu ve gerçek cihaz davranışı GitHub Actions ile ayrıca doğrulanmalıdır.
 
 ### 1.3.4 — Senkronizasyon ve kullanım güvenilirliği
 
@@ -332,7 +333,7 @@ Bu kaynak paketteki telefon ve saat APK sürümleri `1.3.8` için ayarlanmışt�
 
 ## Yayın öncesi doğrulama
 
-1.3.5 ve 1.3.6 listeleri geçmiş iterasyonları kapsar. Güncel 1.3.8 teslimi için `TEST-KONTROL-LISTESI-1.3.8.md` dosyasını kullan. Statik kontrolleri Android derlemesi veya gerçek cihaz testi yerine sayma.
+1.3.5 ve 1.3.6 listeleri geçmiş iterasyonları kapsar. 1.3.8 kontrol listesi tarihsel teslim içindir; bu kaynak paketi 1.3.9 sürümündedir. Yeni başarım/arayüz kontrolleri `tests/t26_wear_achievement_celebration.js`, `tests/t27_wear_achievement_test_menu.js` ve `tests/t28_garage_compact_layout.js` dosyalarındadır. Statik kontrolleri Android derlemesi veya gerçek cihaz testi yerine sayma.
 
 
 ### 1.3.6 — Wear OS kokpit ergonomisi
@@ -354,4 +355,4 @@ Bu kaynak paketteki telefon ve saat APK sürümleri `1.3.8` için ayarlanmışt�
 - İçe aktarılmış veya yerel kayıtlardan gelen araç, bildirim ve sosyal akış metinlerinin önemli bölümleri HTML kaçışından geçirilir; dinamik kimlikler güvenli JS dize argümanlarıyla aktarılır.
 - Araç/fiş/sosyal görsel kaynaklarında desteklenen biçimler base64 PNG/JPEG/GIF/WebP ve HTTPS'tir. Bu, uygulamanın her HTML render noktasının tamamını denetlediğimiz anlamına gelmez; kalan noktalar yol haritasında tutulur.
 - `tests/t23_import_render_safety.js` güvenlik yardımcılarını kötü niyetli metin ve URL örnekleriyle test eder.
-- Bu paket kaynak kod paketidir, hazır APK içermez. Güncel checklist `TEST-KONTROL-LISTESI-1.3.8.md` içindedir.
+- Bu paket kaynak kod paketidir, hazır APK içermez. Güncel sürüm 1.3.9’dur; tarihsel 1.3.8 checklist’i yalnızca eski teslimi belgelemektedir.

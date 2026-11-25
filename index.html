@@ -257,13 +257,39 @@
 html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,42,.12)}html.light .ach-topbar{background:rgba(248,250,252,.97);border-color:rgba(15,23,42,.1)}html.light .ach-hero{background:linear-gradient(140deg,#e9eef5,#f8fafc 65%,#f4f0f9);border-color:rgba(15,23,42,.12)}html.light .ach-hero-title,html.light .ach-stat-value,html.light .ach-dna-name,html.light .ach-next-title,html.light .ach-card-title,html.light .ach-subhead h4{color:#172033}html.light .ach-home-title{color:#fff}html.light .ach-home{background:linear-gradient(135deg,#273243,#111923 58%,#202632)}html.light .ach-card{background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(255,255,255,.65));border-color:rgba(15,23,42,.09)}html.light .ach-stat{background:rgba(15,23,42,.035);border-color:rgba(15,23,42,.07)}html.light .ach-filter{color:#5b6677;border-color:rgba(15,23,42,.1);background:rgba(15,23,42,.035)}html.light .ach-filter.active{color:#182235}html.light .ach-dna,html.light .ach-next,html.light .ach-detail{background:rgba(255,255,255,.68);border-color:rgba(15,23,42,.1)}html.light .ach-dna-copy,html.light .ach-next-copy,html.light .ach-card-desc{color:#647187}
 @media(min-width:560px){.ach-shell{border-radius:28px;height:calc(100% - 32px);max-height:960px}.ach-scroll{padding:22px 24px 28px}.ach-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.ach-card{padding:14px}}@media(min-width:900px){.ach-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:380px){.ach-hero-grid{grid-template-columns:minmax(0,1fr) 70px}.ach-hero-medal{width:65px;height:65px;font-size:28px}.ach-hero{padding:15px}.ach-stat{padding:9px}.ach-stat-value{font-size:18px}.ach-grid{gap:7px}.ach-card{padding:10px}.ach-medal{width:45px;height:45px;font-size:19px}}@media(prefers-reduced-motion:reduce){.ach-progress-fill,.ach-card{transition:none!important}.ach-celebrate-medal{animation:none!important}}
 
+
+  /* Garaj ana ekranı: daha fazla aracı görünür kıl, listenin üzerine yapışan dev başlığı önle. */
+  #listView > header { position: relative !important; top: auto !important; }
+  #miniStats > div { min-width: 0; padding: .48rem .3rem !important; }
+  #miniStats > div p:first-child { font-size: 9px !important; line-height: 1.15 !important; letter-spacing: .015em !important; white-space: nowrap; }
+  #miniStats > div p:last-child { font-size: 13px !important; line-height: 1.2 !important; margin-top: 3px; }
+  #achievementHomeCard { margin-top: .5rem !important; }
+  .ach-home { padding: 12px !important; border-radius: 20px !important; }
+  .ach-home-title { font-size: 17px !important; line-height: 1.12 !important; }
+  .ach-home-sub { font-size: 10px !important; line-height: 1.35 !important; margin-top: 4px !important; }
+  .ach-home .w-14.h-14 { width: 46px !important; height: 46px !important; border-radius: 15px !important; font-size: 19px !important; }
+  .ach-home > .relative.z-10.mt-4 { margin-top: 10px !important; }
+  .ach-home .mt-3 { margin-top: 7px !important; }
+  #search { min-height: 42px; }
+  #vehicleList { padding-top: 10px !important; padding-bottom: calc(8rem + env(safe-area-inset-bottom)) !important; }
+  #vehicleList > .card { padding: 12px !important; border-radius: 19px !important; }
+  #vehicleList > .card .w-14.h-14 { width: 50px !important; height: 50px !important; }
+  #vehicleList > .card .font-bold.tracking-wide { font-size: 14px; }
+  #vehicleList > .card p.text-sm { font-size: 12px; line-height: 1.35; }
+  @media (max-width: 380px) {
+    #listView > header { padding-left: 10px !important; padding-right: 10px !important; }
+    #achievementHomeCard { margin-top: 6px !important; }
+    .ach-home { padding: 10px !important; }
+    #vehicleList > .card { padding: 10px !important; }
+  }
+
 </style>
 </head>
 <body class="min-h-screen">
 
 <!-- LIST VIEW -->
 <div id="listView">
-  <header class="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 px-4 pt-4 pb-3">
+  <header class="relative z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 px-3 pt-3 pb-2">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-extrabold tracking-tight"><span class="text-white">Garaj</span><span class="text-red-500">ım</span></h1>
@@ -285,49 +311,37 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       </div>
     </div>
 
-    <div id="miniStats" class="mt-3 grid grid-cols-3 gap-2 hidden">
-      <div class="bg-white/5 rounded-xl px-3 py-2.5 text-center border border-white/5">
-        <p class="text-[10px] text-slate-500 uppercase tracking-wider">Toplam KM</p>
+    <div id="miniStats" class="mt-2 grid grid-cols-3 gap-2 hidden">
+      <div class="bg-white/5 rounded-xl px-2 py-2 text-center border border-white/5">
+        <p class="text-[9px] leading-tight text-slate-500 uppercase tracking-normal whitespace-nowrap">Toplam KM</p>
         <p class="text-sm font-bold" id="statTotalKm">0</p>
       </div>
-      <div class="bg-white/5 rounded-xl px-3 py-2.5 text-center border border-white/5">
-        <p class="text-[10px] text-slate-500 uppercase tracking-wider">Uyarı</p>
+      <div class="bg-white/5 rounded-xl px-2 py-2 text-center border border-white/5">
+        <p class="text-[9px] leading-tight text-slate-500 uppercase tracking-normal whitespace-nowrap">Uyarı</p>
         <p class="text-sm font-bold text-amber-400" id="statAlerts">0</p>
       </div>
-      <div class="bg-white/5 rounded-xl px-3 py-2.5 text-center border border-white/5">
-        <p class="text-[10px] text-slate-500 uppercase tracking-wider">Toplam Masraf</p>
+      <div class="bg-white/5 rounded-xl px-2 py-2 text-center border border-white/5">
+        <p class="text-[9px] leading-tight text-slate-500 uppercase tracking-normal whitespace-nowrap">Toplam Masraf</p>
         <p class="text-sm font-bold text-accent" id="statCost">0 ₺</p>
       </div>
     </div>
 
-    <div id="achievementHomeCard" class="mt-3"></div>
-    <div id="insightCard" class="mt-3 hidden insight-card rounded-2xl p-3.5">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(var(--accent-rgb),0.2)">
-          <i class="fa-solid fa-sparkles text-accent"></i>
-        </div>
-        <div class="min-w-0 flex-1">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-accent mb-0.5">Garaj özeti</p>
-          <p class="text-sm leading-snug" id="insightText">—</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-3 relative">
+    <div id="achievementHomeCard" class="mt-2"></div>
+    <div class="mt-2 relative">
       <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
       <input id="search" oninput="renderList()" type="text" placeholder="Plaka, marka veya model ara..."
              class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50">
     </div>
 
     <!-- Filtreler -->
-    <div class="mt-3 flex gap-2 overflow-x-auto pb-1" id="filterBar">
+    <div class="mt-2 flex gap-2 overflow-x-auto pb-1" id="filterBar">
       <button onclick="setFilter('all')" class="filter-btn active px-3 py-1.5 rounded-full text-xs font-medium border border-white/10 bg-white/5 whitespace-nowrap">Tümü</button>
       <button onclick="setFilter('alert')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium border border-white/10 bg-white/5 whitespace-nowrap">Uyarı Olanlar</button>
       <button onclick="setFilter('month')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium border border-white/10 bg-white/5 whitespace-nowrap">Bu Ay Masraf</button>
     </div>
   </header>
 
-  <main class="px-4 py-4 space-y-3 pb-28" id="vehicleList"></main>
+  <main class="px-4 py-3 space-y-2 pb-32" id="vehicleList"></main>
 
   <div id="emptyState" class="hidden flex-col items-center justify-center pt-20 px-8 text-center">
     <div class="w-28 h-28 rounded-3xl flex items-center justify-center mb-6 border border-white/10 insight-card">
@@ -620,11 +634,30 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
 <!-- Garajım Rozet Koleksiyonu -->
 <div id="achievementModal" class="fixed inset-0 z-[100] hidden modal-bg flex items-center justify-center">
  <div class="ach-shell">
-  <div class="ach-topbar px-4 py-3 flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-2xl flex items-center justify-center text-amber-300 border border-amber-200/15" style="background:linear-gradient(145deg,rgba(229,184,96,.18),rgba(255,255,255,.025))"><i class="fa-solid fa-medal text-lg"></i></div><div class="min-w-0"><div class="ach-eyebrow">Garajım · başarı arşivi</div><h3 class="text-base font-extrabold truncate" style="color:inherit">Rozetlerim</h3></div></div><button onclick="achievementClose()" aria-label="Kapat" class="w-10 h-10 shrink-0 rounded-xl border border-white/10 flex items-center justify-center text-slate-400" style="background:rgba(255,255,255,.035)"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="ach-topbar px-4 py-3 flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-2xl flex items-center justify-center text-amber-300 border border-amber-200/15" style="background:linear-gradient(145deg,rgba(229,184,96,.18),rgba(255,255,255,.025))"><i class="fa-solid fa-medal text-lg"></i></div><div class="min-w-0"><div class="ach-eyebrow">Garajım · başarı arşivi</div><h3 class="text-base font-extrabold truncate select-none" style="color:inherit" onclick="achievementHiddenTestTap(event)" aria-label="Rozetlerim">Rozetlerim</h3></div></div><button onclick="achievementClose()" aria-label="Kapat" class="w-10 h-10 shrink-0 rounded-xl border border-white/10 flex items-center justify-center text-slate-400" style="background:rgba(255,255,255,.035)"><i class="fa-solid fa-xmark"></i></button></div>
   <div id="achievementBody" class="ach-scroll"></div>
  </div>
 </div>
 <div id="achievementCelebration" class="fixed inset-0 z-[130] hidden modal-bg flex items-center justify-center p-4" onclick="if(event.target===this)achievementDismissCelebration()"><div id="achievementCelebrationContent" class="w-full flex justify-center"></div></div>
+<div id="achievementTestModal" class="fixed inset-0 z-[145] hidden modal-bg flex items-center justify-center p-4" onclick="if(event.target===this)achievementCloseTestMenu()" aria-hidden="true">
+ <div class="w-full max-w-sm rounded-3xl border border-amber-200/20 bg-[#0d111b] p-5 shadow-2xl" onclick="event.stopPropagation()">
+  <div class="flex items-start justify-between gap-3 mb-4">
+   <div><div class="ach-eyebrow"><i class="fa-solid fa-flask mr-1.5"></i>Geliştirici aracı</div><h3 class="text-lg font-extrabold mt-1">Gizli kutlama testi</h3></div>
+   <button type="button" onclick="achievementCloseTestMenu()" class="w-9 h-9 rounded-xl border border-white/10 text-slate-400" aria-label="Test menüsünü kapat"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <label for="achievementTestRarity" class="block text-xs font-bold text-slate-300 mb-2">Test edilecek rozet nadirliği</label>
+  <select id="achievementTestRarity" class="w-full rounded-xl border border-white/10 bg-[#161d2a] p-3 text-sm text-white mb-4">
+   <option value="common">Standart</option><option value="uncommon">Gelişmiş</option><option value="rare" selected>Nadir</option><option value="epic">Destansı</option><option value="legendary">Efsanevi</option>
+  </select>
+  <div class="grid grid-cols-1 gap-2">
+   <button type="button" onclick="achievementRunCelebrationTest('both')" class="w-full rounded-xl bg-amber-300 px-4 py-3 text-sm font-extrabold text-slate-950"><i class="fa-solid fa-mobile-screen-button mr-2"></i>Telefon + saat kutlamasını dene</button>
+   <button type="button" onclick="achievementRunCelebrationTest('watch')" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white"><i class="fa-solid fa-clock mr-2"></i>Yalnızca saate gönder</button>
+   <button type="button" onclick="achievementRunCelebrationTest('phone')" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white"><i class="fa-solid fa-mobile-screen mr-2"></i>Yalnızca telefonda göster</button>
+  </div>
+  <p class="mt-4 text-[11px] leading-relaxed text-slate-400">Bu test gerçek rozet kazandırmaz, koleksiyonunu veya sürüş geçmişini değiştirmez. Saat testi için saat bağlı olmalı; saatte uygulama açık değilse bildirim izni gerekir.</p>
+  <p id="achievementTestStatus" class="mt-3 min-h-8 rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-slate-300" role="status" aria-live="polite">Test için bir seçenek seç.</p>
+ </div>
+</div>
 
 <div id="rideHistoryModal" class="fixed inset-0 z-[80] hidden modal-bg flex items-end sm:items-center justify-center">
   <div class="bg-[#111] w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl border border-white/10 p-5 slide-up max-h-[85vh] overflow-y-auto">
@@ -1528,30 +1561,6 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     return Math.round(base + upcoming);
   }
 
-  function garageInsight() {
-    const alerts = vehicles.reduce((s, v) => s + getAlerts(v).length, 0);
-    const ym = todayStr().slice(0, 7);
-    const monthCost = vehicles.reduce((s, v) => s + (v.history || []).filter(h => (h.date || '').startsWith(ym)).reduce((a, h) => a + (Number(h.cost) || 0), 0), 0);
-    const maintSoon = vehicles.filter(v => { const p = serviceProgress(v); return p && (p.warning || p.overdue); }).length;
-    const avgScore = vehicles.length ? Math.round(vehicles.reduce((s, v) => s + healthScore(v).score, 0) / vehicles.length) : 0;
-    const est = vehicles.reduce((s, v) => s + estimate90Days(v), 0);
-    const tcos = vehicles.map(computeTCO).filter(t => t.perKm != null);
-    const avgTco = tcos.length ? tcos.reduce((s, t) => s + t.perKm, 0) / tcos.length : null;
-    let line = '';
-    if (!vehicles.length) line = 'İlk aracını ekleyerek premium takibe başla.';
-    else {
-      const parts = [];
-      if (alerts) parts.push(`${alerts} uyarı`);
-      if (monthCost) parts.push(`bu ay ${fmtTL(monthCost)}`);
-      if (maintSoon) parts.push(`${maintSoon} bakım yakın`);
-      parts.push(`sağlık ${avgScore}`);
-      if (avgTco != null) parts.push(`~${avgTco.toFixed(2).replace('.', ',')} ₺/km`);
-      if (est) parts.push(`90g ~${fmtTL(est)}`);
-      line = parts.join(' · ');
-    }
-    return line;
-  }
-
   function serviceProgress(v) {
     if (!v.km || !v.nextServiceKm) return null;
     const remaining = Number(v.nextServiceKm) - Number(v.km);
@@ -1891,22 +1900,16 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     document.getElementById('statCost').textContent = formatMoney(vehicles.reduce((s, v) => s + totalCost(v), 0)) || '0 ₺';
 
     const mini = document.getElementById('miniStats');
-    const insight = document.getElementById('insightCard');
     const empty = document.getElementById('emptyState');
     const container = document.getElementById('vehicleList');
 
     if (vehicles.length === 0) {
       mini.classList.add('hidden');
-      if (insight) insight.classList.add('hidden');
       empty.classList.remove('hidden'); empty.classList.add('flex');
       container.innerHTML = '';
       return;
     }
     mini.classList.remove('hidden');
-    if (insight) {
-      insight.classList.remove('hidden');
-      document.getElementById('insightText').textContent = garageInsight();
-    }
     empty.classList.add('hidden'); empty.classList.remove('flex');
 
     if (list.length === 0) {
@@ -3779,10 +3782,60 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   function achievementShowDetail(id){achievementSelectedId=id||null;achievementRender();if(id){const box=document.getElementById('achievementBody'),detail=box&&box.querySelector('.ach-detail');if(detail&&detail.scrollIntoView)detail.scrollIntoView({block:'nearest',behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}}
   function achievementInit(){const state=achievementStateGet(),list=achievementCatalog();if(!state.initialized){list.filter(b=>b.ok).forEach(b=>{if(!state.earned[b.id])state.earned[b.id]={earnedAt:null,source:'legacy'};});state.initialized=true;state.initializedAt=new Date().toISOString();achievementStateSave(state);}else{list.filter(b=>b.ok&&!state.earned[b.id]).forEach(b=>{state.earned[b.id]={earnedAt:null,source:'recovery'};});achievementStateSave(state);}achievementHomeRender();}
   function achievementEvaluate(source,options){options=options||{};const state=achievementStateGet();if(!state.initialized){achievementInit();return[];}const unlocked=achievementCatalog().filter(b=>b.ok&&!state.earned[b.id]);if(!unlocked.length){achievementHomeRender();return[];}const now=new Date().toISOString();unlocked.forEach(b=>{state.earned[b.id]={earnedAt:options.silent?null:now,source:source||'progress'};});if(!achievementStateSave(state)){achievementHomeRender();return[];}achievementHomeRender();if(!options.silent)achievementCelebrate(unlocked);return unlocked;}
-  function achievementCelebrate(items){achievementQueue=achievementQueue.concat((items||[]).slice().sort((a,b)=>(ACHIEVEMENT_RARITY[b.rarity]||1)-(ACHIEVEMENT_RARITY[a.rarity]||1)));if(!achievementCelebrationActive)achievementShowNextCelebration();}
+  function achievementSendWearCelebrations(items){
+    try{
+      const bridge=rideNativeBridge();
+      if(!bridge||typeof bridge.pushWearAchievements!=='function')return false;
+      const safe=(items||[]).filter(b=>b&&b.id&&b.name).map(b=>({id:String(b.id),name:String(b.name),rarity:ACHIEVEMENT_RARITY_LABEL[b.rarity]?String(b.rarity):'common',rarityLabel:ACHIEVEMENT_RARITY_LABEL[b.rarity]||'Standart',description:String(b.description||''),category:String(ACHIEVEMENT_CATEGORIES[b.category]||'Başarım'),icon:String(b.icon||'fa-medal')}));
+      if(!safe.length)return false;
+      const payload={eventId:'achievement-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),createdAt:new Date().toISOString(),source:'achievement',items:safe};
+      bridge.pushWearAchievements(JSON.stringify(payload));
+      return true;
+    }catch(e){return false;}
+  }
+  function achievementCelebrate(items){const sorted=(items||[]).slice().sort((a,b)=>(ACHIEVEMENT_RARITY[b.rarity]||1)-(ACHIEVEMENT_RARITY[a.rarity]||1));achievementSendWearCelebrations(sorted);achievementQueue=achievementQueue.concat(sorted);if(!achievementCelebrationActive)achievementShowNextCelebration();}
   function achievementShowNextCelebration(){const modal=document.getElementById('achievementCelebration'),box=document.getElementById('achievementCelebrationContent');if(!modal||!box||!achievementQueue.length){if(modal)modal.classList.add('hidden');achievementCelebrationActive=false;return;}achievementCelebrationActive=true;const b=achievementQueue[0],many=achievementQueue.length,rarity=achievementEsc(b.rarity),tone=b.rarity==='legendary'?'Koleksiyonundaki en özel kilometre taşlarından biri.':b.rarity==='epic'?'Bu başarı emek istedi. Sürüş hikâyene özel bir iz eklendi.':b.rarity==='rare'?'Gelişimin görünür bir başarıya dönüştü.':'Garajım yolculuğunda yeni bir adım attın.';box.innerHTML='<div class="ach-celebrate-shell"><button type="button" onclick="achievementDismissCelebration()" class="absolute right-4 top-4 z-10 w-9 h-9 rounded-xl text-slate-400 border border-white/10" style="background:rgba(255,255,255,.045)" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button><div class="ach-celebrate-kicker"><i class="fa-solid fa-sparkles mr-1.5"></i>Başarı kilidi açıldı</div><div class="ach-celebrate-medal ach-medal '+rarity+'"><i class="fa-solid '+achievementEsc(b.icon)+'"></i></div><div class="ach-rarity '+rarity+' inline-block">'+achievementEsc(ACHIEVEMENT_RARITY_LABEL[b.rarity])+'</div><div class="ach-celebrate-title">'+achievementEsc(b.name)+'</div><p class="ach-celebrate-copy">'+achievementEsc(b.description)+'<br><span style="color:#e0c58d">'+achievementEsc(tone)+'</span></p><div class="ach-celebrate-actions"><button type="button" onclick="achievementDismissCelebration()" class="ach-secondary">Şimdi değil</button><button type="button" onclick="achievementNextCelebration()" class="ach-primary">'+(many>1?'Sıradaki başarı ('+many+')':'Rozetlerime bak')+' <i class="fa-solid fa-arrow-right ml-1"></i></button></div>'+(many>1?'<div class="text-[9px] text-slate-500 mt-3">'+many+' yeni rozet sırada · en nadir olan önce gösteriliyor</div>':'')+'</div>';modal.classList.remove('hidden');try{if(navigator.vibrate)navigator.vibrate(b.rarity==='legendary'?[45,35,65,45,110]:b.rarity==='epic'?[35,30,70]:[30,35,45]);}catch(e){}}
   function achievementNextCelebration(){if(achievementQueue.length)achievementQueue.shift();if(achievementQueue.length)achievementShowNextCelebration();else{achievementCelebrationActive=false;const m=document.getElementById('achievementCelebration');if(m)m.classList.add('hidden');achievementOpen('all');}}
   function achievementDismissCelebration(){achievementQueue=[];achievementCelebrationActive=false;const m=document.getElementById('achievementCelebration');if(m)m.classList.add('hidden');}
+  // Gizli test aracı: Rozetlerim başlığına 7 kez hızlıca dokun. Testler kalıcı başarı durumu yazmaz.
+  let achievementHiddenTestTapCount=0,achievementHiddenTestTapStartedAt=0;
+  function achievementHiddenTestTap(event){
+    if(event){event.preventDefault();event.stopPropagation();}
+    const now=Date.now();
+    if(now-achievementHiddenTestTapStartedAt>4000)achievementHiddenTestTapCount=0;
+    achievementHiddenTestTapStartedAt=now;
+    achievementHiddenTestTapCount++;
+    if(achievementHiddenTestTapCount>=7){achievementHiddenTestTapCount=0;achievementOpenTestMenu();}
+  }
+  function achievementOpenTestMenu(){const modal=document.getElementById('achievementTestModal');if(modal){modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');}const status=document.getElementById('achievementTestStatus');if(status)status.textContent='Hazır. Gerçek rozet kayıtlarına dokunulmaz.';}
+  function achievementCloseTestMenu(){const modal=document.getElementById('achievementTestModal');if(modal){modal.classList.add('hidden');modal.setAttribute('aria-hidden','true');}}
+  function achievementBuildTestBadge(rarity){
+    const r=['common','uncommon','rare','epic','legendary'].includes(String(rarity||'').toLowerCase())?String(rarity).toLowerCase():'rare';
+    return{id:'__garajim_test_'+Date.now().toString(36),name:'Test Başarımı',category:'drive',rarity:r,icon:'fa-vial',description:'Bu bir deneme kutlamasıdır. Gerçek başarı kayıtların değiştirilmedi.',current:1,target:1,unit:'test',ok:true,ratio:1,progressText:'Test / Test',requirement:'Yalnızca kutlama ve saat bağlantısı testi'};
+  }
+  function achievementRunCelebrationTest(target){
+    const mode=['both','watch','phone'].includes(target)?target:'both';
+    const rarityEl=document.getElementById('achievementTestRarity');
+    const badge=achievementBuildTestBadge(rarityEl?rarityEl.value:'rare');
+    let wearCallStarted=false;
+    if(mode==='both'||mode==='watch')wearCallStarted=achievementSendWearCelebrations([badge]);
+    if(mode==='both'||mode==='phone'){
+      // Var olan bekleyen gerçek kutlamaları silme; sentetik test rozetini kuyruğun başına ekle.
+      achievementQueue.unshift(badge);
+      if(!achievementCelebrationActive)achievementShowNextCelebration();
+      achievementCloseTestMenu();
+    }
+    const status=document.getElementById('achievementTestStatus');
+    if(status){
+      if(mode==='phone')status.textContent='Telefon kutlaması gösterildi/gösterilmek üzere. Saat mesajı gönderilmedi.';
+      else if(wearCallStarted)status.textContent='Saat için mesaj gönderme çağrısı yapıldı. Bu, saatin mesajı aldığına dair onay değildir; saat bağlantısını ve bildirim iznini kontrol et.';
+      else status.textContent='Saat mesajı gönderilemedi: Garajım yerel köprüsü bulunamadı. Uygulamanın native APK sürümünü kullandığını kontrol et.';
+    }
+    return{mode:mode,rarity:badge.rarity,wearCallStarted:wearCallStarted,persistentAchievementCreated:false};
+  }
+  // İsteğe bağlı gizli komut: garajimTestAchievementCelebration('legendary') veya ('rare','watch').
+  window.garajimOpenAchievementTestMenu=achievementOpenTestMenu;
+  window.garajimTestAchievementCelebration=function(rarity,target){const select=document.getElementById('achievementTestRarity');if(select&&['common','uncommon','rare','epic','legendary'].includes(String(rarity||'').toLowerCase()))select.value=String(rarity).toLowerCase();return achievementRunCelebrationTest(target||'both');};
   function achievementMergeBackup(extras){if(!extras||typeof extras!=='object')return;const local=achievementStateGet(),incoming=extras.achievements;if(incoming&&typeof incoming==='object'){if(incoming.earned&&typeof incoming.earned==='object')Object.keys(incoming.earned).forEach(id=>{if(!local.earned[id])local.earned[id]=incoming.earned[id];else{const a=local.earned[id],b=incoming.earned[id];if(a&&b&&a.earnedAt&&b.earnedAt&&new Date(b.earnedAt)<new Date(a.earnedAt))local.earned[id]=b;}});local.initialized=!!(local.initialized||incoming.initialized);if(!local.initializedAt&&incoming.initializedAt)local.initializedAt=incoming.initializedAt;achievementStateSave(local);}const mergeRows=(key,rows,cap)=>{if(!Array.isArray(rows))return;const cur=key===ACHIEVEMENT_ACTIVITY_KEY?achievementActivityGet():achievementOdoGet(),have=new Set(cur.map(x=>x.id));rows.filter(x=>x&&x.id&&!have.has(x.id)).forEach(x=>{cur.push(x);have.add(x.id);});cur.sort((a,b)=>String(a.at||a.date||'').localeCompare(String(b.at||b.date||'')));try{localStorage.setItem(key,JSON.stringify(cur.slice(-cap)));}catch(e){}};mergeRows(ACHIEVEMENT_ACTIVITY_KEY,extras.activity,1200);mergeRows(ACHIEVEMENT_ODO_KEY,extras.odoHistory,1000);}
 
 

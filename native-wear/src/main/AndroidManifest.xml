@@ -3,6 +3,7 @@
     <uses-feature android:name="android.hardware.type.watch" android:required="true" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:allowBackup="true"
@@ -19,6 +20,7 @@
         <activity
             android:name=".WearMainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:taskAffinity=""
             android:label="@string/app_name"
             android:theme="@style/GarajimWear">
@@ -27,5 +29,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".GarajimWearCelebrationListener"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/garajim/achievement" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/garajim/alert" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

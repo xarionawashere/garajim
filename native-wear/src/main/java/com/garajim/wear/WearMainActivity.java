@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,9 +16,13 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.view.View;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.Tasks;
@@ -36,6 +41,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -47,6 +53,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final String PATH_STATE = "/garajim/ride_state";
     private static final String PATH_VEHICLES = "/garajim/vehicles";
     private static final String PATH_ALERT = "/garajim/alert";
+    private static final String PATH_ACHIEVEMENT = "/garajim/achievement";
+    public static final String EXTRA_ACHIEVEMENT_PAYLOAD = "garajim_achievement_payload";
+    public static volatile boolean activityVisible = false;
+    public static boolean isVisibleNow() { return activityVisible; }
     private static final String PATH_CMD = "/garajim/cmd";
     private static final String PATH_ACK = "/garajim/ack";
     private static final String PATH_LINK = "/garajim/link";
@@ -105,6 +115,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private int summaryElapsedSec = 0;
     private AlertDialog summaryDialog;
     private final List<VehicleOption> vehicles = new ArrayList<>();
+    private final ArrayDeque<JSONObject> achievementCelebrationQueue = new ArrayDeque<>();
+    private FrameLayout achievementOverlay;
+    private boolean achievementCelebrationShowing = false;
+    private Runnable achievementOverlayTimeout;
+    private static final int REQ_POST_NOTIFICATIONS = 6811;
 
     private static final class VehicleOption {
         final String id, plate, name, brand, model;
@@ -187,7 +202,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         if (tabC != null) tabC.setOnClickListener(v -> showWearPage(true));
         if (tabM != null) tabM.setOnClickListener(v -> showWearPage(false));
         showWearPage(true);
-
+        requestAchievementNotificationPermission();
+        handleAchievementIntent(getIntent());
 
         playEnter();
     }
@@ -423,6 +439,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     @Override protected void onResume() {
         super.onResume();
+        activityVisible = true;
         activityResumed = true;
         if (!pendingCommandId.isEmpty() && pendingResumeGrace) {
             // Kurtarma süresini komutun gönderildiği andan değil, ekrana geri dönüldüğü andan başlat.
@@ -458,6 +475,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     }
 
     @Override protected void onPause() {
+        activityVisible = false;
         activityResumed = false;
         if (!pendingCommandId.isEmpty()) {
             // Ekran uyursa, kısa ön plan zaman aşımı yerine sonradan gelecek Data Item ACK için
@@ -474,6 +492,27 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         super.onPause();
     }
 
+    @Override protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleAchievementIntent(intent);
+    }
+
+    private void requestAchievementNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            try { requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS); }
+            catch (Exception ignored) { }
+        }
+    }
+
+    private void handleAchievementIntent(android.content.Intent intent) {
+        if (intent == null || !intent.hasExtra(EXTRA_ACHIEVEMENT_PAYLOAD)) return;
+        String payload = intent.getStringExtra(EXTRA_ACHIEVEMENT_PAYLOAD);
+        intent.removeExtra(EXTRA_ACHIEVEMENT_PAYLOAD);
+        if (payload != null && !payload.isEmpty()) enqueueAchievementPayload(payload);
+    }
+
     @Override protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 4401 && resultCode == RESULT_OK && data != null) {
@@ -485,6 +524,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     }
 
     @Override protected void onDestroy() {
+        activityVisible = false;
+        if (achievementOverlayTimeout != null) mainHandler.removeCallbacks(achievementOverlayTimeout);
         mainHandler.removeCallbacks(connectionTicker);
         if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
         if (summaryDialog != null && summaryDialog.isShowing()) summaryDialog.dismiss();
@@ -493,6 +534,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     @Override public void onMessageReceived(MessageEvent event) {
         if (event == null || event.getData() == null) return;
+        if (PATH_ACHIEVEMENT.equals(event.getPath())) {
+            try { enqueueAchievementPayload(new String(event.getData(), StandardCharsets.UTF_8)); }
+            catch (Exception ignored) { }
+            return;
+        }
         if (PATH_ALERT.equals(event.getPath())) {
             try {
                 JSONObject alertPayload = new JSONObject(new String(event.getData(), StandardCharsets.UTF_8));
@@ -508,6 +554,197 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             processAck(ack.optString("id", ""), ack.optBoolean("accepted", false),
                     ack.optString("message", "Telefon yanıt verdi."));
         } catch (Exception ignored) { }
+    }
+
+    private void enqueueAchievementPayload(String rawPayload) {
+        try {
+            JSONObject payload = new JSONObject(rawPayload);
+            JSONArray items = payload.optJSONArray("items");
+            final ArrayList<JSONObject> safeItems = new ArrayList<>();
+            if (items != null) {
+                for (int i = 0; i < items.length() && i < 30; i++) {
+                    JSONObject item = items.optJSONObject(i);
+                    if (item != null && !item.optString("name", "").trim().isEmpty()) safeItems.add(new JSONObject(item.toString()));
+                }
+            } else if (!payload.optString("name", "").trim().isEmpty()) {
+                safeItems.add(new JSONObject(payload.toString()));
+            }
+            if (safeItems.isEmpty()) return;
+            runOnUiThread(() -> {
+                for (JSONObject item : safeItems) achievementCelebrationQueue.addLast(item);
+                if (!achievementCelebrationShowing) showNextAchievementCelebration();
+            });
+        } catch (Exception ignored) { }
+    }
+
+    private void showNextAchievementCelebration() {
+        JSONObject item = achievementCelebrationQueue.pollFirst();
+        if (item == null) {
+            achievementCelebrationShowing = false;
+            removeAchievementOverlay(false);
+            return;
+        }
+        achievementCelebrationShowing = true;
+        removeAchievementOverlay(false);
+        final String name = item.optString("name", "Yeni başarım");
+        final String rarity = item.optString("rarity", "common").toLowerCase(Locale.ROOT);
+        final String rarityLabel = item.optString("rarityLabel", rarityLabel(rarity));
+        final String description = item.optString("description", "Garajım yolculuğunda yeni bir başarı kazandın.");
+        final int accent = rarityColor(rarity);
+
+        FrameLayout content = findViewById(android.R.id.content);
+        if (content == null) {
+            buzzAchievementRarity(rarity);
+            mainHandler.postDelayed(this::showNextAchievementCelebration, 3500L);
+            return;
+        }
+        FrameLayout overlay = new FrameLayout(this);
+        overlay.setBackgroundColor(0xD900050D);
+        overlay.setClickable(true);
+        overlay.setFocusable(true);
+
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setGravity(Gravity.CENTER_HORIZONTAL);
+        card.setPadding(dp(16), dp(17), dp(16), dp(15));
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setColor(0xFF111827);
+        cardBg.setCornerRadius(dp(24));
+        cardBg.setStroke(dp(2), accent);
+        card.setBackground(cardBg);
+        card.setElevation(dp(8));
+
+        TextView kicker = new TextView(this);
+        kicker.setText("✦  BAŞARIM KAZANDIN  ✦");
+        kicker.setTextColor(accent);
+        kicker.setTextSize(10);
+        kicker.setTypeface(null, android.graphics.Typeface.BOLD);
+        kicker.setGravity(Gravity.CENTER);
+        card.addView(kicker, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView medal = new TextView(this);
+        medal.setText("🏆");
+        medal.setTextSize(34);
+        medal.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams medalLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        medalLp.topMargin = dp(5);
+        card.addView(medal, medalLp);
+
+        TextView title = new TextView(this);
+        title.setText(name);
+        title.setTextColor(Color.WHITE);
+        title.setTextSize(18);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setGravity(Gravity.CENTER);
+        title.setMaxLines(2);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        titleLp.topMargin = dp(4);
+        card.addView(title, titleLp);
+
+        TextView rarityView = new TextView(this);
+        rarityView.setText(rarityLabel.toUpperCase(Locale.ROOT));
+        rarityView.setTextColor(accent);
+        rarityView.setTextSize(10);
+        rarityView.setTypeface(null, android.graphics.Typeface.BOLD);
+        rarityView.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams rarityLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rarityLp.topMargin = dp(3);
+        card.addView(rarityView, rarityLp);
+
+        TextView body = new TextView(this);
+        body.setText(description);
+        body.setTextColor(0xFFD1D5DB);
+        body.setTextSize(11);
+        body.setGravity(Gravity.CENTER);
+        body.setMaxLines(3);
+        LinearLayout.LayoutParams bodyLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        bodyLp.topMargin = dp(8);
+        bodyLp.bottomMargin = dp(12);
+        card.addView(body, bodyLp);
+
+        Button dismiss = new Button(this);
+        dismiss.setText(achievementCelebrationQueue.isEmpty() ? "Harika!" : "Sıradaki başarım");
+        dismiss.setTextColor(Color.WHITE);
+        dismiss.setTextSize(12);
+        dismiss.setAllCaps(false);
+        GradientDrawable buttonBg = new GradientDrawable();
+        buttonBg.setColor(accent);
+        buttonBg.setCornerRadius(dp(18));
+        dismiss.setBackground(buttonBg);
+        dismiss.setOnClickListener(v -> removeAchievementOverlay(true));
+        card.addView(dismiss, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(40)));
+
+        FrameLayout.LayoutParams cardLp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+        cardLp.setMargins(dp(12), dp(12), dp(12), dp(12));
+        overlay.addView(card, cardLp);
+        content.addView(overlay, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        achievementOverlay = overlay;
+        overlay.setAlpha(0f);
+        card.setScaleX(0.94f);
+        card.setScaleY(0.94f);
+        overlay.animate().alpha(1f).setDuration(180L).start();
+        card.animate().scaleX(1f).scaleY(1f).setDuration(220L).setInterpolator(new OvershootInterpolator(0.7f)).start();
+        buzzAchievementRarity(rarity);
+        achievementOverlayTimeout = () -> removeAchievementOverlay(true);
+        mainHandler.postDelayed(achievementOverlayTimeout, 8500L);
+    }
+
+    private void removeAchievementOverlay(boolean advance) {
+        if (achievementOverlayTimeout != null) mainHandler.removeCallbacks(achievementOverlayTimeout);
+        achievementOverlayTimeout = null;
+        if (achievementOverlay != null) {
+            View old = achievementOverlay;
+            achievementOverlay = null;
+            ViewGroup parent = (ViewGroup) old.getParent();
+            if (parent != null) {
+                old.animate().cancel();
+                old.animate().alpha(0f).setDuration(120L).withEndAction(() -> parent.removeView(old)).start();
+            }
+        }
+        if (advance) {
+            mainHandler.postDelayed(this::showNextAchievementCelebration, 130L);
+        }
+    }
+
+    private void buzzAchievementRarity(String rarity) {
+        try {
+            Vibrator vib;
+            if (Build.VERSION.SDK_INT >= 31) {
+                VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+                vib = vm != null ? vm.getDefaultVibrator() : null;
+            } else vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            if (vib == null || !vib.hasVibrator()) return;
+            long[] pattern;
+            switch (rarity) {
+                case "legendary": pattern = new long[]{0, 70, 35, 70, 35, 150, 55, 230}; break;
+                case "epic": pattern = new long[]{0, 70, 40, 70, 80, 120}; break;
+                case "rare": pattern = new long[]{0, 60, 45, 100}; break;
+                case "uncommon": pattern = new long[]{0, 45, 60, 50}; break;
+                default: pattern = new long[]{0, 45}; break;
+            }
+            if (Build.VERSION.SDK_INT >= 26) vib.vibrate(VibrationEffect.createWaveform(pattern, -1));
+            else vib.vibrate(pattern, -1);
+        } catch (Exception ignored) { }
+    }
+
+    private int rarityColor(String rarity) {
+        switch (rarity) {
+            case "uncommon": return 0xFF34D399;
+            case "rare": return 0xFF60A5FA;
+            case "epic": return 0xFFC084FC;
+            case "legendary": return 0xFFFBBF24;
+            default: return 0xFF9CA3AF;
+        }
+    }
+
+    private String rarityLabel(String rarity) {
+        switch (rarity) {
+            case "uncommon": return "Gelişmiş";
+            case "rare": return "Nadir";
+            case "epic": return "Destansı";
+            case "legendary": return "Efsanevi";
+            default: return "Standart";
+        }
     }
 
     private void processAck(String id, boolean accepted, String message) {

@@ -1,0 +1,17 @@
+const fs = require('fs');
+const path = require('path');
+const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'index.html'), 'utf8');
+const ok = (condition, message) => { console.log((condition ? 'PASS ' : 'FAIL ') + message); if (!condition) process.exitCode = 1; };
+ok(/id="achievementTestModal"[^>]*class="[^"]*hidden/.test(html), 'gizli test menüsü normalde kapalı');
+ok(/achievementHiddenTestTap\(event\)/.test(html) && /Rozetlerim<\/h3>/.test(html), 'test menüsü Rozetlerim başlığına gizli dokunmayla açılır');
+ok(/achievementHiddenTestTapCount>=7/.test(html) && /now-achievementHiddenTestTapStartedAt>4000/.test(html), '7 dokunuş ve zaman penceresi kontrolü var');
+ok(/window\.garajimOpenAchievementTestMenu=achievementOpenTestMenu/.test(html), 'gizli test menüsü için yardımcı komut var');
+ok(/window\.garajimTestAchievementCelebration=function\(rarity,target\)/.test(html), 'tek komutla kutlama testi çağrılabilir');
+ok(/achievementRunCelebrationTest\('both'\)/.test(html) && /achievementRunCelebrationTest\('watch'\)/.test(html) && /achievementRunCelebrationTest\('phone'\)/.test(html), 'telefon+saat, yalnızca saat ve yalnızca telefon testleri mevcut');
+ok(/achievementSendWearCelebrations\(\[badge\]\)/.test(html), 'saat testi gerçek başarı protokolünü kullanıyor');
+ok(/achievementQueue\.unshift\(badge\)/.test(html) && /achievementShowNextCelebration\(\)/.test(html), 'telefon testi mevcut kutlama görünümünü kullanıyor');
+const start = html.indexOf('  function achievementBuildTestBadge(rarity)');
+const end = html.indexOf('\n  // İsteğe bağlı gizli komut:', start);
+const block = start >= 0 && end > start ? html.slice(start, end) : '';
+ok(!!block && !/achievementStateSave|achievementEvaluate\(|localStorage\.setItem|achievementRecordActivity/.test(block), 'test fonksiyonları başarı durumunu veya aktivite kaydını değiştirmiyor');
+ok(/Bu bir deneme kutlamasıdır/.test(block) && /persistentAchievementCreated:false/.test(block), 'test başarımı geçici olarak tanımlı ve kalıcı başarı üretmiyor');

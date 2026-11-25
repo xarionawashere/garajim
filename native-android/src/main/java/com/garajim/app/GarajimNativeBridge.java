@@ -212,6 +212,13 @@ public class GarajimNativeBridge {
         try { GarajimWearSync.pushAlert(context, kind, msg); } catch (Exception ignored) { }
     }
 
+    /** Yeni kazanılan rozetleri yalnızca o anda bağlı saata yollar; geriye dönük/eski kutlama kuyruğu oluşturmaz. */
+    @JavascriptInterface
+    public void pushWearAchievements(String json) {
+        try { GarajimWearSync.pushAchievements(context, json); }
+        catch (Exception ignored) { }
+    }
+
     /** DNA kutlaması yalnızca o anda bağlı saata iletilir; bağlantı yoksa bekletilmez. */
     @JavascriptInterface
     public void pushWearDnaCelebration(String msg) {
