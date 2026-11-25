@@ -1,0 +1,21 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.dirname(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+const listener = read('native-wear/src/main/java/com/garajim/wear/GarajimWearCelebrationListener.java');
+const gradle = read('native-wear/build.gradle');
+const workflow = read('.github/workflows/build-apk.yml');
+const pkg = JSON.parse(read('package.json'));
+const manifest = read('native-wear/src/main/AndroidManifest.xml');
+const ok = (condition, message) => { console.log((condition ? 'PASS ' : 'FAIL ') + message); if (!condition) process.exitCode = 1; };
+ok(/vibrateAchievementRarity\(rarity\);/.test(listener), 'başarım bildirimi sonrasında servis doğrudan titreşimi tetikliyor');
+ok(/VibratorManager/.test(listener) && /getDefaultVibrator\(\)/.test(listener), 'Wear OS için VibratorManager kullanılıyor');
+ok(/VibrationEffect\.createWaveform\(pattern, -1\)/.test(listener), 'nadirliğe göre titreşim dalga biçimi kullanılıyor');
+ok(/VibrationAttributes\.createForUsage\(VibrationAttributes\.USAGE_NOTIFICATION\)/.test(listener), 'Android 13+ titreşimi bildirim kullanım türüyle çağırıyor');
+ok(/AudioAttributes\.Builder\(\)[\s\S]*?setUsage\(AudioAttributes\.USAGE_NOTIFICATION\)[\s\S]*?vibrator\.vibrate\(effect, attributes\)/.test(listener), 'Android 8–12 arka plan titreşimi bildirim kullanım türüyle çağırıyor');
+ok(/CHANNEL_PREFIX = "garajim_achievement_v2_"/.test(listener), 'eski ve ayarı kilitlenmiş bildirim kanallarından farklı v2 kanalı kullanılıyor');
+ok(/channel\.enableVibration\(false\)/.test(listener), 'kanal titreşimi kapalı; çift titreşim yerine tek doğrudan haptik var');
+ok(/setVibrationPattern\(vibrationPattern\(rarity\)\)/.test(listener) === false, 'eski kanal desenine bağlı pasif titreşim davranışı kaldırılmış');
+ok(/android\.permission\.VIBRATE/.test(manifest), 'Wear manifestinde VIBRATE izni mevcut');
+ok(pkg.version === '1.4.2' && /versionCode 16/.test(gradle) && /versionName "1\.4\.2"/.test(gradle)
+  && /versionCode=14, versionName=1\.4\.2/.test(workflow), 'telefon ve saat APK sürümü 1.4.2 olarak artırılmış');

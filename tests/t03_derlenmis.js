@@ -1,4 +1,4 @@
-const {JSDOM}=require('jsdom');const path=require('path');
+const {JSDOM}=require('jsdom');const path=require('path');const fsx=require('fs');
 let errors=[], fetched=[];
 const cacheStore=new Map();
 const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)process.exitCode=1};
@@ -24,7 +24,7 @@ const w=dom.window,ev=s=>w.eval(s);
 await new Promise(r=>w.addEventListener('load',r)); await new Promise(r=>setTimeout(r,1500));
 ok(errors.length===0,'sayfa hatasız yüklendi '+errors.join('|'));
 ok(['Chart','L','jspdf','Tesseract'].every(k=>typeof w[k]!=='undefined'),'yerel kütüphaneler yüklendi: Chart, Leaflet, jsPDF, Tesseract');
-ok(typeof w.L.TileLayer.Cached==='function','önbellekli harita katmanı tanımlı');
+ok(typeof w.tileLayerCached==='function','harita katmanı sağlayıcı önbelleğine bağlı');
 ok(!/cdn\.|unpkg|cdnjs|googleapis/.test(w.document.documentElement.outerHTML.replace(/https:\/\/(www\.)?(google|router|tile|server|api|generative|calendar)[^"' ]*/g,'')),'sayfada CDN bağlantısı yok');
 // OCR yolları
 const T=w.TESS_OPTS; ok(T&&/vendor\/tesseract\/worker\.min\.js$/.test(T.workerPath)&&/vendor\/tesseract\/core$/.test(T.corePath)&&/vendor\/tesseract\/lang$/.test(T.langPath),'OCR yolları yerel');
@@ -55,10 +55,9 @@ w.parkDelete(); ok(ev("parkGet()")===null,'park silindi');
 // widget park eylemi
 w.__q('park'); w.garajimCheckAction(); await new Promise(r=>setTimeout(r,50)); ok(ev("parkGet()")!==null,'widget 🅿 tuşu park yerini kaydetti');
 // harita önbelleği
-await ev("tileFetchStore('https://tile.openstreetmap.org/1/1/1.png')"); ok((await ev("tileFromCache('https://tile.openstreetmap.org/1/1/1.png')"))!==null,'harita karesi önbelleğe yazıldı ve okundu');
-ok((await ev("tileFromCache('https://tile.openstreetmap.org/9/9/9.png')"))===null,'önbellekte olmayan kare null');
+ok(!/tileFetchStore|tileFromCache|TileLayer\.Cached/.test(fsx.readFileSync(path.join(__dirname,'..','index.html'),'utf8')),'uygulama OSM karesi için toplu özel önbellek indirmesi yapmıyor');
 w.__rm=ev('ride.map'); fetched.length=0; ev("ride.map={getBounds:()=>({getWest:()=>28.99,getEast:()=>29.0,getNorth:()=>41.01,getSouth:()=>41.0}),getZoom:()=>15,__base:{_url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}}");
-await ev("rideSaveOfflineArea()"); ok(fetched.length>0&&fetched.length<=150&&fetched.every(u=>/tile\.openstreetmap\.org\/\d+\/\d+\/\d+\.png/.test(u)),'çevrimdışı alan kaydı: '+fetched.length+' kare (≤150)');
+await ev("rideSaveOfflineArea()"); ok(fetched.length===0,'OSM toplu çevrimdışı karo indirmesi devre dışı; rota için internet gerekir');
 ev('ride.map=__rm');
 // Tailwind kapsama
 w.eval("vehicles=[{id:'v1',plate:'34 ABC 123',brand:'Honda',model:'CB',km:1700,history:[{date:'2026-01-02',km:1000,desc:'x',cost:100,cat:'bakim'}],fuelLogs:[]}]"); w.showTab('garage'); w.openDetail('v1'); w.showTab('ride'); w.showTab('assistant'); w.showTab('social'); w.showTab('garage');

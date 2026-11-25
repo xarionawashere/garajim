@@ -26,7 +26,7 @@ for (const id of ['btnVehicle', 'btnToggle', 'btnStop', 'btnPendingSummary', 'bt
 check(/android:contentDescription="Önceki parça"/.test(xml)
   && /android:contentDescription="Oynat veya duraklat"/.test(xml)
   && /android:contentDescription="Sonraki parça"/.test(xml), 'Müzik ikonlarında ekran okuyucu adları vardır');
-check(/versionCode 13/.test(gradle) && /versionName "1\.3\.9"/.test(gradle)
-  && /versionCode=11, versionName=1\.3\.9/.test(workflow)
-  && /"version": "1\.3\.9"/.test(pkg), 'Telefon, saat ve kaynak paket sürümleri 1.3.9 olarak eşleşir');
+check(/versionCode 16/.test(gradle) && /versionName "1\.4\.2"/.test(gradle)
+  && /versionCode=14, versionName=1\.4\.2/.test(workflow)
+  && /"version": "1\.4\.2"/.test(pkg), 'Telefon, saat ve kaynak paket sürümleri 1.4.2 olarak eşleşir');
 process.exit(failures ? 1 : 0);

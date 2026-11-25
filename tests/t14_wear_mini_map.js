@@ -15,8 +15,8 @@ check(ride.includes('buildMiniRouteJson()') && ride.includes('Math.min(24, count
 check(sync.includes('putString("routeJson", o.optString("routeJson", "[]"))'), 'Rota Wearable Data Layer üzerinden taşınır');
 check(map.includes('drawRoute(Canvas c') && map.includes('Color') && map.includes('drawWaiting(Canvas c'), 'Saat rota çizgisi ve GPS bekleme durumunu çizebilir');
 check(map.includes('lng * cos') && map.includes('points.size() >= 2'), 'GPS enlem/boylamları mini haritada ölçeklenir');
-check(/versionCode 13/.test(read('native-wear/build.gradle')) && /versionName \"1.3.9\"/.test(read('native-wear/build.gradle')), 'Wear OS sürümü 1.3.9 ve versionCode 13');
-check(/versionCode=11, versionName=1\.3\.9/.test(read('.github/workflows/build-apk.yml')) && /\"version\": \"1.3.9\"/.test(read('package.json')), 'Telefon workflow ve paket sürümü 1.3.9');
+check(/versionCode 16/.test(read('native-wear/build.gradle')) && /versionName \"1.4.2\"/.test(read('native-wear/build.gradle')), 'Wear OS sürümü 1.4.2 ve versionCode 16');
+check(/versionCode=14, versionName=1\.4\.2/.test(read('.github/workflows/build-apk.yml')) && /\"version\": \"1.4.2\"/.test(read('package.json')), 'Telefon workflow ve paket sürümü 1.4.2');
 check(layout.includes('@+id/wearDistance') && layout.includes('@+id/wearDuration') && layout.includes('@+id/wearMaxSpeed'), 'Saat kokpitinde mesafe, süre ve maksimum hız ayrı okunabilir ölçümlerde gösterilir');
 check(wear.includes('map.getDouble("maxKmh", 0)') && wear.includes('wearMaxSpeed'), 'Maksimum hız telefondan gelen sürüş durumundan gösterilir');
 check(ride.includes('catch (JSONException e)') && ride.includes('buildMiniRouteJson()'), 'Rota JSON oluşturulurken JSONException kontrollü biçimde ele alınır');

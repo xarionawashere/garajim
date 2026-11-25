@@ -41,13 +41,16 @@ w.nvSelect(1); ok(ev('nv.sel')===1,'rota 2 seçildi'); w.nvSelect(0);
 w.nvStart(); ok(vis('navBanner')&&ev('nv.active'),'navigasyon başladı, üst bilgi kutusu açık');
 ok(d.getElementById('navText').textContent==='Sağa dön · Moda Cd.','ilk yönerge: '+d.getElementById('navText').textContent);
 ok(/1[,.]1 km/.test(d.getElementById('navDist').textContent),'dönüşe mesafe: '+d.getElementById('navDist').textContent);
-ok(/Varış \d\d:\d\d/.test(d.getElementById('navEta').textContent),'varış saati: '+d.getElementById('navEta').textContent);
+ok(/(?:Tahmini )?varış \d\d:\d\d/i.test(d.getElementById('navEta').textContent),'varış saati: '+d.getElementById('navEta').textContent);
+ok(d.getElementById('navGpsStatus').textContent.includes('GPS'),'navigasyon GPS doğruluk durumu gösteriliyor: '+d.getElementById('navGpsStatus').textContent);
+ok(!!JSON.parse(w.localStorage.getItem('garaj_nav_session_v2')||'null'),'aktif navigasyon oturumu güvenli biçimde kaydedildi');
 const fix=(la,lo)=>watchCb({coords:{latitude:la,longitude:lo,accuracy:5,speed:10,heading:0},timestamp:Date.now()});
 fix(41.0075,29); ok(said.some(t=>/sonra sağa dön/.test(t)),'~250 m kala sesli uyarı: "'+(said.find(t=>/sonra/.test(t))||'')+'"');
 ok(/2[0-9]0 m|3[0-9]0 m/.test(d.getElementById('navDist').textContent),'mesafe azaldı: '+d.getElementById('navDist').textContent);
 fix(41.0098,29); ok(said.filter(t=>t==='Sağa dön · Moda Cd.').length===1,'dönüşte tam yönerge okundu');
 fix(41.0112,29); ok(d.getElementById('navText').textContent.startsWith('Varış noktasına'),'dönüşü geçince sıradaki yönerge: varış');
 fix(41.0199,29); await sleep(30); ok(!vis('navBanner')&&!ev('nv.active'),'varışta navigasyon kapandı');
+ok(!w.localStorage.getItem('garaj_nav_session_v2'),'varışta devam oturumu temizlendi');
 // ---- rotadan çıkma → yeniden rota
 fix(41.0,29); w.nvRouteTo({name:'Kadıköy',lat:41.02,lng:29}); await sleep(60); w.nvStart(); const before=fetched.filter(u=>u.includes('osrm')).length;
 fix(41.005,29.003); fix(41.0052,29.0031); fix(41.0054,29.0032); await sleep(80);

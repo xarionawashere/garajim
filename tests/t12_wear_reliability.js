@@ -45,8 +45,8 @@ check(!!syncNativeBlock && /pushWearVehicles/.test(syncNativeBlock[1]),
 check(/Tasks\.await\(Wearable\.getDataClient\(app\)\.putDataItem\(req\.asPutDataRequest\(\)\)\)/.test(wearSync)
   && /lastJson = json/.test(wearSync),
   'Saat durumunun gönderim önbelleği yalnızca başarılı yazımdan sonra güncellenir');
-check(/versionCode 13/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
-  && /versionCode=11/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8')),
+check(/versionCode 16/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
+  && /versionCode=14/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8')),
   'Telefon ve saat paket sürüm kodları yükseltilir');
 
 process.exit(failures ? 1 : 0);

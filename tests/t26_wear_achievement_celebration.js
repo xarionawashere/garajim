@@ -35,6 +35,6 @@ ok(/PATH_ACHIEVEMENT\s*=\s*"\/garajim\/achievement"/.test(sync) && /sendMessage\
 ok(/PATH_ACHIEVEMENT\.equals\(event\.getPath\(\)\)/.test(activity) && /BAŞARIM KAZANDIN/.test(activity), 'saat uygulaması başarı kutlama katmanını açıyor');
 ok(/buzzAchievementRarity/.test(activity) && /case "legendary"/.test(activity), 'saatte nadirliğe göre ayrı titreşim düzenleri var');
 ok(/GarajimWearCelebrationListener/.test(manifest) && /MESSAGE_RECEIVED/.test(manifest) && /pathPrefix="\/garajim\/achievement"/.test(manifest), 'uygulama kapalıyken mesaj dinleyicisi manifestte kayıtlı');
-ok(/setVibrationPattern\(vibrationPattern\(rarity\)\)/.test(listener) && /notify\(notificationId/.test(listener), 'arka plan başarım bildirimi ve nadirliğe göre bildirim titreşimi var');
+ok(/CHANNEL_PREFIX = "garajim_achievement_v2_"/.test(listener) && /vibrateAchievementRarity\(rarity\)/.test(listener) && /notify\(notificationId/.test(listener), 'arka plan başarım bildirimi ve doğrudan nadirlik titreşimi var');
 ok(/POST_NOTIFICATIONS/.test(manifest) && /requestAchievementNotificationPermission/.test(activity), 'saat bildirim izni isteniyor');
-ok(packageJson.version === '1.3.9' && /versionCode 13/.test(gradle) && /versionName "1\.3\.9"/.test(gradle) && /versionCode=11, versionName=1\.3\.9/.test(workflow), 'telefon ve Wear APK sürümleri yükseltildi');
+ok(packageJson.version === '1.4.2' && /versionCode 16/.test(gradle) && /versionName "1\.4\.2"/.test(gradle) && /versionCode=14, versionName=1\.4\.2/.test(workflow), 'telefon ve Wear APK sürümleri yükseltildi');
