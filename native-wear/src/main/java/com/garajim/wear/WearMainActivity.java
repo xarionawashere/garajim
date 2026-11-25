@@ -492,7 +492,17 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     }
 
     @Override public void onMessageReceived(MessageEvent event) {
-        if (event == null || !PATH_ACK.equals(event.getPath()) || event.getData() == null) return;
+        if (event == null || event.getData() == null) return;
+        if (PATH_ALERT.equals(event.getPath())) {
+            try {
+                JSONObject alertPayload = new JSONObject(new String(event.getData(), StandardCharsets.UTF_8));
+                applyAlert(alertPayload.optString("kind", "info"),
+                        alertPayload.optString("msg", "Uyarı"),
+                        alertPayload.optLong("ts", System.currentTimeMillis()));
+            } catch (Exception ignored) { }
+            return;
+        }
+        if (!PATH_ACK.equals(event.getPath())) return;
         try {
             JSONObject ack = new JSONObject(new String(event.getData(), StandardCharsets.UTF_8));
             processAck(ack.optString("id", ""), ack.optBoolean("accepted", false),
@@ -773,21 +783,27 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     }
 
     private void applyAlert(DataMap map) {
-        long ts = map.getLong("ts", 0);
+        if (map == null) return;
+        applyAlert(map.getString("kind", "info"), map.getString("msg", "Uyarı"), map.getLong("ts", 0L));
+    }
+
+    private void applyAlert(String kind, String msg, long ts) {
         if (ts > 0 && ts <= lastAlertTs) return;
-        lastAlertTs = ts;
-        final String msg = map.getString("msg", "Uyarı");
-        final String kind = map.getString("kind", "info");
+        lastAlertTs = ts > 0 ? ts : System.currentTimeMillis();
+        final String safeMsg = msg == null ? "Uyarı" : msg;
+        final String safeKind = kind == null ? "info" : kind;
+        final int color = "limit".equals(safeKind) ? 0xFFEF4444
+                : ("dna".equals(safeKind) ? 0xFF4ADE80 : 0xFFFBBF24);
         runOnUiThread(() -> {
-            visibleAlertKind = kind;
-            showAlertAnimated(msg, "limit".equals(kind) ? 0xFFEF4444 : 0xFFFBBF24);
-            if (!"limit".equals(kind)) {
+            visibleAlertKind = safeKind;
+            showAlertAnimated(safeMsg, color);
+            if (!"limit".equals(safeKind)) {
                 mainHandler.postDelayed(() -> {
-                    if (kind.equals(visibleAlertKind) && !lastOverLimit) hideAlertAnimated();
+                    if (safeKind.equals(visibleAlertKind) && !lastOverLimit) hideAlertAnimated();
                 }, 6500L);
             }
         });
-        buzz("limit".equals(kind) ? 2 : 1);
+        buzz("limit".equals(safeKind) ? 2 : ("dna".equals(safeKind) ? 3 : 1));
     }
 
     private void hideAlertAnimated() {
