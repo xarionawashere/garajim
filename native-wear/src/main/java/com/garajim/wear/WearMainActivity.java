@@ -48,7 +48,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** GarajÄ±m Wear OS: araÃ§ seÃ§imi, sÃ¼rÃ¼ÅŸ kontrolÃ¼ ve sÃ¼rÃ¼ÅŸ bitirme/kayÄ±t kararlarÄ± saatten yapÄ±lÄ±r. */
+/** Garajım Wear OS: araç seçimi, sürüş kontrolü ve sürüş bitirme/kayıt kararları saatten yapılır. */
 public class WearMainActivity extends Activity implements DataClient.OnDataChangedListener, MessageClient.OnMessageReceivedListener {
     private static final String PATH_STATE = "/garajim/ride_state";
     private static final String PATH_VEHICLES = "/garajim/vehicles";
@@ -92,7 +92,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private int lastShownSpeed = -1;
     private boolean entered;
     private boolean phoneConnected = false;
-    private Boolean lastPhoneLinkUi = null; // toast iÃ§in Ã¶nceki durum
+    private Boolean lastPhoneLinkUi = null; // toast için önceki durum
     private boolean connectionChecked = false;
     private boolean gpsReady = false;
     private volatile long lastStateAt = 0L;
@@ -135,8 +135,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         String label() {
             String title = !plate.isEmpty() ? plate : (!name.isEmpty() ? name : (brand + " " + model).trim());
             String detail = (brand + " " + model).trim();
-            if (title.isEmpty()) title = "AraÃ§";
-            if (!detail.isEmpty() && !detail.equalsIgnoreCase(title)) return title + " Â· " + detail;
+            if (title.isEmpty()) title = "Araç";
+            if (!detail.isEmpty() && !detail.equalsIgnoreCase(title)) return title + " · " + detail;
             return title;
         }
     }
@@ -196,7 +196,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         wirePress(findViewById(R.id.btnPark), v -> { send("park_where"); showPark(); });
         wirePress(btnVehicle, v -> showVehiclePicker());
         wirePress(btnPendingSummary, v -> showPendingSummaryDialog());
-        if (status != null) status.setText("HazÄ±r");
+        if (status != null) status.setText("Hazır");
         updateConnectionUi();
         View fuelQ = findViewById(R.id.btnFuelQuick);
         if (fuelQ != null) wirePress(fuelQ, v -> send("fuel_quick"));
@@ -207,11 +207,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             try {
                 android.content.Intent si = new android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 si.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                si.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Pin notu sÃ¶yle");
+                si.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Pin notu söyle");
                 startActivityForResult(si, 4401);
             } catch (Exception e) {
                 send("voice_pin");
-                Toast.makeText(this, "Ses yok Â· pin komutu telefona gitti", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Ses yok · pin komutu telefona gitti", Toast.LENGTH_SHORT).show();
             }
         });
         View tabC = findViewById(R.id.tabCockpit);
@@ -237,13 +237,13 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private void onTogglePressed() {
         if (!running && pendingSummary) {
             showPendingSummaryDialog();
-            Toast.makeText(this, "Ã–nce bekleyen sÃ¼rÃ¼ÅŸ Ã¶zetini tamamla", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Önce bekleyen sürüş özetini tamamla", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!running) {
             if (vehicles.isEmpty()) {
                 send("request_sync");
-                Toast.makeText(this, "AraÃ§ listesi telefondan bekleniyor", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Araç listesi telefondan bekleniyor", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (selectedVehicleId.isEmpty() || findVehicle(selectedVehicleId) == null) {
@@ -251,7 +251,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 return;
             }
         }
-        // Toggle yerine aÃ§Ä±k komut kullan: gecikmiÅŸ/tekrarlanmÄ±ÅŸ mesaj sÃ¼rÃ¼ÅŸ durumunu tersine Ã§evirmesin.
+        // Toggle yerine açık komut kullan: gecikmiş/tekrarlanmış mesaj sürüş durumunu tersine çevirmesin.
         if (!running) send(selectedVehicleId.isEmpty() ? "start" : "start|" + selectedVehicleId);
         else if (paused) send("resume");
         else send("pause");
@@ -259,7 +259,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private void confirmStopOnWatch() {
         if (!running && !pendingSummary) {
-            Toast.makeText(this, "Aktif sÃ¼rÃ¼ÅŸ yok", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Aktif sürüş yok", Toast.LENGTH_SHORT).show();
             return;
         }
         if (pendingSummary && !running) {
@@ -267,11 +267,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             return;
         }
         boolean veryShort = lastDistM < 30 && lastElapsedSec < 20;
-        String message = veryShort ? "Ã‡ok kÄ±sa sÃ¼rÃ¼ÅŸ. Bitirilsin mi?" : "SÃ¼rÃ¼ÅŸÃ¼ bitirip Ã¶zeti gÃ¶ster?";
+        String message = veryShort ? "Çok kısa sürüş. Bitirilsin mi?" : "Sürüşü bitirip özeti göster?";
         new AlertDialog.Builder(this)
-                .setTitle("SÃ¼rÃ¼ÅŸÃ¼ bitir")
+                .setTitle("Sürüşü bitir")
                 .setMessage(message)
-                .setNegativeButton("VazgeÃ§", (d, w) -> { })
+                .setNegativeButton("Vazgeç", (d, w) -> { })
                 .setPositiveButton("Bitir", (d, w) -> send("stop_confirmed"))
                 .show();
     }
@@ -286,15 +286,15 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private void showVehiclePicker() {
         if (running) {
-            new AlertDialog.Builder(this).setTitle("AraÃ§ deÄŸiÅŸtirilemiyor")
-                    .setMessage("Aktif sÃ¼rÃ¼ÅŸ sÄ±rasÄ±nda araÃ§ deÄŸiÅŸtirilemez. Ã–nce sÃ¼rÃ¼ÅŸÃ¼ bitir.")
+            new AlertDialog.Builder(this).setTitle("Araç değiştirilemiyor")
+                    .setMessage("Aktif sürüş sırasında araç değiştirilemez. Önce sürüşü bitir.")
                     .setPositiveButton("Tamam", null).show();
             return;
         }
         if (vehicles.isEmpty()) {
             send("request_sync");
-            new AlertDialog.Builder(this).setTitle("AraÃ§ seÃ§")
-                    .setMessage("AraÃ§ listesi henÃ¼z telefondan gelmedi. Telefon ve saat baÄŸlantÄ±sÄ±nÄ± kontrol edip tekrar dene.")
+            new AlertDialog.Builder(this).setTitle("Araç seç")
+                    .setMessage("Araç listesi henüz telefondan gelmedi. Telefon ve saat bağlantısını kontrol edip tekrar dene.")
                     .setPositiveButton("Tekrar dene", (d, w) -> send("request_sync"))
                     .setNegativeButton("Kapat", null).show();
             return;
@@ -306,7 +306,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (vehicles.get(i).id.equals(selectedVehicleId)) checked = i;
         }
         new AlertDialog.Builder(this)
-                .setTitle("SÃ¼rÃ¼ÅŸ aracÄ±")
+                .setTitle("Sürüş aracı")
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     VehicleOption v = vehicles.get(which);
                     selectedVehicleId = v.id;
@@ -314,7 +314,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     updateVehicleButton();
                     dialog.dismiss();
                     send("select_vehicle|" + v.id);
-                    Toast.makeText(this, "AraÃ§ seÃ§imi gÃ¶nderildi", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Araç seçimi gönderildi", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Kapat", null)
                 .show();
@@ -325,17 +325,17 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         VehicleOption chosen = findVehicle(selectedVehicleId);
         if (chosen != null) {
             String label = chosen.plate.isEmpty() ? chosen.label() : chosen.plate;
-            btnVehicle.setText("AraÃ§: " + label);
+            btnVehicle.setText("Araç: " + label);
         } else if (!selectedPlate.isEmpty()) {
-            btnVehicle.setText("AraÃ§: " + selectedPlate);
+            btnVehicle.setText("Araç: " + selectedPlate);
         } else {
-            btnVehicle.setText("AraÃ§ seÃ§");
+            btnVehicle.setText("Araç seç");
         }
     }
 
     private void showPendingSummaryDialog() {
         if (!pendingSummary || pendingSummaryId.isEmpty()) {
-            Toast.makeText(this, "Bekleyen sÃ¼rÃ¼ÅŸ kaydÄ± yok", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bekleyen sürüş kaydı yok", Toast.LENGTH_SHORT).show();
             return;
         }
         if (summaryDialog != null && summaryDialog.isShowing()) return;
@@ -343,12 +343,12 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         int m = summaryElapsedSec / 60, s = summaryElapsedSec % 60;
         StringBuilder msg = new StringBuilder();
         if (!summaryPlate.isEmpty()) msg.append(summaryPlate).append("\n");
-        msg.append(dist).append(" Â· ").append(m).append(":").append(String.format(Locale.US, "%02d", s));
+        msg.append(dist).append(" · ").append(m).append(":").append(String.format(Locale.US, "%02d", s));
         msg.append("\nOrt. ").append(String.format(Locale.US, "%.0f", summaryAvgKmh)).append(" km/sa");
-        msg.append(" Â· Maks. ").append(String.format(Locale.US, "%.0f", summaryMaxKmh)).append(" km/sa");
+        msg.append(" · Maks. ").append(String.format(Locale.US, "%.0f", summaryMaxKmh)).append(" km/sa");
         final String id = pendingSummaryId;
         summaryDialog = new AlertDialog.Builder(this)
-                .setTitle("SÃ¼rÃ¼ÅŸ tamamlandÄ±")
+                .setTitle("Sürüş tamamlandı")
                 .setMessage(msg.toString())
                 .setPositiveButton("Kaydet", (d, w) -> send("summary_save|" + id))
                 .setNegativeButton("Sil", (d, w) -> confirmDiscardSummary(id))
@@ -360,9 +360,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private void confirmDiscardSummary(String id) {
         new AlertDialog.Builder(this)
-                .setTitle("SÃ¼rÃ¼ÅŸ kaydÄ± silinsin mi?")
-                .setMessage("Bu sÃ¼rÃ¼ÅŸ kaydedilmeyecek.")
-                .setNegativeButton("VazgeÃ§", (d, w) -> showPendingSummaryDialog())
+                .setTitle("Sürüş kaydı silinsin mi?")
+                .setMessage("Bu sürüş kaydedilmeyecek.")
+                .setNegativeButton("Vazgeç", (d, w) -> showPendingSummaryDialog())
                 .setPositiveButton("Sil", (d, w) -> send("summary_discard|" + id))
                 .show();
     }
@@ -392,7 +392,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         });
     }
 
-    /** Ä°lk aÃ§Ä±lÄ±ÅŸta yumuÅŸak giriÅŸ. */
+    /** İlk açılışta yumuşak giriş. */
     private void playEnter() {
         if (entered) return;
         entered = true;
@@ -460,7 +460,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         activityVisible = true;
         activityResumed = true;
         if (!pendingCommandId.isEmpty() && pendingResumeGrace) {
-            // Kurtarma sÃ¼resini komutun gÃ¶nderildiÄŸi andan deÄŸil, ekrana geri dÃ¶nÃ¼ldÃ¼ÄŸÃ¼ andan baÅŸlat.
+            // Kurtarma süresini komutun gönderildiği andan değil, ekrana geri dönüldüğü andan başlat.
             pendingCommandAt = System.currentTimeMillis();
             persistPendingCommand();
         }
@@ -480,7 +480,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     else if (PATH_THEME.equals(path)) applyPhoneTheme(map.getString("pack", "dark-red"), map.getString("mode", "dark"));
                     else if (path.startsWith(PATH_ACK + "/")) {
                         processAck(map.getString("id", ""), map.getBoolean("accepted", false),
-                                map.getString("message", "Telefon yanÄ±t verdi."));
+                                map.getString("message", "Telefon yanıt verdi."));
                         Wearable.getDataClient(this).deleteDataItems(item.getUri());
                     }
                 }
@@ -497,8 +497,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         activityVisible = false;
         activityResumed = false;
         if (!pendingCommandId.isEmpty()) {
-            // Ekran uyursa, kÄ±sa Ã¶n plan zaman aÅŸÄ±mÄ± yerine sonradan gelecek Data Item ACK iÃ§in
-            // daha uzun kurtarma penceresi kalÄ±cÄ± olarak saklanÄ±r.
+            // Ekran uyursa, kısa ön plan zaman aşımı yerine sonradan gelecek Data Item ACK için
+            // daha uzun kurtarma penceresi kalıcı olarak saklanır.
             pendingResumeGrace = true;
             persistPendingCommand();
         }
@@ -507,7 +507,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         Wearable.getMessageClient(this).removeListener(this);
         if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
         commandAckTimeout = null;
-        // Komut beklemedeyken ekranÄ±n uyumasÄ± sonucu kaybolmamalÄ±; ACK Data Layer'da tutulur.
+        // Komut beklemedeyken ekranın uyuması sonucu kaybolmamalı; ACK Data Layer'da tutulur.
         super.onPause();
     }
 
@@ -538,7 +538,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             java.util.ArrayList<String> list = data.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
             String said = (list != null && !list.isEmpty()) ? list.get(0) : "";
             send("voice_pin");
-            Toast.makeText(this, said.isEmpty() ? "Pin isteÄŸi gÃ¶nderildi" : ("Pin: " + said), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, said.isEmpty() ? "Pin isteği gönderildi" : ("Pin: " + said), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -562,7 +562,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             try {
                 JSONObject alertPayload = new JSONObject(new String(event.getData(), StandardCharsets.UTF_8));
                 applyAlert(alertPayload.optString("kind", "info"),
-                        alertPayload.optString("msg", "UyarÄ±"),
+                        alertPayload.optString("msg", "Uyarı"),
                         alertPayload.optLong("ts", System.currentTimeMillis()));
             } catch (Exception ignored) { }
             return;
@@ -571,7 +571,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         try {
             JSONObject ack = new JSONObject(new String(event.getData(), StandardCharsets.UTF_8));
             processAck(ack.optString("id", ""), ack.optBoolean("accepted", false),
-                    ack.optString("message", "Telefon yanÄ±t verdi."));
+                    ack.optString("message", "Telefon yanıt verdi."));
         } catch (Exception ignored) { }
     }
 
@@ -605,10 +605,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         }
         achievementCelebrationShowing = true;
         removeAchievementOverlay(false);
-        final String name = item.optString("name", "Yeni baÅŸarÄ±m");
+        final String name = item.optString("name", "Yeni başarım");
         final String rarity = item.optString("rarity", "common").toLowerCase(Locale.ROOT);
         final String rarityLabel = item.optString("rarityLabel", rarityLabel(rarity));
-        final String description = item.optString("description", "GarajÄ±m yolculuÄŸunda yeni bir baÅŸarÄ± kazandÄ±n.");
+        final String description = item.optString("description", "Garajım yolculuğunda yeni bir başarı kazandın.");
         final int accent = rarityColor(rarity);
 
         FrameLayout content = findViewById(android.R.id.content);
@@ -634,7 +634,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         card.setElevation(dp(8));
 
         TextView kicker = new TextView(this);
-        kicker.setText("âœ¦  BAŞARIM KAZANDIN  âœ¦");
+        kicker.setText("✦  BAŞARIM KAZANDIN  ✦");
         kicker.setTextColor(accent);
         kicker.setTextSize(10);
         kicker.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -642,7 +642,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         card.addView(kicker, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView medal = new TextView(this);
-        medal.setText("ğŸ†");
+        medal.setText("ğ");
         medal.setTextSize(34);
         medal.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams medalLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -682,7 +682,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         card.addView(body, bodyLp);
 
         Button dismiss = new Button(this);
-        dismiss.setText(achievementCelebrationQueue.isEmpty() ? "Harika!" : "SÄ±radaki baÅŸarÄ±m");
+        dismiss.setText(achievementCelebrationQueue.isEmpty() ? "Harika!" : "Sıradaki başarım");
         dismiss.setTextColor(Color.WHITE);
         dismiss.setTextSize(12);
         dismiss.setAllCaps(false);
@@ -758,9 +758,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private String rarityLabel(String rarity) {
         switch (rarity) {
-            case "uncommon": return "GeliÅŸmiÅŸ";
+            case "uncommon": return "Gelişmiş";
             case "rare": return "Nadir";
-            case "epic": return "DestansÄ±";
+            case "epic": return "Destansı";
             case "legendary": return "Efsanevi";
             default: return "Standart";
         }
@@ -772,13 +772,13 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         clearPendingCommand();
         if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
         commandAckTimeout = null;
-        String safeMessage = message == null ? "Telefon yanÄ±t verdi." : message;
+        String safeMessage = message == null ? "Telefon yanıt verdi." : message;
         runOnUiThread(() -> {
             if (!accepted) {
                 Toast.makeText(this, safeMessage.isEmpty() ? "Telefon komutu kabul etmedi" : safeMessage, Toast.LENGTH_LONG).show();
             } else if (command.startsWith("request_sync") || command.startsWith("select_vehicle|")
                     || command.startsWith("summary_save|") || command.startsWith("summary_discard|")) {
-                Toast.makeText(this, "Telefon komutu aldÄ±", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Telefon komutu aldı", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -792,8 +792,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         if (!id.isEmpty() && !cmd.isEmpty() && at > 0 && age >= 0 && age <= PENDING_RESTORE_TTL_MS) {
             pendingCommandId = id;
             pendingCommandText = cmd;
-            // Activity/process yeniden yaratÄ±ldÄ±ÄŸÄ± iÃ§in ACK Data Layer Ã¼zerinden geÃ§ gelebilir.
-            // onResume() bu zaman damgasÄ±nÄ± tekrar tazeleyerek geri dÃ¶nÃ¼ÅŸ penceresini baÅŸlatÄ±r.
+            // Activity/process yeniden yaratıldığı için ACK Data Layer üzerinden geç gelebilir.
+            // onResume() bu zaman damgasını tekrar tazeleyerek geri dönüş penceresini başlatır.
             pendingCommandAt = at;
             pendingResumeGrace = true;
             persistPendingCommand();
@@ -824,8 +824,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         if (commandAckTimeout != null) mainHandler.removeCallbacks(commandAckTimeout);
         final String id = pendingCommandId;
         long age = Math.max(0L, System.currentTimeMillis() - pendingCommandAt);
-        // Ã–n planda komutlar hÄ±zlÄ± yanÄ±t bekler. Uyku/yeniden yaratma sonrasÄ± ACK Data Item
-        // gecikebileceÄŸinden, restore penceresinin sonuna kadar korelasyon kimliÄŸini koru.
+        // Ön planda komutlar hızlı yanıt bekler. Uyku/yeniden yaratma sonrası ACK Data Item
+        // gecikebileceğinden, restore penceresinin sonuna kadar korelasyon kimliğini koru.
         long ttl = pendingResumeGrace ? PENDING_RESTORE_TTL_MS : COMMAND_ACK_TTL_MS;
         long delay = Math.max(0L, ttl - age);
         commandAckTimeout = () -> {
@@ -833,7 +833,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (!activityResumed) return;
             clearPendingCommand();
             commandAckTimeout = null;
-            Toast.makeText(this, "Telefon yanÄ±t vermedi Â· baÄŸlantÄ±yÄ± kontrol et", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Telefon yanıt vermedi · bağlantıyı kontrol et", Toast.LENGTH_SHORT).show();
         };
         if (activityResumed) mainHandler.postDelayed(commandAckTimeout, delay);
     }
@@ -853,7 +853,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     else if (PATH_LINK.equals(path)) { phoneConnected = map.getBoolean("online", true); runOnUiThread(this::updateConnectionUi); }
                 else if (path.startsWith(PATH_ACK + "/")) {
                     processAck(map.getString("id", ""), map.getBoolean("accepted", false),
-                            map.getString("message", "Telefon yanÄ±t verdi."));
+                            map.getString("message", "Telefon yanıt verdi."));
                     Wearable.getDataClient(this).deleteDataItems(e.getDataItem().getUri());
                 }
             }
@@ -912,21 +912,21 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             gpsReady = incomingGpsReady;
             if (navStrip != null) {
                 if (navText != null && !navText.isEmpty()) {
-                    String nd = navDistM >= 0 ? (navDistM >= 1000 ? String.format(java.util.Locale.US, " Â· %.1f km", navDistM/1000.0) : String.format(java.util.Locale.US, " Â· %.0f m", navDistM)) : "";
-                    navStrip.setText("â¤ " + navText + nd);
+                    String nd = navDistM >= 0 ? (navDistM >= 1000 ? String.format(java.util.Locale.US, " · %.1f km", navDistM/1000.0) : String.format(java.util.Locale.US, " · %.0f m", navDistM)) : "";
+                    navStrip.setText("➤ " + navText + nd);
                     navStrip.setVisibility(View.VISIBLE);
                 } else navStrip.setText("Rota yok");
             }
             if (limitTxt != null) {
                 if (limitKmh > 0) {
-                    limitTxt.setText(over ? ("Limit " + (int)limitKmh + "+  Â· AÅILDI") : ("Limit " + (int)limitKmh + " km/sa"));
+                    limitTxt.setText(over ? ("Limit " + (int)limitKmh + "+  · AŞILDI") : ("Limit " + (int)limitKmh + " km/sa"));
                     limitTxt.setTextColor(over ? 0xFFEF4444 : 0xFF94A3B8);
                     if (over) buzz(2);
-                } else limitTxt.setText("Limit kapalÄ±");
+                } else limitTxt.setText("Limit kapalı");
             }
             if (goalTxt != null) {
                 int pct = dailyGoalKm > 0 ? (int)Math.min(100, Math.round(100.0 * dailyKm / dailyGoalKm)) : 0;
-                goalTxt.setText(String.format(java.util.Locale.US, "GÃ¼nlÃ¼k %.1f / %.0f km Â· %%%d", dailyKm, dailyGoalKm, pct));
+                goalTxt.setText(String.format(java.util.Locale.US, "Günlük %.1f / %.0f km · %%%d", dailyKm, dailyGoalKm, pct));
             }
             if (badgeTxt != null) {
                 if (badgeText != null && !badgeText.isEmpty()) {
@@ -937,7 +937,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 }
             }
             if (convoyTxt != null) {
-                convoyTxt.setText((convoyText != null && !convoyText.isEmpty()) ? convoyText : "Konvoy Â· yakÄ±nda");
+                convoyTxt.setText((convoyText != null && !convoyText.isEmpty()) ? convoyText : "Konvoy · yakında");
             }
             if (distanceView != null) distanceView.setText(String.format(java.util.Locale.US, "%.2f km", distM / 1000.0));
             if (durationView != null) {
@@ -958,7 +958,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (mapStatus != null) {
                 String mapText;
                 int mapColor;
-                if (!incomingGpsReady) { mapText = "GPS BEKLENÄ°YOR"; mapColor = 0xFFFBBF24; }
+                if (!incomingGpsReady) { mapText = "GPS BEKLENİYOR"; mapColor = 0xFFFBBF24; }
                 else if (incomingRunning && incomingPaused) { mapText = "DURAKLATILDI"; mapColor = 0xFFFBBF24; }
                 else if (incomingRunning) { mapText = "CANLI ROTA"; mapColor = 0xFF67E8F9; }
                 else if (routeJson != null && routeJson.length() > 4) { mapText = "SON ROTA"; mapColor = 0xFF93C5FD; }
@@ -990,7 +990,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 lastOverLimit = over;
             }
             int m = sec / 60, s = sec % 60;
-            if (meta != null) meta.setText(plate.isEmpty() ? "AraÃ§ seÃ§ilmedi" : plate);
+            if (meta != null) meta.setText(plate.isEmpty() ? "Araç seçilmedi" : plate);
             if (distanceView != null) distanceView.setText(String.format(Locale.US, "%.2f km", distM / 1000.0));
             if (durationView != null) durationView.setText(String.format(Locale.US, "%d:%02d", m, s));
             if (maxSpeedView != null) maxSpeedView.setText(String.format(Locale.US, "%.0f km/sa", maxKmh));
@@ -999,9 +999,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             updateVehicleButton();
             updateConnectionUi();
             String st;
-            if (!running) { st = hasSummary ? "Kaydedilecek sÃ¼rÃ¼ÅŸ var" : (incomingNativeMode ? "Arka plan sÃ¼rÃ¼ÅŸÃ¼ hazÄ±r" : "HazÄ±r"); btnToggle.setText("BaÅŸlat"); }
-            else if (paused) { st = incomingNativeMode ? "DuraklatÄ±ldÄ± Â· arka plan" : "DuraklatÄ±ldÄ±"; btnToggle.setText("Devam"); }
-            else { st = over ? "Limit Ã¼stÃ¼" : (incomingNativeMode ? "SÃ¼rÃ¼ÅŸ aktif Â· arka plan" : "SÃ¼rÃ¼ÅŸ aktif"); btnToggle.setText("Duraklat"); }
+            if (!running) { st = hasSummary ? "Kaydedilecek sürüş var" : (incomingNativeMode ? "Arka plan sürüşü hazır" : "Hazır"); btnToggle.setText("Başlat"); }
+            else if (paused) { st = incomingNativeMode ? "Duraklatıldı · arka plan" : "Duraklatıldı"; btnToggle.setText("Devam"); }
+            else { st = over ? "Limit üstü" : (incomingNativeMode ? "Sürüş aktif · arka plan" : "Sürüş aktif"); btnToggle.setText("Duraklat"); }
             if (status != null && !st.contentEquals(status.getText())) {
                 status.setAlpha(0.3f); status.setText(st); status.animate().alpha(1f).setDuration(180).start();
             }
@@ -1009,7 +1009,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 status.setTextColor(!running ? 0xFF94A3B8 : (paused ? 0xFFFBBF24 : (over ? 0xFFF87171 : 0xFF4ADE80)));
             }
             if (tr != null && !tr.isEmpty()) {
-                String line = ar != null && !ar.isEmpty() ? (tr + " â€” " + ar) : tr;
+                String line = ar != null && !ar.isEmpty() ? (tr + " — " + ar) : tr;
                 if (track != null && !line.contentEquals(track.getText())) {
                     track.setAlpha(0.4f); track.setText(line); track.animate().alpha(1f).setDuration(200).start();
                 }
@@ -1041,13 +1041,13 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private void applyAlert(DataMap map) {
         if (map == null) return;
-        applyAlert(map.getString("kind", "info"), map.getString("msg", "UyarÄ±"), map.getLong("ts", 0L));
+        applyAlert(map.getString("kind", "info"), map.getString("msg", "Uyarı"), map.getLong("ts", 0L));
     }
 
     private void applyAlert(String kind, String msg, long ts) {
         if (ts > 0 && ts <= lastAlertTs) return;
         lastAlertTs = ts > 0 ? ts : System.currentTimeMillis();
-        final String safeMsg = msg == null ? "UyarÄ±" : msg;
+        final String safeMsg = msg == null ? "Uyarı" : msg;
         final String safeKind = kind == null ? "info" : kind;
         final int color = "limit".equals(safeKind) ? 0xFFEF4444
                 : ("dna".equals(safeKind) ? 0xFF4ADE80 : 0xFFFBBF24);
@@ -1112,7 +1112,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             java.util.ArrayList<View> old = new java.util.ArrayList<>();
             for (int i=0; i<column.getChildCount(); i++) old.add(column.getChildAt(i));
             column.removeAllViews();
-            String[] names = {"â—‰  KOKPÄ°T", "â™«  MÃœZÄ°K", "â¤  NAVÄ°GASYON", "â–¦  GARAJ"};
+            String[] names = {"◉  KOKPİT", "♫  MÜZİK", "➤  NAVİGASYON", "▦  GARAJ"};
             for (int p=0; p<4; p++) {
                 LinearLayout page = new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setGravity(Gravity.CENTER_HORIZONTAL);
                 page.setPadding(dp(8), dp(5), dp(8), dp(5)); page.setTag("wear-page-"+p);
@@ -1143,7 +1143,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         currentWearPage = Math.max(0, Math.min(wearPages.size()-1, page));
         for (int i=0; i<wearPages.size(); i++) wearPages.get(i).setVisibility(i==currentWearPage ? View.VISIBLE : View.GONE);
         if (wearPageDots != null) {
-            StringBuilder dots=new StringBuilder(); for(int i=0;i<wearPages.size();i++) dots.append(i==currentWearPage ? "â—" : "â—‹").append(i==wearPages.size()-1?"":"  ");
+            StringBuilder dots=new StringBuilder(); for(int i=0;i<wearPages.size();i++) dots.append(i==currentWearPage ? "●" : "○").append(i==wearPages.size()-1?"":"  ");
             wearPageDots.setText(dots.toString());
         }
     }
@@ -1204,7 +1204,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             for(int i=0;i<g.getChildCount();i++) tintThemeTree(g.getChildAt(i));
         }
     }
-    /** KontrastÄ± korumak iÃ§in vurgu renginin parlaklÄ±ÄŸÄ±na gÃ¶re siyah/beyaz metin seÃ§er. */
+    /** Kontrastı korumak için vurgu renginin parlaklığına göre siyah/beyaz metin seçer. */
     private int contrastText(int color) {
         double r = Color.red(color) / 255.0, g = Color.green(color) / 255.0, b = Color.blue(color) / 255.0;
         r = r <= 0.04045 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
@@ -1222,19 +1222,19 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         String text;
         int color;
         if (!connectionChecked) {
-            text = "â— Telefon aranÄ±yorâ€¦";
+            text = "● Telefon aranıyor…";
             color = 0xFFFBBF24;
         } else if (!phoneConnected) {
-            text = "â— Telefon baÄŸlantÄ±sÄ± yok";
+            text = "● Telefon bağlantısı yok";
             color = 0xFFF87171;
         } else if (lastStateAt == 0L) {
-            text = "â— Telefon baÄŸlÄ± Â· eÅŸitleme bekleniyor";
+            text = "● Telefon bağlı · eşitleme bekleniyor";
             color = 0xFFFBBF24;
         } else if (age > 25_000L) {
-            text = "â— Veri eski Â· " + Math.max(1L, age / 1000L) + " sn Ã¶nce";
+            text = "● Veri eski · " + Math.max(1L, age / 1000L) + " sn önce";
             color = 0xFFFBBF24;
         } else {
-            text = running && !paused && !gpsReady ? "â— Telefon baÄŸlÄ± Â· GPS bekleniyor" : "â— Telefon baÄŸlÄ± Â· gÃ¼ncel";
+            text = running && !paused && !gpsReady ? "● Telefon bağlı · GPS bekleniyor" : "● Telefon bağlı · güncel";
             color = 0xFF4ADE80;
         }
         if (!text.contentEquals(connection.getText())) {
@@ -1245,11 +1245,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         } else {
             connection.setTextColor(color);
         }
-        // BaÄŸlantÄ± deÄŸiÅŸim bildirimi (bir kez)
+        // Bağlantı değişim bildirimi (bir kez)
         boolean linked = phoneConnected && connectionChecked;
         if (lastPhoneLinkUi != null && lastPhoneLinkUi != linked) {
-            if (linked) Toast.makeText(this, "Telefon baÄŸlandÄ±", Toast.LENGTH_SHORT).show();
-            else Toast.makeText(this, "Telefon baÄŸlantÄ±sÄ± kesildi", Toast.LENGTH_SHORT).show();
+            if (linked) Toast.makeText(this, "Telefon bağlandı", Toast.LENGTH_SHORT).show();
+            else Toast.makeText(this, "Telefon bağlantısı kesildi", Toast.LENGTH_SHORT).show();
             buzz(linked ? 1 : 2);
         }
         if (connectionChecked) lastPhoneLinkUi = linked;
@@ -1262,20 +1262,20 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         parkInfo.animate().alpha(1f).setDuration(220).start(); buzz(1);
     }
 
-    /** Durum verisi geÃ§ gelirse aÃ§Ä±k park kartÄ±nÄ±n metnini gÃ¼ncelle; her tickte titreÅŸim Ã¼retme. */
+    /** Durum verisi geç gelirse açık park kartının metnini güncelle; her tickte titreşim üretme. */
     private void renderParkInfoText() {
         if (parkInfo == null) return;
         if (!parkSaved) {
-            parkInfo.setText("Park yeri kayÄ±tlÄ± deÄŸil");
+            parkInfo.setText("Park yeri kayıtlı değil");
             return;
         }
         if (parkDist < 0) {
-            parkInfo.setText("Park kayÄ±tlÄ± Â· gÃ¼ncel GPS bekleniyor");
+            parkInfo.setText("Park kayıtlı · güncel GPS bekleniyor");
             return;
         }
         String d = parkDist >= 1000 ? String.format(Locale.US, "%.1f km", parkDist / 1000.0)
                 : String.format(Locale.US, "%.0f m", parkDist);
-        parkInfo.setText(d + (parkDir.isEmpty() ? "" : "  Â·  " + parkDir));
+        parkInfo.setText(d + (parkDir.isEmpty() ? "" : "  ·  " + parkDir));
     }
 
     private void buzz(int pattern) {
@@ -1296,7 +1296,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private void send(String cmd) {
         if (cmd == null || cmd.trim().isEmpty()) return;
         final long now = System.currentTimeMillis();
-        // Saat ekranÄ±nda Ã§ift dokunuÅŸun aynÄ± komutu iki kez gÃ¶ndermesini Ã¶nle.
+        // Saat ekranında çift dokunuşun aynı komutu iki kez göndermesini önle.
         if (cmd.equals(lastCommandSent) && now - lastCommandSentAt < 700L) return;
         lastCommandSent = cmd;
         lastCommandSentAt = now;
@@ -1308,7 +1308,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             envelope.put("cmd", cmd);
             payload = envelope.toString();
         } catch (Exception e) {
-            Toast.makeText(this, "Komut hazÄ±rlanamadÄ±", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Komut hazırlanamadı", Toast.LENGTH_SHORT).show();
             return;
         }
         pendingCommandId = commandId;
@@ -1326,18 +1326,18 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     phoneConnected = false;
                     runOnUiThread(() -> {
                         updateConnectionUi();
-                        Toast.makeText(this, "Telefonla baÄŸlantÄ± yok", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Telefonla bağlantı yok", Toast.LENGTH_SHORT).show();
                     });
                     return;
                 }
                 boolean sent = false;
                 for (Node n : nodes) {
-                    // Bir dÃ¼ÄŸÃ¼me gÃ¶nderim hatasÄ± diÄŸer eÅŸleÅŸmiÅŸ dÃ¼ÄŸÃ¼mlere denemeyi durdurmasÄ±n.
+                    // Bir düğüme gönderim hatası diğer eşleşmiş düğümlere denemeyi durdurmasın.
                     try {
                         Tasks.await(Wearable.getMessageClient(this).sendMessage(n.getId(), PATH_CMD, data));
                         sent = true;
                     } catch (Exception nodeError) {
-                        // BaÅŸarÄ±lÄ± bir baÅŸka gÃ¶nderim varsa ACK beklemeye devam edilir.
+                        // Başarılı bir başka gönderim varsa ACK beklemeye devam edilir.
                     }
                 }
                 if (sent) {
@@ -1350,11 +1350,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     });
                 } else {
                     if (commandId.equals(pendingCommandId)) clearPendingCommand();
-                    runOnUiThread(() -> Toast.makeText(this, "Komut hiÃ§bir baÄŸlÄ± cihaza iletilemedi", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(this, "Komut hiçbir bağlı cihaza iletilemedi", Toast.LENGTH_SHORT).show());
                 }
             } catch (Exception e) {
                 if (commandId.equals(pendingCommandId)) clearPendingCommand();
-                runOnUiThread(() -> Toast.makeText(this, "Komut iletilemedi Â· baÄŸlantÄ±yÄ± kontrol et", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, "Komut iletilemedi · bağlantıyı kontrol et", Toast.LENGTH_SHORT).show());
             }
         });
     }
