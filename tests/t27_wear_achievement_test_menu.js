@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'index.html'), 'utf8');
+const root = path.dirname(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 const ok = (condition, message) => { console.log((condition ? 'PASS ' : 'FAIL ') + message); if (!condition) process.exitCode = 1; };
 ok(/id="achievementTestModal"[^>]*class="[^"]*hidden/.test(html), 'gizli test menüsü normalde kapalı');
 ok(/achievementHiddenTestTap\(event\)/.test(html) && /Rozetlerim<\/h3>/.test(html), 'test menüsü Rozetlerim başlığına gizli dokunmayla açılır');

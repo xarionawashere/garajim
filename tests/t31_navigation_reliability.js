@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'index.html'), 'utf8');
+const root = path.dirname(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) process.exitCode = 1; };
 const navStart = html.indexOf('// ---------- NAVİGASYON (OSM arama + OSRM rota) ----------');
 const navEnd = html.indexOf('// ---------- CANLI GHOST', navStart);

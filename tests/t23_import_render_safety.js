@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const root = path.dirname(process.argv[2]);
-const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const source = readIndexWithAppSource(root);
 let failures = 0;
 function check(ok, name) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failures++; }
 const a = source.indexOf('  function garajimHtmlEsc(value) {');

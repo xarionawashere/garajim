@@ -15,6 +15,8 @@ function copyDir(src, dst, filter) {
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(V, { recursive: true });
+// App JavaScript modules are copied alongside www/index.html and loaded as classic scripts.
+copyDir(path.join('src', 'js'), path.join(OUT, 'src', 'js'));
 
 // --- JS kütüphaneleri
 copy(nm('chart.js/dist/chart.umd.js'), path.join(V, 'chart.umd.min.js'));

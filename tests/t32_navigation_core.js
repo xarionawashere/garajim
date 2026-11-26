@@ -2,7 +2,9 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const root = path.dirname(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 const start = html.indexOf('// ---------- NAVİGASYON (OSM arama + OSRM rota) ----------');
 const end = html.indexOf('// ---------- CANLI GHOST', start);
 const ok = (condition, message) => { console.log((condition ? 'PASS ' : 'FAIL ') + message); if (!condition) process.exitCode = 1; };

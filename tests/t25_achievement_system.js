@@ -1,7 +1,9 @@
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
-const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'index.html'), 'utf8');
+const root = path.dirname(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 const errors = [];
 const ok = (condition, message) => { console.log((condition ? 'PASS ' : 'FAIL ') + message); if (!condition) process.exitCode = 1; };
 function mkL() { const chain = () => new Proxy(function(){}, { get:(t,k)=>k==='then'?undefined:chain(), apply:()=>chain() }); return {map:()=>chain(),tileLayer:()=>chain(),polyline:()=>({addTo(){return this},setLatLngs(){},getBounds(){return{}}}),marker:()=>({addTo(){return this},setLatLng(){},getLatLng:()=>({lat:41,lng:29}),getElement:()=>({querySelector:()=>({style:{}})})}),divIcon:()=>({}),latLng:(lat,lng)=>({lat,lng}),Icon:{Default:{}}}; }

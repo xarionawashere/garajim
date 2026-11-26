@@ -2,7 +2,8 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
 const root = path.dirname(process.argv[2] || path.join(__dirname, '..', 'index.html'));
-const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 const errors = [];
 const ok = (condition, message) => { console.log((condition ? 'PASS ' : 'FAIL ') + message); if (!condition) process.exitCode = 1; };
 function mkL() {
