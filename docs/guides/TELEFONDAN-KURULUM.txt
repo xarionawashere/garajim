@@ -1,0 +1,33 @@
+TELEFONDAN APK OLUSTURMA + IMZA
+
+1) Bu ZIP'i bilgisayarına çıkar. Klasör yapısını koru; özellikle .github/workflows, native-android, native-wear, scripts ve tests klasörleri eksik kalmamalı.
+2) GitHub'da bir depo oluştur veya mevcut Garajım deponun yerel kopyasına tüm proje dosyalarını aktar. Gizli .github klasörünün de yüklendiğini doğrula.
+3) Değişiklikleri main veya master dalına commit edip push et.
+4) GitHub > Actions > APK Olustur çalışmasını aç. Test ve derleme adımları tamamen başarılı olmadan APK'yı kurma.
+5) Aynı başarılı çalıştırmanın içinden iki ayrı artifact indir: Garajim-Mobil-APK ve Garajim-WearOS-APK. Telefon ve saat APK'larını farklı çalıştırmalardan karıştırma.
+
+Bu kaynak ZIP'i hazır APK içermez; APK'lar yukarıdaki GitHub Actions derlemesinde oluşturulur.
+IMZA
+- Eski hali debug APK idi; telefon "bilinmeyen uygulama" uyarisi verirdi.
+- Workflow yalnızca KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS ve KEY_PASSWORD secrets degerlerinin tamami tanimliysa RELEASE imzali APK uretir. Bu degerler eksikse DEBUG APK olusur ve mevcut release-imzali kurulumun ustune yuklenemeyebilir.
+- Uyari tamamen yok olmaz: Play Store disi kurulumda Android guvenlik uyarisi normaldir.
+- Kendi telefonunda: Ayarlar > Guvenlik > Bilinmeyen kaynaklar / uygulamayi yukle izni.
+
+KALICI IMZA (guncellemede ayni imza)
+Bilgisayarda bir kez:
+  keytool -genkeypair -v -keystore garajim.jks -alias garajim -keyalg RSA -keysize 2048 -validity 10000
+  base64 -w0 garajim.jks > key.txt
+GitHub repo > Settings > Secrets and variables > Actions:
+  KEYSTORE_BASE64  = key.txt icerigi
+  KEYSTORE_PASSWORD = sifren
+  KEY_ALIAS         = garajim
+  KEY_PASSWORD      = sifren
+
+Play Protect ve bilinmeyen kaynak uyarilari Android surumune ve cihaz politikasina gore degisebilir; ekrandaki resmi guvenlik adimlarini izle.
+
+
+GUNCELLEME NOTLARI
+- Android ana ekran widget'i eklendi: Ana ekranda bos alana basili tut > Widget'lar > Garajim. Widget verisi uygulama acildiginda ve arac kaydedildiginde guncellenir.
+- Uygulamadaki Sistem bildirimi dugmesi Android 13+ bildirim izni ister ve her gun yaklasik 09.00 icin genel bakim kontrolu hatirlaticisi kurar. Bu hatirlatici su an araclara ozel son tarihleri native alarma donusturmez.
+- GitHub Actions imza secrets yoksa debug APK olusturur. Kalici guncelleme icin KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS ve KEY_PASSWORD secrets degerlerini tanimlayip release APK olusturun. Keystore'u guvenli bir yerde saklayin; kaybolursa mevcut imzali uygulamanin ustune guncelleme yapilamayabilir.
+- Kaynak paketi hazir APK icermiyor. GitHub Actions derlemesi ve gercek cihaz testi gereklidir.
