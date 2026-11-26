@@ -176,7 +176,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
       card.classList.add('wear-pair-connected');
     } else {
       if (title) title.textContent = 'Saatini Garajım’a bağla';
-      if (detail) detail.textContent = 'Saat uygulaması isteğe bağlı; telefon uygulaması tam olarak kullanılabilir.';
+      if (detail) detail.textContent = 'Saat uygulaması isteğe bağlı. Telefon uygulaması tam olarak kullanılabilir.';
       if (action) action.textContent = 'Saati bağla';
       card.classList.remove('wear-pair-connected');
     }
