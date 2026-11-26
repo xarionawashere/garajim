@@ -634,7 +634,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         card.setElevation(dp(8));
 
         TextView kicker = new TextView(this);
-        kicker.setText("âœ¦  BAÅARIM KAZANDIN  âœ¦");
+        kicker.setText("âœ¦  BAŞARIM KAZANDIN  âœ¦");
         kicker.setTextColor(accent);
         kicker.setTextSize(10);
         kicker.setTypeface(null, android.graphics.Typeface.BOLD);
