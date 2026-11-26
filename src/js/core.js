@@ -139,22 +139,22 @@ let vehicles = JSON.parse(localStorage.getItem('garaj_v4') || '[]');
       return;
     }
     if (a === 'wear_request_sync') { try { rideWearPush(); } catch (e) {} return; }
-    if (a === 'wear_fuel_quick') {
+    if (a === 'wear_fuel_quick' || a === 'wear_km_quick') {
       try {
+        const requestedId = vid || currentId || localStorage.getItem('garaj_ride_vehicle');
+        const selected = vehicles.find(x => String(x.id) === String(requestedId)) || vehicles[0];
+        if (!selected) { toast('Önce Garajım’a bir araç ekle'); return; }
         showTab('garage');
-        if (vid || (v && v.id)) { currentId = vid || v.id; openDetail(currentId); }
-        if (typeof openFuelModal === 'function') openFuelModal();
-        toast('Saatten yakıt kaydı · tutarı gir');
-      } catch (e) {}
-      return;
-    }
-    if (a === 'wear_km_quick') {
-      try {
-        showTab('garage');
-        if (vid || (v && v.id)) { currentId = vid || v.id; openDetail(currentId); }
-        if (typeof openKmModal === 'function') openKmModal();
-        toast('Saatten KM kaydı · değeri gir');
-      } catch (e) {}
+        currentId = selected.id;
+        openDetail(currentId);
+        if (a === 'wear_fuel_quick' && typeof openFuelModal === 'function') {
+          openFuelModal();
+          toast('Saatten yakıt kaydı · tutarı gir');
+        } else if (a === 'wear_km_quick' && typeof openKmModal === 'function') {
+          openKmModal();
+          toast('Saatten KM kaydı · değeri gir');
+        }
+      } catch (e) { console.warn('Wear hızlı kayıt açılamadı', e); }
       return;
     }
     if (a === 'wear_voice_pin') {
@@ -197,9 +197,9 @@ let vehicles = JSON.parse(localStorage.getItem('garaj_v4') || '[]');
       try { rideWearAlert('info', 'Sürüşü bitirmek için saatteki Bitir düğmesini kullan.'); } catch (e) {}
       return;
     }
-    if (a === 'wear_music_next') { try { rideMusic('next'); } catch (e) {} return; }
-    if (a === 'wear_music_prev') { try { rideMusic('prev'); } catch (e) {} return; }
-    if (a === 'wear_music_playpause') { try { rideMusic('playpause'); } catch (e) {} return; }
+    if (a === 'wear_music_next') { try { musCmd('next'); } catch (e) {} return; }
+    if (a === 'wear_music_prev') { try { musCmd('prev'); } catch (e) {} return; }
+    if (a === 'wear_music_playpause') { try { musCmd('toggle'); } catch (e) {} return; }
     if (a === 'wear_park_where') {
       try {
         const p = parkGet();
@@ -236,9 +236,9 @@ let vehicles = JSON.parse(localStorage.getItem('garaj_v4') || '[]');
       try { if (ride.running) rideStopConfirm(); } catch (e) {}
       return;
     }
-    if (a === 'music_next' || a === 'next') { try { rideMusic('next'); } catch (e) {} return; }
-    if (a === 'music_prev' || a === 'prev') { try { rideMusic('prev'); } catch (e) {} return; }
-    if (a === 'music_playpause' || a === 'playpause') { try { rideMusic('playpause'); } catch (e) {} return; }
+    if (a === 'music_next' || a === 'next') { try { musCmd('next'); } catch (e) {} return; }
+    if (a === 'music_prev' || a === 'prev') { try { musCmd('prev'); } catch (e) {} return; }
+    if (a === 'music_playpause' || a === 'playpause') { try { musCmd('toggle'); } catch (e) {} return; }
     if (a === 'park_where') {
       try {
         showTab('ride');

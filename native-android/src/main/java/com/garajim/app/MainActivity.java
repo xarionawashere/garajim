@@ -26,14 +26,41 @@ public class MainActivity extends BridgeActivity {
      * komutları uygulama kapalıyken daha sonra kendiliğinden çalıştırılmak üzere saklanmaz.
      */
     static boolean dispatchWearCommand(Context context, String action, String vehicleId) {
-        // Native arka plan sürüşü başladıysa kaynak tek olsun: JS/WebView eski durumla üzerine yazmasın.
+        if (context == null || action == null) return false;
+
+        // MediaSession/media-key routing is native, so it works even while the ride service owns GPS.
+        String mediaCommand = null;
+        if ("wear_music_next".equals(action)) mediaCommand = "next";
+        else if ("wear_music_prev".equals(action)) mediaCommand = "prev";
+        else if ("wear_music_playpause".equals(action)) mediaCommand = "toggle";
+        if (mediaCommand != null) {
+            GarajimMedia.command(context.getApplicationContext(), mediaCommand);
+            return true;
+        }
+
+        MainActivity target = active.get();
+        boolean canDeliver = target != null && !target.isFinishing()
+                && target.getBridge() != null && target.getBridge().getWebView() != null;
+        boolean quickLog = "wear_fuel_quick".equals(action) || "wear_km_quick".equals(action);
+
+        // Fuel/KM forms belong to the WebView. Preserve the request if the phone UI is not open.
+        if (quickLog) {
+            if (canDeliver) {
+                if (!enqueueWearCommand(context, action, vehicleId)) return false;
+                target.runOnUiThread(target::notifyJs);
+                return true;
+            }
+            if (!enqueueWearCommand(context, action, vehicleId)) return false;
+            GarajimWearSync.pushAlertLive(context, "info",
+                    "Kaydı tamamlamak için telefonda Garajım’ı aç; form sıraya alındı.");
+            return true;
+        }
+
+        // Ride control stays with the native service while it owns the background session.
         if (GarajimRideService.isNativeRideManaged(context)) {
             GarajimRideService.dispatchWatchCommand(context, action, vehicleId);
             return true;
         }
-        MainActivity target = active.get();
-        boolean canDeliver = target != null && !target.isFinishing()
-                && target.getBridge() != null && target.getBridge().getWebView() != null;
         if (canDeliver && enqueueWearCommand(context, action, vehicleId)) {
             target.runOnUiThread(target::notifyJs);
             return true;
@@ -45,7 +72,6 @@ public class MainActivity extends BridgeActivity {
             return true;
         }
 
-        // Servis henüz hazırlanmadıysa komutu sessizce kaybetmek yerine dinleyici kullanıcıya uyarı gösterecek.
         if ("wear_select_vehicle".equals(action)) {
             context.getApplicationContext().getSharedPreferences(WEAR_QUEUE_PREFS, Context.MODE_PRIVATE).edit()
                     .putString("action", action)
