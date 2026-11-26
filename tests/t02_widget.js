@@ -1,5 +1,8 @@
 const {JSDOM}=require('jsdom');const fs=require('fs');
-const html=fs.readFileSync(require('path').join(__dirname,'..','index.html'),'utf8');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 let errors=[];
 const dom=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://localhost/',beforeParse(w){
  const c=()=>new Proxy(function(){},{get:(t,k)=>k==='then'?undefined:c(),apply:()=>c()});

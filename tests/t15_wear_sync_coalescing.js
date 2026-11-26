@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const root = path.dirname(process.argv[2]);
 const sync = fs.readFileSync(path.join(root, 'native-android/src/main/java/com/garajim/app/GarajimWearSync.java'), 'utf8');
-const html = fs.readFileSync(process.argv[2], 'utf8');
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 let failures = 0;
 function check(ok, name) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failures++; }
 

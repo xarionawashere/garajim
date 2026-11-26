@@ -1,8 +1,9 @@
 // Native background ride architecture contract checks. Static checks require real-device validation too.
 const fs = require('fs');
 const path = require('path');
-const html = fs.readFileSync(process.argv[2], 'utf8');
 const root = path.dirname(process.argv[2]);
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const service = read('native-android/src/main/java/com/garajim/app/GarajimRideService.java');
 const main = read('native-android/src/main/java/com/garajim/app/MainActivity.java');

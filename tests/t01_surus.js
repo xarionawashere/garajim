@@ -1,5 +1,7 @@
-const {JSDOM}=require('jsdom');const fs=require('fs');
-const html=fs.readFileSync(process.argv[2],'utf8');
+const {JSDOM}=require('jsdom');const fs=require('fs');const path=require('path');
+const root = path.dirname(process.argv[2]);
+const { readIndexWithAppSource } = require('./helpers/read-app-source');
+const html = readIndexWithAppSource(root);
 let watchCb=null, errors=[];
 function mkL(){
   const chain=()=>new Proxy(function(){},{get:(t,k)=>{ if(k==='getContainer') return ()=>({classList:{toggle(){}}}); if(k==='getZoom') return ()=>12; if(k==='getBounds') return ()=>({}); if(k==='getLatLng') return ()=>({lat:41,lng:29}); if(k==='getElement') return ()=>({querySelector:()=>({style:{}})}); if(k==='then') return undefined; return chain();},apply:()=>chain()});
