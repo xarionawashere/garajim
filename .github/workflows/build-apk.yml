@@ -47,12 +47,12 @@ jobs:
           from pathlib import Path
           p = Path('android/app/build.gradle')
           s = p.read_text(encoding='utf-8')
-          s, code = re.subn(r'(?m)^(\s*versionCode\s+)\d+\s*$', r'\g<1>14', s, count=1)
-          s, name = re.subn(r'(?m)^(\s*versionName\s+)["\'][^"\']*["\']\s*$', r'\g<1>"1.4.2"', s, count=1)
+          s, code = re.subn(r'(?m)^(\s*versionCode\s+)\d+\s*$', r'\g<1>17', s, count=1)
+          s, name = re.subn(r'(?m)^(\s*versionName\s+)["\'][^"\']*["\']\s*$', r'\g<1>"1.4.6"', s, count=1)
           if not code or not name:
             raise SystemExit('Telefon versionCode/versionName alanları bulunamadı; APK sürümü güvenle güncellenemedi.')
           p.write_text(s, encoding='utf-8')
-          print('Telefon sürümü: versionCode=14, versionName=1.4.2')
+          print('Telefon sürümü: versionCode=17, versionName=1.4.6')
           PYVER
 
       - name: Native widget ve hatirlaticilari ekle
