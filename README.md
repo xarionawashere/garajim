@@ -10,7 +10,7 @@
 
 ---
 
-**Kaynak sürümü: 1.4.2** · Navigasyon güvenilirliği ve sadeleştirilmiş Açık Dünya arayüzü.
+**Kaynak sürümü: 1.4.6** · 24 renk teması, Wear OS çok sayfalı kokpit ve telefon–saat tema eşitlemesi; artık araç tasarımı, modifikasyon bütçesi ve proje günlüğü için Garajım Studio da içerir.
 
 ## Garajım nedir?
 
@@ -30,9 +30,9 @@ Garajım'ın yaklaşımı basit: **daha düzenli araç kayıtları, daha görün
 - **Navigasyon ve park yeri:** Adres arama, rota yönergeleri, kayıtlı park konumu ve yön/mesafe bilgisi.
 - **Wear OS kontrolü:** Saatten araç seçme, sürüşü başlatma/duraklatma/devam ettirme/bitirme ve sürüş özetini yönetme.
 - **Başarım ve Sürüş DNA:** 51 rozet, nadirliğe göre telefon kutlaması, Wear OS saatine başarım iletimi, titreşim ve arka plan bildirimi. Gizli test menüsü, gerçek rozet kazanmadan kutlamaları denemeyi sağlar.
-- **Kişiselleştirme:** 12 renk teması, karanlık/açık görünüm, dört haneli uygulama PIN'i ve ana ekran widget'ı.
+- **Kişiselleştirme:** 24 renk teması (yumuşak ve düşük doygunluklu yeni paletler dahil), telefondaki temanın Wear OS ile eşitlenmesi, karanlık/açık görünüm, dört haneli uygulama PIN'i ve ana ekran widget'ı.
 - **Dışa aktarma:** JSON yedekleme/geri yükleme, CSV masraf çıktısı, PDF raporları ve sürüş rotası için GPX çıktısı.
-- **İsteğe bağlı yapay zekâ asistanı:** Kullanıcının kendi Gemini veya OpenAI API anahtarıyla çalışır.
+- **Garajım Studio:** Fotoğraf referansı, renk deneme maketi, kaydedilebilir tasarım varyantları, modifikasyon listesi, manuel bütçe, parça durumu ve proje günlüğü.
 
 ## Özellikler ayrıntılı olarak
 
@@ -130,20 +130,22 @@ Uygulama içi uyarılar, girilmiş tarih ve bakım kilometresi verilerine dayan�
 
 Telefon tarafındaki yerel medya köprüsü, uygun aktif medya oturumundan parça adı/sanatçı/albüm bilgisini ve albüm kapağını okuyabilir; oynat/duraklat, önceki ve sonraki parça komutlarını iletebilir. Bu özellik için Android'in **Bildirim erişimi** iznini vermek gerekebilir. Erişim izni olmadan parça bilgileri eksik kalabilir; kontrol davranışı aktif medya uygulamasına göre değişir.
 
-### 9. Yapay zekâ asistanı
+### 9. Garajım Studio — Tasarım ve modifikasyon projesi
 
-Asistan bölümü iki sağlayıcı seçeneği sunar:
+Studio, eski Asistan sekmesinin yerini alan araç odaklı bir çalışma alanıdır. Kullanıcı iki şekilde başlar:
 
-- Google Gemini
-- OpenAI (`gpt-4o-mini` model çağrısı)
+- Garajım'da zaten kayıtlı olan bir aracı seçer; marka, model, yıl ve fotoğraf gibi kayıtlı bilgiler otomatik kullanılır.
+- Katalogda bulunmayan araç için plaka zorunluluğu olmadan bağımsız profil açar; marka/model/yıl/kasa tipini elle girer ve isterse galeriden/kameradan fotoğraf ekler.
 
-Kullanıcı kendi API anahtarını ayarlara girer. Özellik internet ve sağlayıcı hesabı/anahtarı gerektirir; kullanım ücretleri, kotalar ve sağlayıcı koşulları kullanıcıya aittir. Gemini entegrasyonunda isteğe bağlı görsel gönderimi de bulunur.
+Studio fotoğrafı cihaz içinde sıkıştırıp yerel depoda tutar. Renk laboratuvarında sekiz renkten biri seçildiğinde genel bir SVG otomobil maketi anında değişir. Yüklenen gerçek araç fotoğrafı referans olarak gösterilir; fotoğrafın boyası değiştirilmiş veya araç birebir 3D modellenmiş gibi davranılmaz.
 
-API anahtarı uygulamanın yerel web depolamasında tutulur; bu, donanım destekli güvenli kasa veya şifrelenmiş gizli depo değildir. Cihazını başkalarıyla paylaşırken dikkatli ol. Manuel JSON yedeklemesi API anahtarını ve PIN bilgisini dışarı aktarmamaya çalışır.
+Kullanıcı renk/komponent kombinasyonlarını varyant olarak kaydedip yeniden uygulayabilir. Modifikasyon panosunda jant, süspansiyon, gövde kiti, fren, egzoz ve diğer işler için ürün adı, marka/kod, kullanıcı tarafından girilen fiyat ve planlandı/sipariş edildi/takıldı durumu kaydedilir. Toplam plan, takılan işlerin maliyeti ve kalan plan bütçesi ayrı hesaplanır. Proje günlüğü, notlar, proje özeti paylaşımı ve tekil Studio JSON dışa aktarma da bulunur.
+
+**Kapsam sınırı:** Bu sürümde tüm markaları kapsayan lisanslı araç kataloğu, canlı fiyat sağlayıcısı, gerçek fotoğraf üzerinde kusursuz otomatik boya düzenleme veya otomatik parça uyumluluk veritabanı bulunmaz. “Ben doğruladım” seçeneği kullanıcının kontrol kaydıdır; üretici belgesi veya uzman kontrolünün yerine geçmez.
 
 ### 10. Temalar, PIN ve kişiselleştirme
 
-Uygulamada karanlık/açık görünüm tercihi, dört haneli PIN ekranı ve 12 renk paketi bulunur: Klasik Koyu, Beyaz + Kırmızı, Metalik Gri, Metalik Altın, Carbon Turuncu, Okyanus, Orman, Royal Mor, Rose Gold, Kar + Mavi, Krem + Kahve ve Neon Mint.
+Uygulamada karanlık/açık görünüm tercihi, dört haneli PIN ekranı ve 24 renk paketi bulunur. İlk 12 pakete ek olarak Sisli Turkuaz, Alacakaranlık Lavanta, Yumuşak Arduvaz, Adaçayı, Sıcak Kum, Soluk Gül, Yosun ve Taş, Mürdüm Grisi, Bakır Dumanı, Mavi Saat, Yumuşak Zeytin ve Kâğıt ve Mürekkep gibi daha sakin paletler gelir.
 
 PIN, uygulama açılışında ek bir kilit ekranı sağlar; **uygulama verilerini şifrelemez**. Telefonun kendi ekran kilidini kullanmaya devam et. PIN unutulması veya uygulamanın kaldırılması durumunda veri kurtarma için önceden alınmış dışa aktarılmış yedeğe ihtiyaç duyulabilir.
 
@@ -157,18 +159,18 @@ Garajım'ın araç kayıtları ve arayüz tercihleri ağırlıklı olarak uygula
 
 ### Yedekleme türleri
 
-- **Manuel JSON yedeği:** Araçlar, kayıtlı sürüşler, park konumu, sürüş ayarları/ek verileri, güvenli tercihler ve kurtarılabilir sürüş taslağı/bekleyen özet gibi desteklenen verileri içerir. PIN ve AI API anahtarı özellikle dahil edilmez.
+- **Manuel JSON yedeği:** Araçlar, kayıtlı sürüşler, park konumu, sürüş ayarları/ek verileri, güvenli tercihler ve kurtarılabilir sürüş taslağı/bekleyen özet gibi desteklenen verileri içerir. PIN ve eski sürümlerde saklanmış AI API anahtarı özellikle dahil edilmez. Studio projeleri ve proje fotoğrafları dahil edilebilir; büyük fotoğraflar yedek boyutunu artırır.
 - **Otomatik yerel yedek:** Aynı cihazda son yedi kopyaya kadar **yalnızca araç listesini** saklar; tam yedek veya bulut yedeklemesi değildir.
 - **CSV:** Masraf kayıtları için dışa aktarma.
 - **PDF:** Araç raporu ve genel rapor.
 - **GPX:** Sürüş rotası dışa aktarma.
 
-Sosyal akış ve AI sohbet geçmişi mevcut manuel JSON yedeğinin parçası değildir. Otomatik yedekler uygulama verisiyle aynı cihazda tutulduğu için uygulama verileri silinirse onlar da kaybolabilir. Önemli bir güncelleme/kaldırma öncesinde JSON yedeğini indirip başka bir konuma kopyala ve gerektiğinde geri yüklemeyi test et.
+Sosyal akış ve eski sürümlerde kalmış AI sohbet geçmişi manuel JSON yedeğinin parçası değildir. Studio bağımsız projeleri ise bu sürümde yedeğe eklenir. Otomatik yedekler uygulama verisiyle aynı cihazda tutulduğu için uygulama verileri silinirse onlar da kaybolabilir. Önemli bir güncelleme/kaldırma öncesinde JSON yedeğini indirip başka bir konuma kopyala ve gerektiğinde geri yüklemeyi test et.
 
 ### Dış servislerle veri paylaşımı
 
 - **Harita/rota:** Harita kareleri OSM/Esri sağlayıcılarından alınabilir. Adres arama ve rota hesaplama istekleri Nominatim/OSRM uç noktalarına gider. Harita/rota kullanımında ağ sağlayıcıları IP adresi ve istenen harita/koordinat bilgilerini görebilir.
-- **Yapay zekâ:** Asistan kullanılırsa yazdığın mesajlar ve desteklenen akışta gönderdiğin görsel seçtiğin Gemini/OpenAI API hizmetine iletilir. İlgili sağlayıcının gizlilik ve kullanım koşulları geçerlidir.
+- **Studio fotoğrafları:** Araç fotoğrafları ve proje ayrıntıları varsayılan olarak bu cihazın yerel depolamasında tutulur; kullanıcı yedek dosyasını dışarı aktarırsa Studio projesi fotoğrafı da dosyaya girebilir.
 - **Garajım sunucusu:** Bu kaynakta tüm araç/sürüş kayıtlarını toplayan bir merkezi Garajım sunucusu veya kullanıcı hesabı altyapısı tanımlı değildir.
 
 ## İzinler ve pil kullanımı
@@ -314,7 +316,7 @@ Araçlarını kaydet, bakım ve sigorta tarihlerini takip et, yakıt fişlerini 
 
 Saat arayüzü; hız, seçili araç, mesafe, geçen süre, maksimum hız ve GPS rota önizlemesini tek akışta sunar. Telefonun sürüş hizmetinden gelen sınırlı rota örnekleri Wearable Data Layer üzerinden aktarılır; saat, rota çizgisini yerel olarak işler ve gerçek sokak haritası varmış gibi davranmaz. Bağlantı, GPS bekleme ve eski veri durumları ayrıca gösterilir.
 
-Bu tam kaynak paketi `1.4.2` sürümünü kullanır. Rozet koleksiyonu, gizli kutlama testi, sekiz profilli Sürüş DNA motoru/panosu ve Wear OS başarım kutlaması dahildir. Derleme sonucu ve gerçek cihaz davranışı GitHub Actions ile ayrıca doğrulanmalıdır.
+Bu tam kaynak paketi `1.4.6` sürümünü kullanır. Rozet koleksiyonu, Sürüş DNA, dört sayfalı Wear OS kokpiti, 24 temalı renk kataloğu ve Garajım Studio proje merkezi dahildir. Studio’nun akışı ve kaynak kontrolleri statik testlerle incelenmiştir; Android APK derlemesi ve gerçek cihaz davranışı ayrıca doğrulanmalıdır.
 
 ### 1.3.4 — Senkronizasyon ve kullanım güvenilirliği
 
@@ -374,3 +376,8 @@ Başarım koleksiyonunun gizli test menüsündeki **Sürüş DNA simülatörü**
 - Nominatim sorgu önbelleği ve hız sınırlama.
 - Standart OSM tile servisinde toplu çevrimdışı indirmeyi kaldırma; açık kaynak atfı ekleme.
 - Açık Dünya ekranındaki harita kontrollerini iki ana buton ve tek bir araçlar sheet'i etrafında sadeleştirme.
+
+
+### Garajım’ı Keşfet 1.4.3
+
+İlk açılışta 6 adımlı animasyonlu tur başlar; kullanıcı herhangi bir adımda Atla seçebilir. Sonraki açılışlarda tek bir kısa “Şunu Dene!” kartı görünür. Ayarlar > Garajım’ı Keşfet üzerinden tur tekrarlanabilir, bir öneri elle açılabilir veya otomatik öneriler kapatılabilir. Tercihler `garaj_discovery_v1` anahtarında saklanır; araç ve rozet durumuna dokunulmaz.

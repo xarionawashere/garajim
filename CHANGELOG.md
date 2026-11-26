@@ -1,3 +1,33 @@
+## 1.4.6 — Garajım Studio
+- Asistan sekmesi, araç tasarımı ve modifikasyon projesi çalışma alanı olarak yeniden tasarlandı.
+- Kayıtlı garaj aracından proje oluşturma veya plaka zorunluluğu olmadan bağımsız araç profili açma eklendi; yaygın marka/model hızlı seçim listesi ve serbest metin girişi birlikte destekleniyor.
+- Fotoğraf seçme ve cihaz içinde sıkıştırma, boya rengi maketi, kaydedilebilir tasarım varyantları eklendi.
+- Modifikasyon listesi, manuel fiyat/bütçe takibi, sipariş/montaj durumu ve proje zaman çizelgesi eklendi.
+- Studio projeleri uygulama yedeğine dahil edildi; doğrulanmamış parça uyumluluğu açıkça işaretleniyor.
+
+## 1.4.5 — Göz yormayan tema paketleri
+- Tema kataloğu 12 yeni, düşük doygunluklu paletle 24 pakete çıkarıldı: Sisli Turkuaz, Alacakaranlık Lavanta, Yumuşak Arduvaz, Adaçayı, Sıcak Kum, Soluk Gül, Yosun ve Taş, Mürdüm Grisi, Bakır Dumanı, Mavi Saat, Yumuşak Zeytin ve Kâğıt ve Mürekkep.
+- İlk ekran çizimindeki renk haritası, web tema kataloğu ve Wear OS renk eşlemesi senkronize edildi.
+- Wear OS ana sürüş düğmesinin metin rengi, vurgu renginin parlaklığına göre siyah/beyaz seçilerek okunabilirlik korundu.
+- `tests/t34_soft_theme_packs.js` tema katalogu, her paletin ilk çizim haritasında ve Wear OS tarafında bulunması için statik kontroller içerir.
+- Doğrulama sınırı: kaynak/statik testler gerçek cihazda görsel konfor, renk algısı veya APK kurulumunu doğrulamaz; saat/telefon üzerinde kontrol edilmelidir.
+
+## 1.4.4 — Wear OS çok sayfalı arayüz ve tema eşitleme
+- Saat arayüzü Kokpit, Müzik, Navigasyon ve Garaj sayfalarına ayrıldı.
+- Telefon tema paketinin Wear OS cihazına Data Layer üzerinden eşitlenmesi eklendi.
+- Doğrulama sınırları ve cihaz testi adımları `TESLIM-RAPORU-1.4.4-WEAR-REDESIGN-TEMA.md` içinde.
+
+## 1.4.3 — Animasyonlu ilk tanıtım ve “Şunu Dene!”
+
+- İlk açılışta 6 adımlı animasyonlu Garajım tanıtımı; her adımda Atla, Geri ve Devam et.
+- Sonraki açılışlarda her seferinde değişen, tek kartlık “Şunu Dene!” önerisi. Atla ile anında kapatılabilir.
+- Öneriler kullanıcı ilerlemesine göre uyarlanır: araç yoksa araç ekleme, araç varsa bakım/yakıt, ayrıca navigasyon, park yeri, DNA ve yedekleme.
+- Ayarlar → Garajım’ı Keşfet bölümünden tanıtımı tekrar izleme, isteğe bağlı ipucu gösterme ve açılış önerilerini kapatma.
+- Animasyonlar azaltılmış hareket tercihini izler; içerik yerel saklanır ve mevcut araç/rozet verileri değiştirilmez.
+- Telefon APK sürümü versionCode 15 / versionName 1.4.3, Wear OS versionCode 17 / versionName 1.4.3.
+- `tests/t33_discovery_onboarding.js` ilk tanıtım, Atla, açılış ipuçları ve ayar kontrolleri için eklendi.
+- **Doğrulama sınırı:** Kaynak/sentaks/regresyon kontrolleri gerçek cihaz animasyon yerleşimini veya uygulama içindeki yönlendirmeleri tek başına kanıtlamaz; Actions ve cihaz kontrolü gerekir.
+
 ## 1.4.2 — Navigasyon güvenilirliği ve sade Açık Dünya arayüzü
 
 - Navigasyon açık dünya sürüş kaydından bağımsız arka plan konum izleme desteğiyle güçlendirildi; ortak konum izleyicisi navigasyon sürerken yanlışlıkla kapatılmaz.

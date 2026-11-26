@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="Garajım - Araç bakım, masraf ve hatırlatma uygulaması">
+<meta name="description" content="Garajım - Araç yönetimi, bakım, masraf ve kişisel otomobil Studio projeleri">
 <title>Garajım</title>
 <script>
   (function () {
@@ -23,7 +23,19 @@
         'rose-gold':      { bg:'#140f10', accent:'#f472b6', dark:'#db2777', rgb:'244,114,182', text:'#fdf2f8' },
         'snow-blue':      { bg:'#f0f7ff', accent:'#2563eb', dark:'#1d4ed8', rgb:'37,99,235', text:'#0c1929' },
         'cream-brown':    { bg:'#faf6f1', accent:'#b45309', dark:'#92400e', rgb:'180,83,9', text:'#1c1410' },
-        'neon-mint':      { bg:'#050805', accent:'#4ade80', dark:'#22c55e', rgb:'74,222,128', text:'#f0fdf4' }
+        'neon-mint':      { bg:'#050805', accent:'#4ade80', dark:'#22c55e', rgb:'74,222,128', text:'#f0fdf4' },
+        'mist-teal':      { bg:'#101a1b', accent:'#5f938a', dark:'#47766f', rgb:'95,147,138', text:'#e3eeeb' },
+        'lavender-dusk':  { bg:'#18171d', accent:'#9a88b8', dark:'#7b6898', rgb:'154,136,184', text:'#ece8f1' },
+        'slate-blue':     { bg:'#131a22', accent:'#7798b2', dark:'#5d7e98', rgb:'119,152,178', text:'#e5ebf1' },
+        'soft-sage':      { bg:'#e9eee5', accent:'#5e795f', dark:'#4b654d', rgb:'94,121,95', text:'#28352c' },
+        'warm-sand':      { bg:'#efe7db', accent:'#896b4d', dark:'#705438', rgb:'137,107,77', text:'#342a20' },
+        'dusty-rose':     { bg:'#f1e7e7', accent:'#955e67', dark:'#794750', rgb:'149,94,103', text:'#382b2e' },
+        'moss-stone':     { bg:'#171b17', accent:'#84976f', dark:'#697d55', rgb:'132,151,111', text:'#e5e9df' },
+        'plum-ash':       { bg:'#1b181d', accent:'#9a7da1', dark:'#7d6384', rgb:'154,125,161', text:'#e9e3ea' },
+        'copper-smoke':   { bg:'#1c1917', accent:'#a77d5d', dark:'#896346', rgb:'167,125,93', text:'#eee6df' },
+        'blue-hour':      { bg:'#121a27', accent:'#7e97bd', dark:'#617ba2', rgb:'126,151,189', text:'#e2eaf4' },
+        'soft-olive':     { bg:'#eceee3', accent:'#646f4a', dark:'#505b38', rgb:'100,111,74', text:'#2e3629' },
+        'paper-ink':      { bg:'#ecebe4', accent:'#5e7268', dark:'#495d53', rgb:'94,114,104', text:'#30322e' }
       };
       var id = localStorage.getItem('garaj_pack') || 'dark-red';
       var p = packs[id] || packs['dark-red'];
@@ -288,6 +300,70 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     #vehicleList > .card { padding: 10px !important; }
   }
 
+
+  /* ---------- GARJIM'I KESFET / SUNU DENE ---------- */
+  .discovery-backdrop { background:rgba(2,6,15,.86); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+  .discovery-dialog { width:100%; max-width:470px; width:min(100%, 470px); max-height:92vh; max-height:min(92dvh, 850px); overflow:auto; border:1px solid rgba(255,255,255,.12); background:linear-gradient(160deg,rgba(24,31,45,.98),rgba(9,12,19,.99)); box-shadow:0 30px 100px rgba(0,0,0,.55); border-radius:30px; color:#f8fafc; }
+  .discovery-enter { animation:discoveryEnter .42s cubic-bezier(.2,.8,.2,1) both; }
+  .discovery-scene { min-height:156px; position:relative; overflow:hidden; isolation:isolate; border-radius:24px; background:radial-gradient(circle at 50% 50%,rgba(var(--accent-rgb),.27),transparent 52%),linear-gradient(135deg,#17263b,#0b1220 72%); border:1px solid rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
+  .discovery-scene:before,.discovery-scene:after { content:''; position:absolute; border:1px solid rgba(255,255,255,.11); border-radius:50%; width:180px; height:180px; animation:discoveryOrbit 16s linear infinite; z-index:-1; }
+  .discovery-scene:after { width:230px;height:230px;animation-direction:reverse;animation-duration:23s; }
+  .discovery-orb { width:86px;height:86px;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:35px;color:#fff;background:linear-gradient(145deg,var(--accent),var(--accent-dark));box-shadow:0 12px 40px rgba(var(--accent-rgb),.28);animation:discoveryFloat 3s ease-in-out infinite; }
+  .discovery-dialog.tip-mode .discovery-scene { min-height:84px; margin-bottom:12px; border-radius:18px; }
+  .discovery-dialog.tip-mode .discovery-orb { width:58px;height:58px;border-radius:19px;font-size:25px; }
+  .discovery-dialog.tip-mode .discovery-points { display:none; }
+  .discovery-scene[data-kind="navigation"] { background:radial-gradient(circle at 52% 45%,rgba(56,189,248,.25),transparent 55%),linear-gradient(135deg,#0d2636,#0b1220 72%); }
+  .discovery-scene[data-kind="dna"] { background:radial-gradient(circle at 50% 50%,rgba(129,140,248,.25),transparent 54%),linear-gradient(135deg,#1d1b3a,#0b1220 72%); }
+  .discovery-points { display:grid; gap:8px; margin-top:16px; }
+  .discovery-point { display:flex; align-items:flex-start; gap:10px; color:#cbd5e1; font-size:12px; line-height:1.45; }
+  .discovery-point i { color:#67e8f9; margin-top:2px; }
+  .discovery-progress { display:flex; gap:5px; }
+  .discovery-progress span { flex:1; height:4px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden; }
+  .discovery-progress span.active { background:var(--accent); box-shadow:0 0 12px rgba(var(--accent-rgb),.35); }
+  .discovery-primary { background:linear-gradient(135deg,var(--accent),var(--accent-dark)); color:var(--btn-text); box-shadow:0 8px 22px rgba(var(--accent-rgb),.19); }
+  .discovery-secondary { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:#e2e8f0; }
+  .discovery-secondary:active,.discovery-primary:active { transform:scale(.98); }
+  .discovery-caption { color:#94a3b8; font-size:10px; line-height:1.4; }
+  @keyframes discoveryEnter { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes discoveryFloat { 0%,100% { transform:translateY(0) rotate(-2deg); } 50% { transform:translateY(-6px) rotate(2deg); } }
+  @keyframes discoveryOrbit { from { transform:rotate(0deg) scaleX(1.08); } to { transform:rotate(360deg) scaleX(1.08); } }
+  @media (prefers-reduced-motion: reduce) { .discovery-enter,.discovery-orb,.discovery-scene:before,.discovery-scene:after { animation:none !important; transition:none !important; } }
+  html.light .discovery-dialog { color:#0f172a; background:linear-gradient(160deg,#ffffff,#f1f5f9); border-color:rgba(15,23,42,.12); }
+  html.light .discovery-point,html.light .discovery-secondary { color:#334155; }
+  html.light .discovery-secondary { background:rgba(15,23,42,.05); border-color:rgba(15,23,42,.1); }
+
+
+  /* ---- GARAJIM STUDIO: kişisel araç tasarımı ve modifikasyon çalışma alanı ---- */
+  .studio-eyebrow{font-size:9px;letter-spacing:.22em;font-weight:850;color:var(--accent);text-transform:uppercase}
+  .studio-hero{position:relative;overflow:hidden;background:radial-gradient(circle at 85% 15%,rgba(var(--accent-rgb),.24),transparent 38%),linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018));border:1px solid var(--border)}
+  .studio-panel{background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid var(--border);border-radius:22px}
+  .studio-muted{color:var(--muted)}
+  .studio-tab{white-space:nowrap;padding:10px 13px;border-radius:13px;font-size:11px;font-weight:800;color:var(--muted);border:1px solid transparent;background:transparent}
+  .studio-tab.active{color:var(--text);background:rgba(var(--accent-rgb),.15);border-color:rgba(var(--accent-rgb),.28)}
+  .studio-swatch{border:1px solid rgba(255,255,255,.18);border-radius:15px;padding:8px 7px 7px;text-align:left;background:rgba(255,255,255,.025);min-width:0;transition:transform .15s,border-color .15s}
+  .studio-swatch:active{transform:scale(.97)}
+  .studio-swatch.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 7px 20px rgba(var(--accent-rgb),.13)}
+  .studio-swatch-chip{height:35px;border-radius:9px;border:1px solid rgba(255,255,255,.12);margin-bottom:7px;position:relative}
+  .studio-swatch.active .studio-swatch-chip:after{content:'✓';position:absolute;right:5px;top:4px;color:white;font-size:12px;font-weight:900;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+  .studio-car-stage{overflow:hidden;border-radius:18px;background:radial-gradient(ellipse at 50% 80%,rgba(var(--accent-rgb),.12),transparent 52%),linear-gradient(155deg,#19212b,#0b1018 72%);border:1px solid rgba(255,255,255,.08)}
+  .studio-kpi{border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:16px;padding:12px;min-width:0}
+  .studio-field{width:100%;border:1px solid var(--border)!important;border-radius:13px;padding:11px 12px;font-size:12px;background:rgba(255,255,255,.045)!important;color:var(--text)!important;outline:none}
+  .studio-field:focus{border-color:rgba(var(--accent-rgb),.7)!important;box-shadow:0 0 0 3px rgba(var(--accent-rgb),.12)}
+  .studio-primary{background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;font-weight:850;border-radius:14px;padding:12px 15px;font-size:12px;box-shadow:0 8px 25px rgba(var(--accent-rgb),.17)}
+  .studio-secondary{border:1px solid var(--border);background:rgba(255,255,255,.045);color:var(--text);font-weight:750;border-radius:14px;padding:11px 13px;font-size:11px}
+  .studio-part{border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:17px;padding:13px}
+  .studio-dot{width:7px;height:7px;border-radius:100%;display:inline-block;background:#8b95a5}
+  .studio-dot.planned{background:#d8ac64}.studio-dot.ordered{background:#7e9bc4}.studio-dot.installed{background:#6bb89a}
+  .studio-empty-dashed{border:1px dashed var(--border);border-radius:18px;background:rgba(255,255,255,.018)}
+  .studio-photo{width:100%;height:185px;object-fit:cover;display:block;border-radius:17px;background:#111820}
+  .studio-variant{border:1px solid var(--border);border-radius:15px;padding:10px;display:flex;gap:10px;align-items:center;text-align:left;background:rgba(255,255,255,.025);width:100%}
+  .studio-variant:active{transform:scale(.99)}
+  .studio-variant-color{width:36px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
+  html.light .studio-hero{background:radial-gradient(circle at 85% 15%,rgba(var(--accent-rgb),.12),transparent 38%),linear-gradient(145deg,rgba(15,23,42,.035),rgba(15,23,42,.015))}
+  html.light .studio-car-stage{background:radial-gradient(ellipse at 50% 80%,rgba(var(--accent-rgb),.16),transparent 52%),linear-gradient(155deg,#e9edf2,#dfe5ec 72%)}
+  html.light .studio-field{background:rgba(255,255,255,.8)!important}
+  @media(min-width:430px){.studio-photo{height:218px}.studio-swatch-chip{height:42px}}
+
 </style>
 </head>
 <body class="min-h-screen">
@@ -377,40 +453,79 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   <main class="px-4 py-4 space-y-4 pb-28" id="socialFeed"></main>
 </div>
 
-<!-- ASSISTANT VIEW -->
+<!-- GARJIM STUDIO / eski Asistan alanının yerine araç tasarım ve proje merkezi -->
 <div id="assistantView" class="hidden">
-  <header class="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 px-4 pt-3 pb-2">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-extrabold tracking-tight">Asistan</h1>
-        <p class="text-[11px] text-slate-500 mt-0.5" id="aiStatusLine">Soru sor · internet + API gerekir</p>
+  <header class="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 px-4 pt-3 pb-3">
+    <div class="flex items-center justify-between gap-3 max-w-lg mx-auto">
+      <div class="min-w-0">
+        <div class="studio-eyebrow mb-1">BUILD YOUR MACHINE</div>
+        <h1 class="text-2xl font-extrabold tracking-tight">Garajım <span class="text-accent">Studio</span></h1>
+        <p class="text-[11px] text-slate-500 mt-0.5">Tasarımını kur · projenin kontrolü sende</p>
       </div>
-      <div class="flex gap-2">
-        <button onclick="aiClearChat()" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-slate-400" title="Sohbeti temizle">
-          <i class="fa-solid fa-eraser text-sm"></i>
-        </button>
-        <button onclick="openSettings()" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-slate-400" title="API ayarı">
-          <i class="fa-solid fa-key text-sm"></i>
-        </button>
-      </div>
+      <button onclick="studioOpenSetup()" class="studio-primary shrink-0 flex items-center gap-2"><i class="fa-solid fa-plus"></i><span>Yeni proje</span></button>
     </div>
-    <div id="aiQuickTips" class="flex gap-2 overflow-x-auto mt-2 pb-1"></div>
   </header>
-  <main id="aiChatLog" class="px-4 py-3 space-y-3 overflow-y-auto" style="padding-bottom:140px;max-height:calc(100vh - 200px)"></main>
-  <div class="fixed left-0 right-0 z-40 px-3" style="bottom:calc(72px + env(safe-area-inset-bottom))">
-    <div class="max-w-lg mx-auto rounded-2xl border border-white/10 bg-[#111]/95 backdrop-blur-xl p-2 flex gap-2 items-end">
-      <label class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 shrink-0 cursor-pointer">
-        <i class="fa-solid fa-camera"></i>
-        <input type="file" accept="image/*" capture="environment" class="hidden" onchange="aiPickPhoto(event)">
+
+  <main class="px-4 pt-4 pb-32 space-y-4 max-w-lg mx-auto" id="studioRoot">
+    <section id="studioWelcome" class="hidden space-y-4">
+      <div class="studio-hero rounded-3xl p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="studio-eyebrow mb-2">PERSONAL BUILD LAB</div>
+            <h2 class="text-2xl leading-tight font-extrabold">Hayalindeki aracı<br>bir projeye dönüştür.</h2>
+            <p class="text-xs studio-muted mt-3 leading-relaxed">Fotoğrafını ekle, renk kombinasyonlarını dene, parçalarını ve bütçeni tek bir çalışma alanında yönet.</p>
+          </div>
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0" style="background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.2)"><i class="fa-solid fa-car-side text-4xl text-accent"></i></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-5">
+          <button class="studio-primary" onclick="studioOpenSetup()"><i class="fa-solid fa-camera mr-1.5"></i> Fotoğrafla / manuel</button>
+          <button class="studio-secondary" onclick="studioScrollGarageChoices()"><i class="fa-solid fa-warehouse mr-1.5"></i> Garajımdan seç</button>
+        </div>
+      </div>
+      <div id="studioGarageChoices" class="studio-panel p-4 space-y-3">
+        <div class="flex items-center justify-between gap-2"><div><h3 class="font-extrabold text-sm">Garajındaki araçlardan başla</h3><p class="text-[10px] studio-muted mt-1">Kayıtlı araç bilgilerini tekrar girmek zorunda değilsin.</p></div><span class="text-[10px] px-2 py-1 rounded-lg bg-white/5" id="studioGarageCount">0 araç</span></div>
+        <div id="studioGarageChoicesList" class="space-y-2"></div>
+      </div>
+      <div class="studio-empty-dashed p-4 flex gap-3 items-start">
+        <i class="fa-solid fa-shield-halved text-accent mt-0.5"></i>
+        <div><p class="text-xs font-bold">Hızlı listede bulamazsan da devam edebilirsin</p><p class="text-[10px] studio-muted leading-relaxed mt-1">Marka yazınca yaygın modeller önerilir; listede olmayanı yine kendin yazabilirsin. Fotoğrafın bu cihazda saklanır; Studio sahte parça uyumluluğu veya gerçek dışı fiyat iddiasında bulunmaz.</p></div>
+      </div>
+    </section>
+
+    <section id="studioSetupForm" class="hidden studio-panel p-4 space-y-4">
+      <div class="flex items-center justify-between gap-3"><div><div class="studio-eyebrow">NEW BUILD</div><h2 class="text-lg font-extrabold mt-1">Araç profili oluştur</h2><p class="text-[11px] studio-muted mt-1">Plaka zorunlu değil. Fotoğrafı sonra da ekleyebilirsin.</p></div><button onclick="studioCloseSetup()" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10"><i class="fa-solid fa-xmark"></i></button></div>
+      <label class="block">
+        <span class="text-[11px] font-bold studio-muted block mb-2">Araç fotoğrafı <span class="font-normal">(isteğe bağlı)</span></span>
+        <div class="studio-empty-dashed p-3 flex items-center gap-3">
+          <div id="studioSetupPhotoPreview" class="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden shrink-0" style="background:rgba(255,255,255,.04)"><i class="fa-solid fa-camera text-xl studio-muted"></i></div>
+          <div class="min-w-0 flex-1"><p class="text-xs font-bold">Kendi aracının fotoğrafını kullan</p><p class="text-[10px] studio-muted mt-1">JPG, PNG veya WebP · cihaz içinde küçültülür</p></div>
+          <span class="studio-secondary shrink-0">Seç</span>
+          <input id="studioSetupPhoto" type="file" accept="image/*" capture="environment" class="hidden" onchange="studioPickSetupPhoto(event)">
+        </div>
       </label>
-      <input type="hidden" id="aiPhotoData">
-      <textarea id="aiInput" rows="1" placeholder="Sor veya fotoğraf ekle..." class="flex-1 bg-transparent text-sm px-2 py-2 outline-none resize-none max-h-28" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend();}"></textarea>
-      <button onclick="aiSend()" id="aiSendBtn" class="w-11 h-11 rounded-xl text-white shrink-0" style="background:var(--accent)">
-        <i class="fa-solid fa-paper-plane"></i>
-      </button>
-    </div>
-    <p id="aiPhotoHint" class="max-w-lg mx-auto text-[10px] text-slate-500 mt-1 hidden">Foto eklendi · gönderince YZ görür</p>
-  </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-[11px] font-bold studio-muted">Marka *<input id="studioSetupBrand" list="studioBrandSuggestions" oninput="studioUpdateModelSuggestions()" class="studio-field mt-1.5" maxlength="60" placeholder="BMW" required></label>
+        <label class="text-[11px] font-bold studio-muted">Model *<input id="studioSetupModel" list="studioModelSuggestions" onfocus="studioUpdateModelSuggestions()" class="studio-field mt-1.5" maxlength="60" placeholder="M4" required></label>
+        <label class="text-[11px] font-bold studio-muted">Model yılı<input id="studioSetupYear" class="studio-field mt-1.5" type="number" min="1950" max="2035" placeholder="2024"></label>
+        <label class="text-[11px] font-bold studio-muted">Kasa tipi<select id="studioSetupBody" class="studio-field mt-1.5"><option value="Sedan">Sedan</option><option value="Hatchback">Hatchback</option><option value="Coupe">Coupe</option><option value="SUV">SUV</option><option value="Station wagon">Station wagon</option><option value="Motosiklet">Motosiklet</option><option value="Diğer">Diğer</option></select></label>
+        <label class="text-[11px] font-bold studio-muted col-span-2">Proje adı <span class="font-normal">(isteğe bağlı)</span><input id="studioSetupTitle" class="studio-field mt-1.5" maxlength="70" placeholder="Örn. OEM+ günlük build"></label>
+      </div>
+      <datalist id="studioBrandSuggestions"><option value="Audi"></option><option value="BMW"></option><option value="Citroën"></option><option value="Dacia"></option><option value="Fiat"></option><option value="Ford"></option><option value="Honda"></option><option value="Hyundai"></option><option value="Kia"></option><option value="Land Rover"></option><option value="Mazda"></option><option value="Mercedes-Benz"></option><option value="MG"></option><option value="MINI"></option><option value="Nissan"></option><option value="Opel"></option><option value="Peugeot"></option><option value="Renault"></option><option value="SEAT"></option><option value="Škoda"></option><option value="Suzuki"></option><option value="Tesla"></option><option value="TOGG"></option><option value="Toyota"></option><option value="Volkswagen"></option><option value="Volvo"></option></datalist>
+      <datalist id="studioModelSuggestions"></datalist>
+      <p class="text-[9px] studio-muted -mt-1">Hızlı model listesi yaygın seçenekler içindir; tüm donanımları veya üretim yıllarını temsil etmez.</p>
+      <div class="flex gap-2"><button onclick="studioCloseSetup()" class="studio-secondary flex-1">Vazgeç</button><button onclick="studioCreateProject()" class="studio-primary flex-1"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Studio'yu oluştur</button></div>
+      <p id="studioSetupHint" class="text-[10px] studio-muted leading-relaxed"></p>
+    </section>
+
+    <section id="studioDashboard" class="hidden space-y-4">
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-0"><label for="studioProjectSelect" class="studio-eyebrow block mb-1.5">ACTIVE BUILD</label><select id="studioProjectSelect" class="studio-field font-bold" onchange="studioSelectProject(this.value)"></select></div>
+        <button onclick="studioShareBuild()" class="studio-secondary mt-5 w-11 h-11 flex items-center justify-center" title="Projeyi paylaş"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
+        <button onclick="studioExportProject()" class="studio-secondary mt-5 w-11 h-11 flex items-center justify-center" title="Proje yedeği"><i class="fa-solid fa-download"></i></button>
+      </div>
+      <div id="studioProjectContent"></div>
+    </section>
+  </main>
 </div>
 
 <!-- SÜRÜŞ (HARİTA) -->
@@ -781,8 +896,8 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       <span class="text-[10px] font-semibold">Açık Dünya</span>
     </button>
     <button onclick="showTab('assistant')" id="tabAssistant" class="tab-btn flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-500">
-      <i class="fa-solid fa-robot text-lg"></i>
-      <span class="text-[10px] font-semibold">Asistan</span>
+      <i class="fa-solid fa-palette text-lg"></i>
+      <span class="text-[10px] font-semibold">Studio</span>
     </button>
     <button onclick="showTab('social')" id="tabSocial" class="tab-btn flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-500">
       <i class="fa-solid fa-globe text-lg"></i>
@@ -1114,6 +1229,20 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       </div>
     </div>
 
+
+    <p class="text-xs text-slate-500 uppercase mb-2">Garajım’ı Keşfet</p>
+    <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-6 space-y-3">
+      <div class="flex items-center justify-between gap-3">
+        <div class="min-w-0"><p class="text-sm font-semibold">Açılış önerileri</p><p class="text-[11px] text-slate-500">Uygulama açıldığında kısa bir “Şunu dene” ipucu göster.</p></div>
+        <button id="discoveryTipsToggle" onclick="discoveryToggleTips()" class="seg px-3 py-1.5 text-xs shrink-0" aria-pressed="true">Açık</button>
+      </div>
+      <p id="discoveryStatus" class="text-[10px] text-slate-500">Tanıtım durumu yükleniyor…</p>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="discoveryReplayTour()" class="seg text-xs"><i class="fa-solid fa-play mr-1"></i>Tanıtımı tekrar izle</button>
+        <button onclick="discoveryShowTipNow()" class="seg text-xs"><i class="fa-solid fa-lightbulb mr-1"></i>Bir öneri göster</button>
+      </div>
+    </div>
+
     <p class="text-xs text-slate-500 uppercase mb-2">Otomatik Yedek</p>
     <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-4">
       <div class="flex items-center justify-between mb-2">
@@ -1131,26 +1260,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       <p class="text-[10px] text-slate-600 mt-2 leading-relaxed">Yedekler bu cihazda saklanır (son 7 kopya). Gerçek bulut için düzenli “Yedekle” ile dosyayı Google Drive / iCloud’a koyabilirsin.</p>
     </div>
 
-    <p class="text-xs text-slate-500 uppercase mb-2">YZ Asistan (internet)</p>
-    <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-6 space-y-3">
-      <p class="text-[11px] text-slate-500 leading-relaxed">Ücretsiz için <b class="text-slate-300">Google AI Studio</b>’dan Gemini API anahtarı al. Anahtar sadece bu telefonda saklanır.</p>
-      <div>
-        <label class="text-[11px] text-slate-500 mb-1 block">Sağlayıcı</label>
-        <select id="aiProvider" class="w-full rounded-xl px-3 py-2.5 text-sm border border-white/10 bg-black/30">
-          <option value="gemini">Google Gemini (önerilen)</option>
-          <option value="openai">OpenAI</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-[11px] text-slate-500 mb-1 block">API anahtarı</label>
-        <input id="aiApiKey" type="password" autocomplete="off" placeholder="AIza... veya sk-..." class="w-full rounded-xl px-3 py-2.5 text-sm border border-white/10 bg-black/30">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button onclick="aiSaveSettings()" class="seg text-xs"><i class="fa-solid fa-floppy-disk mr-1"></i>Kaydet</button>
-        <button onclick="aiTestConnection()" class="seg text-xs"><i class="fa-solid fa-plug mr-1"></i>Test et</button>
-      </div>
-      <p id="aiSettingsHint" class="text-[10px] text-slate-600">Gemini: aistudio.google.com → Get API key</p>
-    </div>
+    <p class="text-xs text-slate-500 mb-3 leading-relaxed">Studio projeleri cihazında saklanır ve yedek dosyasına dahil edilir.</p>
 
     <p class="text-xs text-slate-500 uppercase mb-2">Veri</p>
     <div class="grid grid-cols-2 gap-2 mb-3">
@@ -1163,6 +1273,31 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     </div>
     <p class="text-[11px] text-slate-500" id="backupInfo">Son yedek: —</p>
   </div>
+</div>
+
+
+<!-- ---------- GARJIM'I KESFET / SUNU DENE ---------- -->
+<div id="discoveryOverlay" class="fixed inset-0 z-[98] hidden discovery-backdrop flex items-center justify-center p-3 sm:p-5" aria-hidden="true">
+  <section id="discoveryDialog" class="discovery-dialog discovery-enter p-4 sm:p-5" role="dialog" aria-modal="true" aria-labelledby="discoveryTitle" aria-describedby="discoveryBody">
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(var(--accent-rgb),.15);color:var(--accent)"><i class="fa-solid fa-sparkles"></i></div>
+        <div class="min-w-0"><div id="discoveryTopLabel" class="text-[10px] font-extrabold uppercase tracking-[.16em] text-slate-300">GARAJIM'I KEŞFET</div><div id="discoveryStepLabel" class="text-[10px] text-slate-500 mt-0.5">Uygulamana hızlı tur</div></div>
+      </div>
+      <button type="button" id="discoverySkipBtn" onclick="discoverySkip()" class="discovery-secondary rounded-full px-3 py-2 text-xs font-bold shrink-0" aria-label="Tanıtımı atla">Atla <i class="fa-solid fa-forward-step ml-1"></i></button>
+    </div>
+    <div id="discoveryProgress" class="discovery-progress mb-4" aria-hidden="true"></div>
+    <div id="discoveryScene" class="discovery-scene mb-4" data-kind="garage" aria-hidden="true"><div class="discovery-orb"><i id="discoveryIcon" class="fa-solid fa-car-side"></i></div></div>
+    <div id="discoveryEyebrow" class="text-[10px] font-extrabold uppercase tracking-[.15em] mb-2" style="color:#67e8f9">GARAJINI TANI</div>
+    <h2 id="discoveryTitle" class="text-2xl sm:text-[28px] leading-tight font-extrabold tracking-tight">Garajım'a hoş geldin</h2>
+    <p id="discoveryBody" class="text-sm text-slate-300 leading-relaxed mt-3">Araçların ve sürüşlerin için tek bir merkez.</p>
+    <div id="discoveryPoints" class="discovery-points"></div>
+    <div class="flex items-center gap-2 mt-5">
+      <button id="discoveryBackBtn" type="button" onclick="discoveryPrevious()" class="discovery-secondary hidden rounded-2xl px-4 py-3 text-sm font-semibold"><i class="fa-solid fa-arrow-left mr-1.5"></i>Geri</button>
+      <button id="discoveryActionBtn" type="button" onclick="discoveryNext()" class="discovery-primary flex-1 rounded-2xl px-4 py-3.5 text-sm font-extrabold">Keşfetmeye başla <i class="fa-solid fa-arrow-right ml-1.5"></i></button>
+    </div>
+    <p id="discoveryFootnote" class="discovery-caption text-center mt-3">İstediğin an atlayabilir, tanıtımı ayarlardan tekrar açabilirsin.</p>
+  </section>
 </div>
 
 <!-- ==================== LOCK SCREEN ==================== -->
@@ -1182,6 +1317,46 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   let tempPhoto = null;
   let currentFilter = 'all';
   let expenseChart = null;
+  let studioActiveProjectId = localStorage.getItem('garaj_studio_selected_project') || null;
+  let studioDraftPhoto = null;
+  let studioSubView = 'design';
+  let studioPartFormOpen = false;
+  let studioJournalFormOpen = false;
+  const STUDIO_PROJECTS_KEY = 'garaj_studio_projects';
+  const STUDIO_COLORS = [
+    {name:'Grafit',hex:'#66717e',note:'OEM+ / sade'}, {name:'Saten siyah',hex:'#24282d',note:'Gizli ve agresif'},
+    {name:'Buz beyazı',hex:'#e7e9e6',note:'Temiz görünüm'}, {name:'Yarış yeşili',hex:'#285246',note:'Klasik sport'},
+    {name:'Okyanus mavisi',hex:'#416987',note:'Soğuk metalik'}, {name:'Bakır',hex:'#a76e50',note:'Sıcak metalik'},
+    {name:'Bordo',hex:'#713744',note:'Derin ton'}, {name:'Kum beji',hex:'#b3a48a',note:'Retro stil'}
+  ];
+  const STUDIO_MODEL_CATALOG = {
+    'Audi':['A1','A3','A4','A5','A6','A7','A8','Q2','Q3','Q5','Q7','e-tron GT'],
+    'BMW':['1 Serisi','2 Serisi','3 Serisi','4 Serisi','5 Serisi','7 Serisi','X1','X3','X5','i4','iX','M2','M3','M4'],
+    'Citroën':['C3','C3 Aircross','C4','C4 X','C5 Aircross'],
+    'Dacia':['Sandero','Jogger','Duster','Spring'],
+    'Fiat':['Egea','500','Panda','Tipo','600'],
+    'Ford':['Fiesta','Focus','Puma','Kuga','Mustang','Ranger','Tourneo Courier'],
+    'Honda':['Civic','Jazz','HR-V','CR-V','ZR-V'],
+    'Hyundai':['i10','i20','i30','Bayon','Kona','Tucson','IONIQ 5','IONIQ 6'],
+    'Kia':['Picanto','Rio','Ceed','Stonic','Sportage','EV3','EV6'],
+    'Land Rover':['Defender','Discovery Sport','Range Rover Evoque','Range Rover Sport'],
+    'Mazda':['Mazda2','Mazda3','CX-30','CX-5','MX-5'],
+    'Mercedes-Benz':['A-Serisi','B-Serisi','C-Serisi','E-Serisi','S-Serisi','CLA','GLA','GLC','GLE','EQA','EQE'],
+    'MG':['MG3','MG4','ZS','HS','Cyberster'],
+    'MINI':['Cooper','Countryman','Aceman'],
+    'Nissan':['Micra','Juke','Qashqai','X-Trail','Leaf'],
+    'Opel':['Corsa','Astra','Mokka','Frontera','Grandland'],
+    'Peugeot':['208','308','408','2008','3008','5008','Rifter'],
+    'Renault':['Clio','Megane','Captur','Austral','Rafale','Kangoo'],
+    'SEAT':['Ibiza','Leon','Arona','Ateca'],
+    'Škoda':['Fabia','Scala','Octavia','Superb','Kamiq','Karoq','Kodiaq','Enyaq'],
+    'Suzuki':['Swift','Vitara','S-Cross','Jimny'],
+    'Tesla':['Model 3','Model Y','Model S','Model X'],
+    'TOGG':['T10X','T10F'],
+    'Toyota':['Yaris','Corolla','C-HR','RAV4','Hilux','Corolla Cross','Land Cruiser'],
+    'Volkswagen':['Polo','Golf','Passat','T-Cross','T-Roc','Tiguan','Touareg','ID.3','ID.4','Transporter'],
+    'Volvo':['EX30','EX40','EC40','S60','S90','V60','XC60','XC90']
+  };
 
   const typeIcons = { car: 'fa-car', suv: 'fa-car-side', motorcycle: 'fa-motorcycle', van: 'fa-van-shuttle', other: 'fa-truck' };
 
@@ -3033,7 +3208,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   }
 
   // ---------- EXPORT / IMPORT ----------
-  // Yedek v3: araçlar + kayıtlı sürüşler + park/ayarlar + güvenli tercihler + kurtarılabilir sürüş durumu.
+  // Yedek v4: araçlar + Studio projeleri + kayıtlı sürüşler + park/ayarlar + güvenli tercihler + kurtarılabilir sürüş durumu.
   // Gizli veriler (PIN ve yapay zekâ API anahtarı) özellikle dışa aktarılmaz.
   function backupReadJson(key) {
     try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }
@@ -3057,8 +3232,8 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       if (ride && ride.pendingSummary && ride.pendingSummary.id && !ride.pendingSummary._previewOnly) pendingRide = ride.pendingSummary;
     } catch (e) {}
     return {
-      app: 'garajim', version: 3, exportedAt: new Date().toISOString(),
-      vehicles, rides: getAllRides(), parking: parkGet(), rideSettings: rideSettings(), extras: rideExtrasGet(),
+      app: 'garajim', version: 4, exportedAt: new Date().toISOString(),
+      vehicles, rides: getAllRides(), studioProjects: (typeof studioProjectsGet === 'function' ? studioProjectsGet() : []), parking: parkGet(), rideSettings: rideSettings(), extras: rideExtrasGet(),
       preferences: backupSafePreferences(),
       rideDraft: backupReadJson('garaj_ride_draft'),
       pendingRide: pendingRide && pendingRide.id ? pendingRide : null
@@ -3110,6 +3285,12 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
         vehicles = data.map(v => ({...v, id: v.id || ('import-' + Math.random().toString(36).slice(2) + Date.now().toString(36))}));
         if (rides.length) mergeRides(rides);
         if (bundle && raw.extras) rideExtrasMerge(raw.extras);
+        if (bundle && Array.isArray(raw.studioProjects)) {
+          const localStudio = (typeof studioProjectsGet === 'function' ? studioProjectsGet() : []);
+          const knownStudio = new Set(localStudio.map(p => String(p.id)));
+          const importedStudio = raw.studioProjects.filter(p => p && p.id && !knownStudio.has(String(p.id))).slice(0, 80);
+          try { localStorage.setItem('garaj_studio_projects', JSON.stringify(localStudio.concat(importedStudio).slice(0, 80))); } catch (e) { toast('Araçlar yüklendi; Studio projeleri depolama sınırı nedeniyle eklenemedi.'); }
+        }
         if (bundle && raw.parking && typeof raw.parking.lat === 'number' && !parkGet()) { try { localStorage.setItem(PARK_KEY, JSON.stringify(raw.parking)); } catch (x) {} }
         if (bundle && raw.rideSettings && !localStorage.getItem('garaj_ride_settings')) { try { localStorage.setItem('garaj_ride_settings', JSON.stringify(raw.rideSettings)); } catch (x) {} }
         // Sadece boş cihazda varsayılanları tamamla; mevcut tema/hatırlatma tercihlerini ezme.
@@ -3352,6 +3533,102 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       accent: '#4ade80', accentDark: '#22c55e', rgb: '74,222,128',
       input: '#122018', header: 'rgba(5,8,5,0.95)', modal: 'rgba(0,0,0,0.85)', btnText: '#052e16',
       preview: ['#050805','#4ade80','#122018','#14532d']
+    },
+    {
+      id: 'mist-teal', name: 'Sisli Turkuaz', desc: 'Yumuşak petrol ve soluk turkuaz',
+      bg: '#101a1b', surface: '#192526', surface2: '#243334', card: 'rgba(143,183,176,0.07)',
+      border: 'rgba(143,183,176,0.15)', text: '#e3eeeb', muted: '#a6beb8',
+      accent: '#5f938a', accentDark: '#47766f', rgb: '95,147,138',
+      input: '#243334', header: 'rgba(16,26,27,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#f7fbf9',
+      preview: ['#101a1b','#5f938a','#243334','#a6beb8']
+    },
+    {
+      id: 'lavender-dusk', name: 'Alacakaranlık Lavanta', desc: 'Dingin mürdüm ve gri lavanta',
+      bg: '#18171d', surface: '#24222b', surface2: '#302d39', card: 'rgba(154,136,184,0.07)',
+      border: 'rgba(181,166,207,0.15)', text: '#ece8f1', muted: '#b6aec4',
+      accent: '#9a88b8', accentDark: '#7b6898', rgb: '154,136,184',
+      input: '#302d39', header: 'rgba(24,23,29,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#201b29',
+      preview: ['#18171d','#9a88b8','#302d39','#b6aec4']
+    },
+    {
+      id: 'slate-blue', name: 'Yumuşak Arduvaz', desc: 'Dumanlı mavi ve grafit',
+      bg: '#131a22', surface: '#1d2630', surface2: '#273441', card: 'rgba(147,177,199,0.07)',
+      border: 'rgba(147,177,199,0.15)', text: '#e5ebf1', muted: '#a9bac8',
+      accent: '#7798b2', accentDark: '#5d7e98', rgb: '119,152,178',
+      input: '#273441', header: 'rgba(19,26,34,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#14212b',
+      preview: ['#131a22','#7798b2','#273441','#a9bac8']
+    },
+    {
+      id: 'soft-sage', name: 'Adaçayı', desc: 'Yumuşak yeşil-gri, açık ve sakin',
+      bg: '#e9eee5', surface: '#f5f7f1', surface2: '#dfe7da', card: 'rgba(94,121,95,0.06)',
+      border: 'rgba(94,121,95,0.16)', text: '#28352c', muted: '#647364',
+      accent: '#5e795f', accentDark: '#4b654d', rgb: '94,121,95',
+      input: '#f5f7f1', header: 'rgba(233,238,229,0.97)', modal: 'rgba(34,45,35,0.38)', btnText: '#ffffff',
+      preview: ['#e9eee5','#5e795f','#f5f7f1','#dfe7da']
+    },
+    {
+      id: 'warm-sand', name: 'Sıcak Kum', desc: 'Krem, kum ve doğal kahve',
+      bg: '#efe7db', surface: '#faf5ec', surface2: '#e5d8c6', card: 'rgba(137,107,77,0.06)',
+      border: 'rgba(137,107,77,0.15)', text: '#342a20', muted: '#756552',
+      accent: '#896b4d', accentDark: '#705438', rgb: '137,107,77',
+      input: '#faf5ec', header: 'rgba(239,231,219,0.97)', modal: 'rgba(52,42,32,0.38)', btnText: '#ffffff',
+      preview: ['#efe7db','#896b4d','#faf5ec','#e5d8c6']
+    },
+    {
+      id: 'dusty-rose', name: 'Soluk Gül', desc: 'Toz pembe ve sıcak gri',
+      bg: '#f1e7e7', surface: '#fbf4f3', surface2: '#e7d7d8', card: 'rgba(149,94,103,0.06)',
+      border: 'rgba(149,94,103,0.15)', text: '#382b2e', muted: '#78666a',
+      accent: '#955e67', accentDark: '#794750', rgb: '149,94,103',
+      input: '#fbf4f3', header: 'rgba(241,231,231,0.97)', modal: 'rgba(56,43,46,0.38)', btnText: '#ffffff',
+      preview: ['#f1e7e7','#955e67','#fbf4f3','#e7d7d8']
+    },
+    {
+      id: 'moss-stone', name: 'Yosun ve Taş', desc: 'Mat taş grisi ve yumuşak yosun',
+      bg: '#171b17', surface: '#222720', surface2: '#2d332a', card: 'rgba(168,182,151,0.06)',
+      border: 'rgba(168,182,151,0.14)', text: '#e5e9df', muted: '#afb8a6',
+      accent: '#84976f', accentDark: '#697d55', rgb: '132,151,111',
+      input: '#2d332a', header: 'rgba(23,27,23,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#182016',
+      preview: ['#171b17','#84976f','#2d332a','#afb8a6']
+    },
+    {
+      id: 'plum-ash', name: 'Mürdüm Grisi', desc: 'Küllü mürdüm ve dumanlı lila',
+      bg: '#1b181d', surface: '#262128', surface2: '#332d36', card: 'rgba(186,165,189,0.06)',
+      border: 'rgba(186,165,189,0.14)', text: '#e9e3ea', muted: '#bbafbd',
+      accent: '#9a7da1', accentDark: '#7d6384', rgb: '154,125,161',
+      input: '#332d36', header: 'rgba(27,24,29,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#211a23',
+      preview: ['#1b181d','#9a7da1','#332d36','#bbafbd']
+    },
+    {
+      id: 'copper-smoke', name: 'Bakır Dumanı', desc: 'Mat bakır ve koyu taş',
+      bg: '#1c1917', surface: '#28231f', surface2: '#342e28', card: 'rgba(200,165,139,0.06)',
+      border: 'rgba(200,165,139,0.14)', text: '#eee6df', muted: '#b8a99a',
+      accent: '#a77d5d', accentDark: '#896346', rgb: '167,125,93',
+      input: '#342e28', header: 'rgba(28,25,23,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#251b14',
+      preview: ['#1c1917','#a77d5d','#342e28','#b8a99a']
+    },
+    {
+      id: 'blue-hour', name: 'Mavi Saat', desc: 'Sessiz gece mavisi ve gri-mavi',
+      bg: '#121a27', surface: '#1a2636', surface2: '#25344a', card: 'rgba(152,175,209,0.06)',
+      border: 'rgba(152,175,209,0.14)', text: '#e2eaf4', muted: '#a6b5cc',
+      accent: '#7e97bd', accentDark: '#617ba2', rgb: '126,151,189',
+      input: '#25344a', header: 'rgba(18,26,39,0.96)', modal: 'rgba(0,0,0,0.82)', btnText: '#172033',
+      preview: ['#121a27','#7e97bd','#25344a','#a6b5cc']
+    },
+    {
+      id: 'soft-olive', name: 'Yumuşak Zeytin', desc: 'Doğal zeytin ve kırık beyaz',
+      bg: '#eceee3', surface: '#f7f8f1', surface2: '#e1e5d3', card: 'rgba(100,111,74,0.06)',
+      border: 'rgba(100,111,74,0.15)', text: '#2e3629', muted: '#68725e',
+      accent: '#646f4a', accentDark: '#505b38', rgb: '100,111,74',
+      input: '#f7f8f1', header: 'rgba(236,238,227,0.97)', modal: 'rgba(46,54,41,0.36)', btnText: '#ffffff',
+      preview: ['#eceee3','#646f4a','#f7f8f1','#e1e5d3']
+    },
+    {
+      id: 'paper-ink', name: 'Kâğıt ve Mürekkep', desc: 'Yumuşak kâğıt grisi ve adaçayı',
+      bg: '#ecebe4', surface: '#f7f6ef', surface2: '#dfdfd4', card: 'rgba(94,114,104,0.06)',
+      border: 'rgba(94,114,104,0.15)', text: '#30322e', muted: '#696e67',
+      accent: '#5e7268', accentDark: '#495d53', rgb: '94,114,104',
+      input: '#f7f6ef', header: 'rgba(236,235,228,0.97)', modal: 'rgba(48,50,46,0.36)', btnText: '#ffffff',
+      preview: ['#ecebe4','#5e7268','#f7f6ef','#dfdfd4']
     }
   ];
 
@@ -3467,6 +3744,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     const titleSpans = document.querySelectorAll('h1 span');
     if (titleSpans[1]) titleSpans[1].style.color = p.accent;
     document.querySelectorAll('.theme-pack').forEach(b => b.classList.toggle('active', b.dataset.id === p.id));
+    try { const N = window.GarajimNative; if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(p.id, themePref()); } catch (e) {}
   }
   function applyTheme() {
     // light class only for legacy light toggle compatibility
@@ -3517,6 +3795,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     document.querySelectorAll('.remind-opt').forEach(b => b.classList.toggle('active', Number(b.dataset.d) === rd));
     updateBackupInfo();
     updateAutoBackupUI();
+    discoveryUpdateSettingsUI();
     const ai = aiGetSettings();
     const prov = document.getElementById('aiProvider');
     const key = document.getElementById('aiApiKey');
@@ -3539,6 +3818,117 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
     clearTimeout(t._h);
     t._h = setTimeout(() => { t.style.display = 'none'; }, 2200);
   }
+
+
+  // ---------- GARAJIM'I KEŞFET / SUNU DENE ----------
+  const DISCOVERY_KEY = 'garaj_discovery_v1';
+  const DISCOVERY_SLIDES = [
+    { kind:'garage', icon:'fa-car-side', tag:'GARAJINI TANI', title:'Her şey aracınla başlar', body:'Araç bilgilerini ve fotoğraflarını ekle; bakım, sigorta, lastik ve kilometre geçmişini tek yerde tut.', points:['Kayıtlı araçların ve önemli tarihlerin bir arada','Bakım geçmişi ve yaklaşan işler gözünün önünde'] },
+    { kind:'fuel', icon:'fa-gas-pump', tag:'MASRAFLARINI GÖR', title:'Yakıtın ve masrafların kontrolünde', body:'Yakıt fişini kaydet, tüketimi ve kilometre başına maliyeti takip et. Tahmin yerine kendi kayıtlarınla ilerle.', points:['Fiş fotoğrafıyla kayıt oluşturmayı dene','Araç geçmişindeki giderleri karşılaştır'] },
+    { kind:'navigation', icon:'fa-route', tag:'YOLA ÇIK', title:'Rotanı oluştur, yola odaklan', body:'Açık Dünya üzerinden konumunu gör, hedef ara ve rota seçeneklerini karşılaştır. Kaydettiğin park yerine de geri dönebilirsin.', points:['Haritada hedef seçme ve adres arama','GPS doğruluğu ile rota durumunu izleme'] },
+    { kind:'dna', icon:'fa-dna', tag:'SÜRÜŞÜNÜ KEŞFET', title:'Sürüş DNA’n zamanla oluşur', body:'Nitelikli sürüşlerin sekiz farklı profil için ipucu verir. Yeterli veri birikmeden kesin bir profil varsayılmaz.', points:['DNA puanlarını ve veri yeterliliğini incele','Başarı hedeflerini gerçek sürüşlerinle tamamla'] },
+    { kind:'watch', icon:'fa-clock', tag:'SAATİNLE BİRLİKTE', title:'Garajım bileğinde de seninle', body:'Uyumlu Wear OS saatinle sürüş bilgilerini, araç seçimini ve başarım kutlamalarını deneyimle.', points:['Saat uygulamasında bağlantı durumunu kontrol et','Gizli test menüsüyle kutlamayı rozet kazanmadan dene'] },
+    { kind:'backup', icon:'fa-shield-halved', tag:'VERİNİ KORU', title:'Yedeğini almadan yola çıkma', body:'Araç ve uygulama kayıtlarını düzenli dışa aktar. Yedek dosyanı güvenli bir konumda sakla.', points:['Ayarlar → Yedekle ile dosya oluştur','Yeni cihaza geçmeden önce geri yüklemeyi planla'] }
+  ];
+  const DISCOVERY_TIPS = [
+    { id:'vehicle', kind:'garage', icon:'fa-car-side', tag:'İLK ADIM', title:'Aracını Garajım’a ekle', body:'Plaka, kilometre ve temel bilgilerini ekleyerek bakım ve masraf takibini kişiselleştir.', action:'Aracı ekle', eligible:()=>!vehicles.length, run:()=>{showTab('garage');setTimeout(openAddModal,120);} },
+    { id:'maintenance', kind:'garage', icon:'fa-screwdriver-wrench', tag:'GARAJINI TANI', title:'Bakım geçmişini gözden geçir', body:'Kayıtlı aracının detayını açıp bakım tarihleri, kilometre ve yaklaşan işleri kontrol et.', action:'Araç detayını aç', eligible:()=>vehicles.length>0, run:()=>{showTab('garage');const v=vehicles[0];if(v)setTimeout(()=>openDetail(v.id),120);} },
+    { id:'fuel', kind:'fuel', icon:'fa-gas-pump', tag:'MASRAF TAKİBİ', title:'Bir yakıt kaydı dene', body:'Son dolumunu litre, tutar ve kilometreyle kaydet. Böylece tüketim hesabı için veri biriktirmeye başlarsın.', action:'Yakıt kaydı aç', eligible:()=>vehicles.length>0, run:()=>{showTab('garage');const v=vehicles[0];if(v)setTimeout(()=>{openDetail(v.id);setTimeout(()=>{try{openFuelModal();}catch(e){toast('Araç detayından yakıt kaydını açabilirsin.');}},180);},120);} },
+    { id:'navigation', kind:'navigation', icon:'fa-route', tag:'AÇIK DÜNYA', title:'Bir hedef belirleyip rotanı gör', body:'Adres aramasını veya haritadan hedef seçmeyi dene. Rota hesaplamak için internet ve güvenilir GPS gerekir.', action:'Navigasyonu aç', eligible:()=>true, run:()=>{showTab('ride');setTimeout(()=>{if(ride.map)nvOpen();else toast('Harita açılınca Navigasyon düğmesine dokun.');},900);} },
+    { id:'dna', kind:'dna', icon:'fa-dna', tag:'SÜRÜŞ DNA', title:'Sürüş DNA profillerini keşfet', body:'Sekiz profilin puanlarını ve hangi verinin eksik olduğunu incele. Gerçek sürüş yapmadan test etmek için gizli simülatör de var.', action:'DNA panosunu aç', eligible:()=>true, run:()=>achievementOpen('dna') },
+    { id:'park', kind:'navigation', icon:'fa-square-parking', tag:'PRATİK KISAYOL', title:'Park yerini kaydetmeyi dene', body:'Aracından inince park konumunu sakla. Daha sonra haritada gösterip geri dönüş yolunu açabilirsin.', action:'Park yerini göster', eligible:()=>true, run:()=>{showTab('ride');setTimeout(()=>{if(ride.map)parkOpen();else toast('Harita açılınca Araçlar menüsünden Park yerim’i aç.');},900);} },
+    { id:'backup', kind:'backup', icon:'fa-shield-halved', tag:'VERİ GÜVENLİĞİ', title:'Bir yedek oluşturmayı unutma', body:'Araç kayıtların bu cihazda saklanır. Düzenli yedek dosyası, cihaz değiştirirken işini kolaylaştırır.', action:'Yedekleme ayarlarını aç', eligible:()=>true, run:()=>openSettings() }
+  ];
+  let discoveryMode = 'tour', discoverySlideIndex = 0, discoveryCurrentTip = null, discoveryBootTimer = null, discoveryBodyOverflow = '', discoveryBootHandled = false;
+  function discoveryGetState(){
+    const defaults={version:1,introComplete:false,tipsEnabled:true,lastTipId:'',shownTips:0};
+    try { const x=JSON.parse(localStorage.getItem(DISCOVERY_KEY)||'{}');return Object.assign({},defaults,x,{version:1,tipsEnabled:x.tipsEnabled!==false,introComplete:x.introComplete===true,shownTips:Math.max(0,Number(x.shownTips)||0)}); }
+    catch(e){return defaults;}
+  }
+  function discoverySaveState(v){try{localStorage.setItem(DISCOVERY_KEY,JSON.stringify(v));return true;}catch(e){return false;}}
+  function discoveryVisible(){const el=document.getElementById('discoveryOverlay');return !!el&&!el.classList.contains('hidden');}
+  function discoveryClose(){
+    const el=document.getElementById('discoveryOverlay');if(el){el.classList.add('hidden');el.setAttribute('aria-hidden','true');}
+    document.body.style.overflow=discoveryBodyOverflow;discoveryBodyOverflow='';discoveryCurrentTip=null;
+  }
+  function discoveryOpen(){
+    const el=document.getElementById('discoveryOverlay');if(!el)return;
+    if(!discoveryVisible())discoveryBodyOverflow=document.body.style.overflow||'';
+    el.classList.remove('hidden');el.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+    const dialog=document.getElementById('discoveryDialog');if(dialog){dialog.classList.remove('discovery-enter');void dialog.offsetWidth;dialog.classList.add('discovery-enter');}
+    try{document.getElementById('discoverySkipBtn').focus({preventScroll:true});}catch(e){}
+  }
+  function discoverySetContent(item, eyebrow, stepText, points){
+    const scene=document.getElementById('discoveryScene');scene.dataset.kind=item.kind||'garage';
+    document.getElementById('discoveryIcon').className='fa-solid '+(item.icon||'fa-sparkles');
+    document.getElementById('discoveryEyebrow').textContent=eyebrow||item.tag||'GARAJIM’I KEŞFET';
+    document.getElementById('discoveryTitle').textContent=item.title||'';
+    document.getElementById('discoveryBody').textContent=item.body||'';
+    const pointList=points||item.points||[];const pointBox=document.getElementById('discoveryPoints');pointBox.innerHTML=pointList.map(t=>'<div class="discovery-point"><i class="fa-solid fa-circle-check"></i><span>'+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span></div>').join('');pointBox.classList.toggle('hidden',pointList.length===0);
+  }
+  function discoveryRenderTour(){
+    const slide=DISCOVERY_SLIDES[discoverySlideIndex];if(!slide)return;
+    discoveryMode='tour';discoveryCurrentTip=null;
+    document.getElementById('discoveryDialog').classList.remove('tip-mode');
+    document.getElementById('discoveryTopLabel').textContent='GARAJIM’I KEŞFET';
+    document.getElementById('discoveryStepLabel').textContent=(discoverySlideIndex+1)+' / '+DISCOVERY_SLIDES.length+' · Kısa tanıtım';
+    document.getElementById('discoveryProgress').classList.remove('hidden');
+    document.getElementById('discoveryProgress').innerHTML=DISCOVERY_SLIDES.map((_,i)=>'<span class="'+(i<=discoverySlideIndex?'active':'')+'"></span>').join('');
+    document.getElementById('discoveryBackBtn').classList.toggle('hidden',discoverySlideIndex===0);
+    const next=document.getElementById('discoveryActionBtn');next.onclick=discoveryNext;next.innerHTML=discoverySlideIndex===DISCOVERY_SLIDES.length-1?'Başlayalım <i class="fa-solid fa-check ml-1.5"></i>':'Devam et <i class="fa-solid fa-arrow-right ml-1.5"></i>';
+    document.getElementById('discoveryFootnote').textContent='İstediğin an atlayabilir, tanıtımı ayarlardan tekrar açabilirsin.';
+    discoverySetContent(slide,slide.tag,'',slide.points);discoveryOpen();
+  }
+  function discoveryStartTour(){discoverySlideIndex=0;discoveryRenderTour();}
+  function discoveryPrevious(){if(discoveryMode!=='tour'||discoverySlideIndex<=0)return;discoverySlideIndex--;discoveryRenderTour();}
+  function discoveryNext(){
+    if(discoveryMode==='tip'){discoveryRunCurrentTip();return;}
+    if(discoverySlideIndex<DISCOVERY_SLIDES.length-1){discoverySlideIndex++;discoveryRenderTour();return;}
+    const state=discoveryGetState();state.introComplete=true;discoverySaveState(state);discoveryClose();toast('Garajım hazır. İstediğin zaman keşfetmeye devam edebilirsin.');
+  }
+  function discoverySkip(){
+    const state=discoveryGetState();
+    if(discoveryMode==='tour'){state.introComplete=true;discoverySaveState(state);}
+    discoveryClose();
+  }
+  function discoverySelectTip(force){
+    const state=discoveryGetState();if(!force&&!state.tipsEnabled)return null;
+    const list=DISCOVERY_TIPS.filter(t=>{try{return t.eligible();}catch(e){return false;}});if(!list.length)return null;
+    let idx=list.findIndex(t=>t.id===state.lastTipId);const tip=list[(idx+1)%list.length]||list[0];
+    state.lastTipId=tip.id;state.shownTips++;discoverySaveState(state);return tip;
+  }
+  function discoveryShowNextTip(force){
+    const tip=discoverySelectTip(!!force);if(!tip)return false;
+    discoveryMode='tip';discoveryCurrentTip=tip;
+    document.getElementById('discoveryDialog').classList.add('tip-mode');
+    document.getElementById('discoveryTopLabel').textContent='ŞUNU DENE!';
+    document.getElementById('discoveryStepLabel').textContent='Garajım’dan küçük bir ipucu';
+    document.getElementById('discoveryProgress').classList.add('hidden');document.getElementById('discoveryProgress').innerHTML='';
+    document.getElementById('discoveryBackBtn').classList.add('hidden');
+    const action=document.getElementById('discoveryActionBtn');action.onclick=discoveryRunCurrentTip;action.innerHTML=tip.action+' <i class="fa-solid fa-arrow-right ml-1.5"></i>';
+    document.getElementById('discoveryFootnote').textContent='Atlayabilirsin. Önerileri Ayarlar’dan istediğin zaman kapatabilirsin.';
+    discoverySetContent(tip,tip.tag,'',[]);discoveryOpen();return true;
+  }
+  function discoveryRunCurrentTip(){const t=discoveryCurrentTip;discoveryClose();if(!t)return;try{t.run();}catch(e){toast('Bu bölümü şimdi açamadım. Ana menüden deneyebilirsin.');}}
+  function discoveryMaybeBoot(){
+    if(discoveryBootHandled)return;
+    if(discoveryBootTimer)clearTimeout(discoveryBootTimer);
+    discoveryBootTimer=setTimeout(()=>{
+      discoveryBootTimer=null;
+      if(document.hidden||discoveryVisible())return;
+      try { const resume=JSON.parse(localStorage.getItem('garaj_nav_session_v2')||'null'); if(resume&&resume.dest&&Date.now()-Number(resume.savedAt||0)<12*60*60*1000){discoveryBootHandled=true;return;} } catch(e) {}
+      if(typeof lockVisible==='function'&&lockVisible())return;
+      try { if (ride && (ride.running || ride.pendingSummary)) { discoveryBootHandled=true; return; } const rv=document.getElementById('rideView'); if (rv && !rv.classList.contains('hidden')) { discoveryBootHandled=true; return; } } catch(e) {}
+      const blocked=['formModal','detailView','settingsModal','navModal','achievementModal','achievementCelebration','notificationPanel','composeModal','fuelModal','serviceModal','planModal','kmModal'];
+      if(blocked.some(id=>{const e=document.getElementById(id);return e&&!e.classList.contains('hidden');}))return;
+      const state=discoveryGetState();if(!state.introComplete){discoveryBootHandled=true;discoveryStartTour();return;}if(state.tipsEnabled){discoveryBootHandled=true;discoveryShowNextTip(false);}else discoveryBootHandled=true;
+    },1200);
+  }
+  function discoveryToggleTips(){const state=discoveryGetState();state.tipsEnabled=!state.tipsEnabled;discoverySaveState(state);discoveryUpdateSettingsUI();toast(state.tipsEnabled?'Açılış önerileri açıldı':'Açılış önerileri kapatıldı');}
+  function discoveryUpdateSettingsUI(){const state=discoveryGetState();const btn=document.getElementById('discoveryTipsToggle');if(btn){btn.textContent=state.tipsEnabled?'Açık':'Kapalı';btn.classList.toggle('active',state.tipsEnabled);btn.setAttribute('aria-pressed',state.tipsEnabled?'true':'false');}const note=document.getElementById('discoveryStatus');if(note)note.textContent=state.introComplete?'Tanıtım tamamlandı · açılış ipuçları '+(state.tipsEnabled?'açık':'kapalı'):'İlk açılış tanıtımı henüz tamamlanmadı';}
+  function discoveryReplayTour(){closeSettings();setTimeout(()=>discoveryStartTour(),160);}
+  function discoveryShowTipNow(){closeSettings();setTimeout(()=>discoveryShowNextTip(true),160);}
+  document.addEventListener('keydown',e=>{if(discoveryVisible()&&e.key==='Escape'){e.preventDefault();discoverySkip();}});
 
   // ---------- PIN KİLİDİ ----------
   const PIN_KEY = 'garaj_pin';
@@ -3587,7 +3977,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   }
 
   function showLock(mode) { pinMode = mode; pinBuf = ''; pinTmp = ''; pinErr = ''; updateLockUI(); document.getElementById('lockScreen').classList.remove('hidden'); }
-  function hideLock() { document.getElementById('lockScreen').classList.add('hidden'); pinBuf = ''; }
+  function hideLock() { document.getElementById('lockScreen').classList.add('hidden'); pinBuf = ''; setTimeout(discoveryMaybeBoot, 350); }
   const lockVisible = () => !document.getElementById('lockScreen').classList.contains('hidden');
 
   function lockError(m) {
@@ -7193,7 +7583,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
         const label = planDefs.find(p => p.key === k)?.label || k;
         if (d === null) {
           tips.push({ level: 'warn', icon: 'fa-calendar-xmark', title: `${plate} · ${label} yok`,
-            body: `Plan kısmından tarih ekle; asistan buna göre uyarır.` });
+            body: `Plan kısmına tarih ekle; Garajım zamanı gelince hatırlatır.` });
         } else if (d < 0) {
           tips.push({ level: 'danger', icon: 'fa-triangle-exclamation', title: `${plate} · ${label} dolmuş`,
             body: `${Math.abs(d)} gün geçmiş. Yenileme için işlem başlat.` });
@@ -7415,12 +7805,300 @@ ${buildGarageContext()}
     ).join('');
   }
 
-  function renderAssistant() {
-    aiUpdateStatus();
-    aiRenderChat();
-    aiRenderQuickTips();
-  }
+  function renderAssistant() { renderStudio(); }
 
+  // ---------- GARAJIM STUDIO ----------
+  function studioProjectsGet() {
+    try {
+      const rows = JSON.parse(localStorage.getItem(STUDIO_PROJECTS_KEY) || '[]');
+      return Array.isArray(rows) ? rows.filter(p => p && typeof p === 'object' && p.id).slice(0, 80) : [];
+    } catch (e) { return []; }
+  }
+  function studioProjectsSave(rows) {
+    try {
+      localStorage.setItem(STUDIO_PROJECTS_KEY, JSON.stringify(rows.slice(0, 80)));
+      return true;
+    } catch (e) {
+      toast('Studio kaydedilemedi. Depolama dolu olabilir; fotoğrafı küçült veya eski projeleri dışa aktar.');
+      return false;
+    }
+  }
+  function studioProjectById(id) { return studioProjectsGet().find(p => String(p.id) === String(id)) || null; }
+  function studioLinkedVehicle(p) { return p && p.vehicleId != null ? (vehicles.find(v => String(v.id) === String(p.vehicleId)) || null) : null; }
+  function studioProjectName(p) {
+    const v = studioLinkedVehicle(p), brand = (v && v.brand) || (p && p.brand) || '', model = (v && v.model) || (p && p.model) || '';
+    const year = (v && v.year) || (p && p.year) || '';
+    return [brand, model, year].filter(Boolean).join(' ') || (p && p.title) || 'Adsız araç';
+  }
+  function studioProjectPhoto(p) {
+    const v = studioLinkedVehicle(p);
+    return (p && p.photo) || (v && v.photo) || '';
+  }
+  function studioColor(paint) { return STUDIO_COLORS.find(c => c.hex.toLowerCase() === String(paint || '').toLowerCase()) || STUDIO_COLORS[0]; }
+  function studioGetCurrent() {
+    const rows = studioProjectsGet();
+    return rows.find(p => String(p.id) === String(studioActiveProjectId)) || rows[0] || null;
+  }
+  function studioUpdateProject(mutator, eventText) {
+    const rows = studioProjectsGet(), idx = rows.findIndex(p => String(p.id) === String(studioActiveProjectId));
+    if (idx < 0) return false;
+    const p = rows[idx];
+    mutator(p);
+    p.updatedAt = new Date().toISOString();
+    if (eventText) {
+      if (!Array.isArray(p.log)) p.log = [];
+      p.log.unshift({ id: 'log-' + Date.now() + '-' + Math.random().toString(36).slice(2,6), at: p.updatedAt, text: eventText });
+      p.log = p.log.slice(0, 150);
+    }
+    return studioProjectsSave(rows);
+  }
+  function studioFormatMoney(n) { return (Number(n) || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' ₺'; }
+  function studioFormatDate(d) {
+    try { return new Date(d || Date.now()).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }); }
+    catch (e) { return 'Tarih yok'; }
+  }
+  function studioCarSvg(paint) {
+    const c = studioColor(paint).hex;
+    return `<svg viewBox="0 0 420 190" role="img" aria-label="Seçili boya rengini gösteren genel otomobil silüeti" style="width:100%;height:auto;display:block">
+      <defs><linearGradient id="studioBodyPaint" x1="0" x2="0.2" y1="0" y2="1"><stop offset="0%" stop-color="${c}"/><stop offset="48%" stop-color="${c}"/><stop offset="100%" stop-color="#111820"/></linearGradient><linearGradient id="studioGlass" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#91a5b7" stop-opacity=".83"/><stop offset="100%" stop-color="#17222f"/></linearGradient></defs>
+      <ellipse cx="210" cy="153" rx="158" ry="15" fill="#000" opacity=".34"/><path d="M42 122 L55 109 Q61 104 76 102 L111 91 Q139 59 183 54 L251 55 Q278 58 301 83 L339 94 Q361 98 371 112 L380 129 L376 143 L354 146 L331 146 Q325 118 299 118 Q272 118 266 146 L153 146 Q147 119 121 119 Q94 119 88 146 L57 144 Q43 141 42 132Z" fill="url(#studioBodyPaint)" stroke="#dbe3ec" stroke-opacity=".38" stroke-width="1.4"/>
+      <path d="M125 89 Q147 63 184 62 L220 63 L220 90Z" fill="url(#studioGlass)" stroke="#dce5ed" stroke-opacity=".5"/><path d="M229 63 L250 64 Q274 67 294 88 L229 90Z" fill="url(#studioGlass)" stroke="#dce5ed" stroke-opacity=".5"/><path d="M222 63 L224 101" stroke="#0b1118" stroke-width="4"/><path d="M66 111 L102 104 L117 104" stroke="#f6e6c6" stroke-width="5" stroke-linecap="round" opacity=".88"/><path d="M343 108 L367 116" stroke="#ff6b64" stroke-width="5" stroke-linecap="round"/><path d="M161 101 L159 111 M261 101 L263 111" stroke="#101820" stroke-width="3"/><path d="M170 118 L241 118" stroke="#f7fafc" stroke-opacity=".22" stroke-width="2"/><path d="M48 127 L377 128" stroke="#fff" stroke-opacity=".12" stroke-width="1.5"/>
+      <g><circle cx="121" cy="143" r="27" fill="#0a0e13" stroke="#7d8997" stroke-width="2"/><circle cx="121" cy="143" r="17" fill="#3e4855" stroke="#d3dae2" stroke-width="2"/><circle cx="121" cy="143" r="5" fill="#cbd5e1"/><path d="M121 127 V159 M105 143 H137 M110 132 L132 154 M132 132 L110 154" stroke="#aab4c1" stroke-width="2"/><circle cx="299" cy="143" r="27" fill="#0a0e13" stroke="#7d8997" stroke-width="2"/><circle cx="299" cy="143" r="17" fill="#3e4855" stroke="#d3dae2" stroke-width="2"/><circle cx="299" cy="143" r="5" fill="#cbd5e1"/><path d="M299 127 V159 M283 143 H315 M288 132 L310 154 M310 132 L288 154" stroke="#aab4c1" stroke-width="2"/></g>
+    </svg>`;
+  }
+  function studioRenderGarageChoices() {
+    const box = document.getElementById('studioGarageChoicesList');
+    const count = document.getElementById('studioGarageCount');
+    if (!box || !count) return;
+    count.textContent = vehicles.length + ' araç';
+    if (!vehicles.length) {
+      box.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-warehouse text-2xl studio-muted"></i><p class="text-xs font-bold mt-2">Garajında henüz araç yok</p><p class="text-[10px] studio-muted mt-1">Kendi profilini oluşturup devam edebilirsin.</p><button class="studio-secondary mt-3" onclick="studioOpenSetup()">Manuel profil oluştur</button></div>`;
+      return;
+    }
+    box.innerHTML = vehicles.map(v => {
+      const photo = garajimSafeImageSrc(v.photo), name = [v.brand, v.model, v.year].filter(Boolean).join(' ') || 'Araç';
+      return `<button class="w-full flex items-center gap-3 rounded-2xl p-3 text-left border border-white/10 bg-white/5" onclick="studioCreateFromGarage(${garajimInlineJsArg(v.id)})">
+        <div class="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center shrink-0" style="background:rgba(var(--accent-rgb),.10)">${photo ? `<img src="${photo}" alt="${garajimHtmlEsc(name)}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-car-side text-xl text-accent"></i>'}</div>
+        <div class="flex-1 min-w-0"><p class="text-xs font-extrabold truncate">${garajimHtmlEsc(name)}</p><p class="text-[10px] studio-muted mt-1 truncate">${garajimHtmlEsc(v.plate || 'Plaka girilmemiş')} · ${garajimHtmlEsc(v.km || 'KM yok')} km</p></div><i class="fa-solid fa-arrow-up-right-from-square text-xs studio-muted"></i>
+      </button>`;
+    }).join('');
+  }
+  function studioUpdateModelSuggestions() {
+    const brandInput = document.getElementById('studioSetupBrand'), list = document.getElementById('studioModelSuggestions');
+    if (!brandInput || !list) return;
+    const brand = String(brandInput.value || '').trim().toLocaleLowerCase('tr-TR');
+    const match = Object.keys(STUDIO_MODEL_CATALOG).find(k => k.toLocaleLowerCase('tr-TR') === brand);
+    const models = match ? STUDIO_MODEL_CATALOG[match] : Array.from(new Set(Object.values(STUDIO_MODEL_CATALOG).flat())).sort((a,b)=>a.localeCompare(b,'tr'));
+    list.innerHTML = models.map(m => `<option value="${garajimHtmlEsc(m)}"></option>`).join('');
+  }
+  function studioOpenNewProject() { studioOpenSetup(); }
+  function studioScrollGarageChoices() { const el = document.getElementById('studioGarageChoices'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  function studioOpenSetup() {
+    studioDraftPhoto = null;
+    const ids = ['studioSetupBrand','studioSetupModel','studioSetupYear','studioSetupTitle'];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const body = document.getElementById('studioSetupBody'); if (body) body.value = 'Sedan';
+    const hint = document.getElementById('studioSetupHint'); if (hint) hint.textContent = 'Fotoğrafı eklersen Studio çalışma alanında referans olarak saklanır. Aracının fotoğrafındaki boya otomatik değiştirilmiş gibi gösterilmez; renk maketi seçimi ayrı gösterir.';
+    const preview = document.getElementById('studioSetupPhotoPreview'); if (preview) preview.innerHTML = '<i class="fa-solid fa-camera text-xl studio-muted"></i>';
+    const file = document.getElementById('studioSetupPhoto'); if (file) file.value = '';
+    studioUpdateModelSuggestions();
+    const form = document.getElementById('studioSetupForm'); if (form) form.classList.remove('hidden');
+    document.getElementById('studioWelcome')?.classList.add('hidden');
+    document.getElementById('studioDashboard')?.classList.add('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function studioCloseSetup() { studioDraftPhoto = null; const f = document.getElementById('studioSetupForm'); if (f) f.classList.add('hidden'); renderStudio(); }
+  async function studioPickSetupPhoto(e) {
+    const file = e && e.target && e.target.files && e.target.files[0]; if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) { toast('Lütfen bir görsel dosyası seç.'); return; }
+    if (file.size > 15 * 1024 * 1024) { toast('Fotoğraf 15 MB altında olmalı.'); e.target.value = ''; return; }
+    try {
+      const data = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
+      studioDraftPhoto = await compressImage(data, 1000, .68);
+      const preview = document.getElementById('studioSetupPhotoPreview');
+      if (preview) preview.innerHTML = `<img src="${garajimSafeImageSrc(studioDraftPhoto)}" alt="Araç fotoğrafı önizleme" class="w-full h-full object-cover">`;
+      const hint = document.getElementById('studioSetupHint'); if (hint) hint.textContent = 'Fotoğraf hazır. Tasarımı oluşturunca bu cihazda proje fotoğrafı olarak saklanacak.';
+    } catch (err) { toast('Fotoğraf okunamadı. Başka bir görsel dene.'); }
+  }
+  function studioCreateProject() {
+    const brand = (document.getElementById('studioSetupBrand')?.value || '').trim();
+    const model = (document.getElementById('studioSetupModel')?.value || '').trim();
+    const yearRaw = (document.getElementById('studioSetupYear')?.value || '').trim();
+    const year = yearRaw && Number(yearRaw) >= 1950 && Number(yearRaw) <= 2035 ? yearRaw : '';
+    const bodyType = document.getElementById('studioSetupBody')?.value || 'Diğer';
+    const title = (document.getElementById('studioSetupTitle')?.value || '').trim();
+    if (!brand || !model) { toast('Başlamak için marka ve model yaz.'); return; }
+    const now = new Date().toISOString();
+    const p = { id: 'studio-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7), vehicleId: null, brand: brand.slice(0,60), model: model.slice(0,60), year, bodyType, title: title.slice(0,70) || `${brand} ${model} Studio`, photo: studioDraftPhoto || null, paint: STUDIO_COLORS[0].hex, parts: [], variants: [], log: [{id:'log-' + Date.now(),at:now,text:'Studio projesi oluşturuldu'}], notes:'', createdAt: now, updatedAt: now };
+    const rows = studioProjectsGet(); rows.unshift(p);
+    if (!studioProjectsSave(rows)) return;
+    studioActiveProjectId = p.id; localStorage.setItem('garaj_studio_selected_project', p.id); studioDraftPhoto = null;
+    document.getElementById('studioSetupForm')?.classList.add('hidden');
+    studioSubView = 'design'; studioPartFormOpen = false; studioJournalFormOpen = false;
+    renderStudio(); toast('Studio projen oluşturuldu');
+  }
+  function studioCreateFromGarage(vehicleId) {
+    const v = vehicles.find(x => String(x.id) === String(vehicleId)); if (!v) { toast('Araç kaydı bulunamadı.'); return; }
+    const existing = studioProjectsGet().find(p => String(p.vehicleId) === String(v.id));
+    if (existing) { studioActiveProjectId = existing.id; localStorage.setItem('garaj_studio_selected_project', existing.id); renderStudio(); toast('Mevcut Studio projen açıldı'); return; }
+    const now = new Date().toISOString();
+    const p = { id:'studio-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7), vehicleId:v.id, brand:v.brand || '', model:v.model || '', year:v.year || '', bodyType:v.type || 'Diğer', title:[v.brand,v.model].filter(Boolean).join(' ') + ' Studio', photo:null, paint:STUDIO_COLORS[0].hex, parts:[], variants:[], log:[{id:'log-' + Date.now(),at:now,text:'Garajım araç kaydından Studio projesi oluşturuldu'}], notes:'', createdAt:now, updatedAt:now };
+    const rows = studioProjectsGet(); rows.unshift(p); if (!studioProjectsSave(rows)) return;
+    studioActiveProjectId = p.id; localStorage.setItem('garaj_studio_selected_project', p.id); studioSubView='design'; renderStudio(); toast('Araç Studio’ya bağlandı');
+  }
+  function studioSelectProject(id) {
+    if (!studioProjectById(id)) return;
+    studioActiveProjectId = id; localStorage.setItem('garaj_studio_selected_project', id); studioSubView='design'; studioPartFormOpen=false; studioJournalFormOpen=false; renderStudio();
+  }
+  function studioSetView(view) { if (!['design','parts','journal'].includes(view)) return; studioSubView = view; studioPartFormOpen = view === 'parts' ? studioPartFormOpen : false; studioJournalFormOpen = view === 'journal' ? studioJournalFormOpen : false; renderStudio(); }
+  function studioSetPaint(hex) {
+    if (!STUDIO_COLORS.some(c => c.hex.toLowerCase() === String(hex).toLowerCase())) return;
+    const color = studioColor(hex);
+    if (studioUpdateProject(p => { p.paint = color.hex; }, 'Tasarım rengi: ' + color.name)) renderStudio();
+  }
+  function studioOpenVariantForm() { const el = document.getElementById('studioVariantSavePanel'); if (el) el.classList.toggle('hidden'); const input = document.getElementById('studioVariantName'); if (input && !el?.classList.contains('hidden')) input.focus(); }
+  function studioSaveVariant() {
+    const name = (document.getElementById('studioVariantName')?.value || '').trim(); if (!name) { toast('Varyanta bir isim ver.'); return; }
+    const p = studioGetCurrent(); if (!p) return;
+    const id = 'variant-' + Date.now().toString(36);
+    const v = { id, name:name.slice(0,45), paint:studioColor(p.paint).hex, parts:(p.parts || []).map(x => ({...x})), notes:String(p.notes || ''), createdAt:new Date().toISOString() };
+    if (studioUpdateProject(x => { if (!Array.isArray(x.variants)) x.variants=[]; x.variants.unshift(v); x.variants=x.variants.slice(0,24); x.activeVariantId=id; }, 'Tasarım varyantı kaydedildi: ' + v.name)) { studioSubView='design'; renderStudio(); toast('Varyant kaydedildi'); }
+  }
+  function studioApplyVariant(id) {
+    const p = studioGetCurrent(); if (!p) return;
+    const v = (p.variants || []).find(x => String(x.id) === String(id)); if (!v) return;
+    if (studioUpdateProject(x => { x.paint = studioColor(v.paint).hex; x.parts = (v.parts || []).map(part => ({...part})); x.notes = v.notes || x.notes || ''; x.activeVariantId = v.id; }, 'Varyant uygulandı: ' + v.name)) { studioSubView='design'; renderStudio(); toast('Varyant uygulandı'); }
+  }
+  function studioOpenGarageVehicle() {
+    const p = studioGetCurrent(), v = studioLinkedVehicle(p); if (!v) { toast('Bu proje bağımsız bir Studio profili.'); return; }
+    currentId = v.id; openDetail(v.id);
+  }
+  function studioPickProjectPhoto(e) {
+    const file = e && e.target && e.target.files && e.target.files[0]; if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) { toast('Lütfen bir görsel dosyası seç.'); return; }
+    if (file.size > 15 * 1024 * 1024) { toast('Fotoğraf 15 MB altında olmalı.'); e.target.value = ''; return; }
+    const reader = new FileReader(); reader.onload = async () => {
+      try { const data = await compressImage(reader.result, 1000, .68); if (studioUpdateProject(p => { p.photo = data; }, 'Araç referans fotoğrafı güncellendi')) { renderStudio(); toast('Fotoğraf Studio’ya eklendi'); } }
+      catch (err) { toast('Fotoğraf okunamadı.'); }
+    }; reader.onerror = () => toast('Fotoğraf okunamadı.'); reader.readAsDataURL(file); e.target.value = '';
+  }
+  function studioTogglePartForm() { studioPartFormOpen = !studioPartFormOpen; renderStudio(); }
+  function studioAddPart() {
+    const name = (document.getElementById('studioPartName')?.value || '').trim();
+    const category = document.getElementById('studioPartType')?.value || 'Diğer';
+    const brand = (document.getElementById('studioPartBrand')?.value || '').trim();
+    const priceText = (document.getElementById('studioPartPrice')?.value || '').trim();
+    const normalizedPrice = priceText.includes(',') ? priceText.replace(/\./g,'').replace(',','.') : (/^\d{1,3}(?:\.\d{3})+$/.test(priceText) ? priceText.replace(/\./g,'') : priceText);
+    const cost = priceText === '' ? 0 : Number(normalizedPrice);
+    const status = document.getElementById('studioPartStatus')?.value || 'planned';
+    if (!name) { toast('Parçanın adını yaz.'); return; }
+    if (!Number.isFinite(cost) || cost < 0 || cost > 100000000) { toast('Fiyatı kontrol et.'); return; }
+    const id = 'part-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,5);
+    if (studioUpdateProject(p => { if (!Array.isArray(p.parts)) p.parts=[]; p.parts.unshift({id,name:name.slice(0,80),category,brand:brand.slice(0,60),cost,status,fitment:'unverified',createdAt:new Date().toISOString()}); }, 'Parça eklendi: ' + name)) { studioPartFormOpen=false; renderStudio(); toast('Parça projeye eklendi'); }
+  }
+  function studioUpdatePartStatus(id, status) {
+    if (!['planned','ordered','installed'].includes(status)) return;
+    if (studioUpdateProject(p => { const part=(p.parts||[]).find(x=>String(x.id)===String(id)); if (part) part.status=status; }, 'Modifikasyon durumu güncellendi')) renderStudio();
+  }
+  function studioUpdatePartFitment(id, value) {
+    if (!['unverified','verified_by_user'].includes(value)) return;
+    if (studioUpdateProject(p => { const part=(p.parts||[]).find(x=>String(x.id)===String(id)); if (part) part.fitment=value; }, value==='verified_by_user'?'Kullanıcı uyumluluk kontrolünü yaptığını işaretledi':'Uyumluluk kontrolü beklemede')) renderStudio();
+  }
+  function studioRemovePart(id) {
+    if (studioUpdateProject(p => { p.parts=(p.parts||[]).filter(x=>String(x.id)!==String(id)); }, 'Bir parça proje listesinden çıkarıldı')) { renderStudio(); toast('Parça kaldırıldı'); }
+  }
+  function studioToggleJournalForm() { studioJournalFormOpen=!studioJournalFormOpen; renderStudio(); }
+  function studioAddJournalEntry() {
+    const text = (document.getElementById('studioJournalText')?.value || '').trim(); if (!text) { toast('Günlük notunu yaz.'); return; }
+    if (studioUpdateProject(p => { p.notes = String(p.notes || ''); }, text.slice(0,240))) { studioJournalFormOpen=false; renderStudio(); toast('Proje günlüğüne eklendi'); }
+  }
+  function studioDeleteProject(id) {
+    const p = studioProjectById(id); if (!p) return;
+    if (!confirm('“' + studioProjectName(p) + '” Studio projesi silinsin mi? Garajındaki araç kaydı silinmez.')) return;
+    const rows = studioProjectsGet().filter(x => String(x.id)!==String(id));
+    if (!studioProjectsSave(rows)) return;
+    studioActiveProjectId = rows[0]?.id || null;
+    if (studioActiveProjectId) localStorage.setItem('garaj_studio_selected_project', studioActiveProjectId); else localStorage.removeItem('garaj_studio_selected_project');
+    renderStudio(); toast('Studio projesi silindi');
+  }
+  function studioExportProject() {
+    const p = studioGetCurrent(); if (!p) return;
+    const safe = {...p};
+    const payload = {app:'garajim-studio',version:1,exportedAt:new Date().toISOString(),project:safe};
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='garajim-studio-' + (String(p.brand||'arac')+'-'+String(p.model||'proje')).replace(/[^a-z0-9çğıöşü_-]+/gi,'-').toLowerCase() + '.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); toast('Studio proje dosyası indirildi');
+  }
+  async function studioShareBuild() {
+    const p=studioGetCurrent(); if (!p) return;
+    const parts=p.parts||[], planned=parts.filter(x=>x.status==='planned').length, installed=parts.filter(x=>x.status==='installed').length, total=parts.reduce((s,x)=>s+(Number(x.cost)||0),0);
+    const msg=`Garajım Studio · ${studioProjectName(p)}
+Tasarım: ${studioColor(p.paint).name}
+Modifikasyonlar: ${parts.length} parça · ${installed} takıldı · ${planned} planlandı
+Bütçe planı: ${studioFormatMoney(total)}
+Not: Bu bir kullanıcı proje planıdır; parça uyumluluğu ayrıca doğrulanmalıdır.`;
+    try { if (navigator.share) await navigator.share({title:'Garajım Studio projem',text:msg}); else if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(msg); toast('Proje özeti panoya kopyalandı'); } else { studioDownloadText(msg); } } catch (e) { if (e && e.name!=='AbortError') studioDownloadText(msg); }
+  }
+  function studioDownloadText(txt) { const b=new Blob([txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='garajim-studio-ozet.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1200); }
+  function studioRenderDesign(p) {
+    const paint=studioColor(p.paint), photo=garajimSafeImageSrc(studioProjectPhoto(p)), variants=Array.isArray(p.variants)?p.variants:[];
+    return `<div class="space-y-4">
+      <section class="studio-hero rounded-3xl p-4">
+        <div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="studio-eyebrow mb-1.5">YOUR BUILD / 01</div><h2 class="text-xl font-extrabold leading-tight">${garajimHtmlEsc(studioProjectName(p))}</h2><p class="text-[10px] studio-muted mt-1">${garajimHtmlEsc(p.title || 'Kişisel modifikasyon projesi')} · ${garajimHtmlEsc(p.bodyType || (studioLinkedVehicle(p)?.type) || 'Araç')}</p></div><span class="text-[10px] rounded-lg px-2 py-1 shrink-0" style="background:rgba(var(--accent-rgb),.13);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.2)">STUDIO</span></div>
+        ${photo ? `<div class="mt-4 relative"><img class="studio-photo" src="${photo}" alt="${garajimHtmlEsc(studioProjectName(p))} referans fotoğrafı"><div class="absolute bottom-2 left-2 rounded-lg px-2.5 py-1.5 bg-black/70 text-white text-[9px] backdrop-blur">REFERANS FOTOĞRAFI</div></div>` : `<div class="studio-car-stage mt-4 p-2">${studioCarSvg(paint.hex)}<div class="text-center text-[9px] text-slate-400 pb-2">Genel araç maketi · seçilen renk canlı güncellenir</div></div>`}
+        <div class="grid grid-cols-2 gap-2 mt-3"><div class="rounded-xl p-3 border border-white/10 bg-white/5"><p class="text-[9px] studio-muted uppercase tracking-wider">Aktif boya</p><div class="flex items-center gap-2 mt-2"><span class="w-5 h-5 rounded-lg border border-white/20" style="background:${paint.hex}"></span><span class="text-xs font-extrabold">${garajimHtmlEsc(paint.name)}</span></div></div><div class="rounded-xl p-3 border border-white/10 bg-white/5"><p class="text-[9px] studio-muted uppercase tracking-wider">Modifikasyonlar</p><p class="text-lg font-extrabold mt-1">${(p.parts||[]).length}<span class="text-[10px] font-semibold studio-muted ml-1">parça</span></p></div></div>
+        <div class="flex flex-wrap gap-2 mt-3"><label class="studio-secondary inline-flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-camera"></i> ${photo?'Fotoğrafı değiştir':'Fotoğraf ekle'}<input type="file" class="hidden" accept="image/*" capture="environment" onchange="studioPickProjectPhoto(event)"></label>${studioLinkedVehicle(p)?`<button onclick="studioOpenGarageVehicle()" class="studio-secondary"><i class="fa-solid fa-car mr-1"></i>Garaj kaydını aç</button>`:''}<button onclick="studioDeleteProject(${garajimInlineJsArg(p.id)})" class="text-[10px] font-bold text-slate-500 px-2"><i class="fa-regular fa-trash-can mr-1"></i>Projeyi sil</button></div>
+      </section>
+      <section class="studio-panel p-4"><div class="flex items-start justify-between gap-3"><div><h3 class="text-sm font-extrabold">Renk laboratuvarı</h3><p class="text-[10px] studio-muted mt-1">Kombinasyonu seç; maket anında değişsin.</p></div><span class="text-[10px] font-bold" style="color:${paint.hex}">${garajimHtmlEsc(paint.name)}</span></div>
+        <div class="studio-car-stage mt-3 p-2">${studioCarSvg(paint.hex)}</div>
+        ${photo?'<p class="text-[9px] studio-muted mt-2 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i>Üstteki fotoğraf gerçek aracına aittir. Alttaki maket yalnızca boya rengini gösteren genel silüettir; fotoğrafın boyası değiştirilmiş değildir.</p>':'<p class="text-[9px] studio-muted mt-2 leading-relaxed">Bu silüet renk fikrini karşılaştırmak içindir; aracının birebir 3D modeli veya parça uyumluluk kanıtı değildir.</p>'}
+        <div class="grid grid-cols-4 gap-2 mt-4">${STUDIO_COLORS.map(c=>`<button class="studio-swatch ${paint.hex===c.hex?'active':''}" onclick="studioSetPaint('${c.hex}')" aria-label="${garajimHtmlEsc(c.name)} rengini seç"><div class="studio-swatch-chip" style="background:${c.hex}"></div><div class="text-[9px] font-extrabold leading-tight">${garajimHtmlEsc(c.name)}</div><div class="text-[8px] studio-muted mt-1">${garajimHtmlEsc(c.note)}</div></button>`).join('')}</div>
+      </section>
+      <section class="studio-panel p-4"><div class="flex items-center justify-between gap-2"><div><h3 class="text-sm font-extrabold">Tasarım varyantları</h3><p class="text-[10px] studio-muted mt-1">Farklı kombinasyonları kaydet, sonra geri dön.</p></div><button onclick="studioOpenVariantForm()" class="studio-secondary shrink-0"><i class="fa-solid fa-bookmark mr-1"></i>Kaydet</button></div>
+        <div id="studioVariantSavePanel" class="hidden rounded-2xl p-3 mt-3 border border-white/10 bg-white/5"><label class="text-[10px] studio-muted font-bold block mb-1.5">Varyant adı</label><input id="studioVariantName" class="studio-field" maxlength="45" placeholder="Örn. OEM+ günlük"><button onclick="studioSaveVariant()" class="studio-primary w-full mt-2">Varyantı kaydet</button></div>
+        <div class="space-y-2 mt-3">${variants.length?variants.map(v=>`<button class="studio-variant" onclick="studioApplyVariant(${garajimInlineJsArg(v.id)})"><span class="studio-variant-color" style="background:${studioColor(v.paint).hex}"></span><span class="flex-1 min-w-0"><span class="text-xs font-extrabold block truncate">${garajimHtmlEsc(v.name)}</span><span class="text-[9px] studio-muted block mt-1">${garajimHtmlEsc(studioColor(v.paint).name)} · ${(v.parts||[]).length} parça · ${studioFormatDate(v.createdAt)}</span></span><i class="fa-solid fa-arrow-rotate-left text-xs studio-muted"></i></button>`).join(''):'<div class="text-center py-5"><i class="fa-regular fa-bookmark text-xl studio-muted"></i><p class="text-xs font-bold mt-2">Henüz varyant yok</p><p class="text-[10px] studio-muted mt-1">Örneğin “OEM+”, “Track” veya “Günlük” tasarımını kaydet.</p></div>'}</div>
+      </section>
+    </div>`;
+  }
+  function studioRenderParts(p) {
+    const parts=Array.isArray(p.parts)?p.parts:[], total=parts.reduce((s,x)=>s+(Number(x.cost)||0),0), spent=parts.filter(x=>x.status==='installed').reduce((s,x)=>s+(Number(x.cost)||0),0), pending=total-spent;
+    const statusLabel={planned:'Planlandı',ordered:'Sipariş edildi',installed:'Takıldı'};
+    return `<div class="space-y-4">
+      <section class="studio-hero rounded-3xl p-4"><div class="studio-eyebrow">BUILD SHEET / 02</div><h2 class="text-xl font-extrabold mt-1">Parça ve bütçe planı</h2><p class="text-[11px] studio-muted mt-2 leading-relaxed">Beğendiğin parçaları topla; fiyatı, satın alma durumunu ve gerçek montaj maliyetini kendin takip et.</p>
+        <div class="grid grid-cols-3 gap-2 mt-4"><div class="studio-kpi"><p class="text-[9px] studio-muted">Plan toplamı</p><p class="text-sm font-extrabold mt-1">${studioFormatMoney(total)}</p></div><div class="studio-kpi"><p class="text-[9px] studio-muted">Takılan</p><p class="text-sm font-extrabold mt-1">${studioFormatMoney(spent)}</p></div><div class="studio-kpi"><p class="text-[9px] studio-muted">Kalan plan</p><p class="text-sm font-extrabold mt-1">${studioFormatMoney(pending)}</p></div></div>
+        <p class="text-[9px] studio-muted mt-2">Fiyatlar senin girdiğin plan değerleridir; canlı piyasa fiyatı değildir.</p>
+      </section>
+      <section class="studio-panel p-4"><div class="flex items-center justify-between"><div><h3 class="text-sm font-extrabold">Modifikasyon listesi</h3><p class="text-[10px] studio-muted mt-1">${parts.length} kayıtlı parça</p></div><button onclick="studioTogglePartForm()" class="studio-primary"><i class="fa-solid fa-plus mr-1"></i>Parça ekle</button></div>
+      ${studioPartFormOpen?`<div class="rounded-2xl p-3 mt-3 space-y-3 border border-white/10 bg-white/5"><div class="grid grid-cols-2 gap-2"><label class="text-[10px] studio-muted font-bold">Kategori<select id="studioPartType" class="studio-field mt-1"><option>Jant / Lastik</option><option>Süspansiyon</option><option>Gövde kiti</option><option>Fren</option><option>Egzoz</option><option>İç mekân</option><option>Multimedya</option><option>Motor / Performans</option><option>Folyo / Boya</option><option>Aydınlatma</option><option>Diğer</option></select></label><label class="text-[10px] studio-muted font-bold">Durum<select id="studioPartStatus" class="studio-field mt-1"><option value="planned">Planlandı</option><option value="ordered">Sipariş edildi</option><option value="installed">Takıldı</option></select></label></div><label class="text-[10px] studio-muted font-bold block">Parça / modifikasyon adı<input id="studioPartName" class="studio-field mt-1" maxlength="80" placeholder="Örn. 18 inç jant seti"></label><label class="text-[10px] studio-muted font-bold block">Marka / ürün kodu <span class="font-normal">(isteğe bağlı)</span><input id="studioPartBrand" class="studio-field mt-1" maxlength="60" placeholder="Marka, model veya referans"></label><label class="text-[10px] studio-muted font-bold block">Tahmini fiyat (₺)<input id="studioPartPrice" class="studio-field mt-1" inputmode="decimal" placeholder="0"></label><div class="flex gap-2"><button onclick="studioTogglePartForm()" class="studio-secondary flex-1">İptal</button><button onclick="studioAddPart()" class="studio-primary flex-1">Listeye ekle</button></div></div>`:''}
+      <div class="space-y-2 mt-3">${parts.length?parts.map(x=>`<article class="studio-part"><div class="flex gap-3 items-start"><div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(var(--accent-rgb),.10);color:var(--accent)"><i class="fa-solid ${x.category==='Jant / Lastik'?'fa-compact-disc':x.category==='Süspansiyon'?'fa-arrows-up-down':x.category==='Gövde kiti'?'fa-car-side':x.category==='Fren'?'fa-gauge-high':'fa-screwdriver-wrench'}"></i></div><div class="flex-1 min-w-0"><div class="flex justify-between gap-2"><div class="min-w-0"><p class="text-xs font-extrabold break-words">${garajimHtmlEsc(x.name)}</p><p class="text-[9px] studio-muted mt-1">${garajimHtmlEsc(x.category||'Diğer')}${x.brand?' · '+garajimHtmlEsc(x.brand):''}</p></div><p class="text-xs font-extrabold whitespace-nowrap">${studioFormatMoney(x.cost)}</p></div><div class="grid grid-cols-2 gap-2 mt-3"><label class="text-[9px] studio-muted">Durum<select class="studio-field mt-1 py-2" onchange="studioUpdatePartStatus(${garajimInlineJsArg(x.id)},this.value)"><option value="planned" ${x.status==='planned'?'selected':''}>Planlandı</option><option value="ordered" ${x.status==='ordered'?'selected':''}>Sipariş edildi</option><option value="installed" ${x.status==='installed'?'selected':''}>Takıldı</option></select></label><label class="text-[9px] studio-muted">Uyumluluk<select class="studio-field mt-1 py-2" onchange="studioUpdatePartFitment(${garajimInlineJsArg(x.id)},this.value)"><option value="unverified" ${x.fitment!=='verified_by_user'?'selected':''}>Doğrulanmadı</option><option value="verified_by_user" ${x.fitment==='verified_by_user'?'selected':''}>Ben doğruladım</option></select></label></div><div class="flex items-center justify-between mt-2"><span class="text-[9px] ${x.status==='installed'?'text-emerald-400':x.status==='ordered'?'text-blue-400':'text-amber-400'}"><span class="studio-dot ${x.status||'planned'} mr-1"></span>${statusLabel[x.status]||'Planlandı'}</span><button onclick="studioRemovePart(${garajimInlineJsArg(x.id)})" class="text-[10px] text-slate-500 hover:text-red-400"><i class="fa-regular fa-trash-can mr-1"></i>Kaldır</button></div></div></div></article>`).join(''):'<div class="studio-empty-dashed py-8 px-4 text-center"><i class="fa-solid fa-screwdriver-wrench text-2xl studio-muted"></i><p class="text-xs font-extrabold mt-2">İlk parçanı listeye ekle</p><p class="text-[10px] studio-muted mt-1 max-w-xs mx-auto">Jant, yay, spoiler, multimedya ya da aklındaki başka bir işi kaydet. Fiyatını bilmiyorsan boş bırakabilirsin.</p></div>'}</div>
+      </section><div class="rounded-2xl p-3 flex items-start gap-2" style="background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.18)"><i class="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5"></i><p class="text-[10px] studio-muted leading-relaxed">Studio henüz otomatik bir parça kataloğu veya araç teknik veri tabanı değildir. “Ben doğruladım” yalnızca kendi kontrolünü kaydeder; kritik uyumluluğu üretici belgesi veya uzmanla doğrula.</p></div>
+    </div>`;
+  }
+  function studioRenderJournal(p) {
+    const log=Array.isArray(p.log)?p.log:[];
+    return `<div class="space-y-4"><section class="studio-hero rounded-3xl p-4"><div class="studio-eyebrow">PROJECT JOURNAL / 03</div><h2 class="text-xl font-extrabold mt-1">Projenin hikâyesi</h2><p class="text-[11px] studio-muted mt-2">Planları, kararları ve yapılan işleri tarihle kaydet. Sonra neden bu parçayı seçtiğini unutmazsın.</p><button onclick="studioToggleJournalForm()" class="studio-primary mt-4"><i class="fa-solid fa-pen-to-square mr-1.5"></i>Günlük notu ekle</button></section>
+    ${studioJournalFormOpen?`<section class="studio-panel p-3"><label class="text-[10px] studio-muted font-bold block mb-1.5">Notun</label><textarea id="studioJournalText" class="studio-field" rows="4" maxlength="500" placeholder="Örn. Önce jant ölçüsünü serviste doğrulat, sonra sipariş ver."></textarea><div class="flex gap-2 mt-2"><button onclick="studioToggleJournalForm()" class="studio-secondary flex-1">İptal</button><button onclick="studioAddJournalEntry()" class="studio-primary flex-1">Notu kaydet</button></div></section>`:''}
+    <section class="studio-panel p-4"><h3 class="text-sm font-extrabold mb-4">Zaman çizelgesi <span class="studio-muted font-normal">· ${log.length} olay</span></h3>${log.length?`<div class="relative pl-5 space-y-4 before:content-[''] before:absolute before:left-[5px] before:top-1 before:bottom-1 before:w-px before:bg-white/10">${log.map(row=>`<article class="relative"><span class="absolute -left-[19px] top-1.5 w-[9px] h-[9px] rounded-full" style="background:var(--accent);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.12)"></span><p class="text-[9px] studio-muted">${studioFormatDate(row.at)}</p><p class="text-xs font-semibold mt-1 leading-relaxed">${garajimHtmlEsc(row.text)}</p></article>`).join('')}</div>`:'<p class="text-xs studio-muted py-4">Henüz kayıt yok.</p>'}</section>
+    <section class="studio-panel p-4"><h3 class="text-sm font-extrabold">Proje notları</h3><p class="text-[10px] studio-muted mt-1 mb-3">Servisle konuşulacaklar, ölçüler veya hatırlatmalar.</p><textarea id="studioNotesField" class="studio-field" rows="4" maxlength="1200" placeholder="Notlarını burada tut...">${garajimHtmlEsc(p.notes||'')}</textarea><button onclick="studioSaveNotes()" class="studio-secondary mt-2 w-full"><i class="fa-solid fa-floppy-disk mr-1.5"></i>Notları kaydet</button></section></div>`;
+  }
+  function studioSaveNotes() { const text=(document.getElementById('studioNotesField')?.value||'').trim(); if(studioUpdateProject(p=>{p.notes=text;},'Proje notları güncellendi')) { renderStudio(); toast('Notlar kaydedildi'); } }
+  function renderStudio() {
+    const welcome=document.getElementById('studioWelcome'), setup=document.getElementById('studioSetupForm'), dashboard=document.getElementById('studioDashboard');
+    if (!welcome || !setup || !dashboard) return;
+    studioRenderGarageChoices();
+    const rows=studioProjectsGet();
+    if (studioActiveProjectId && !rows.some(p=>String(p.id)===String(studioActiveProjectId))) studioActiveProjectId=null;
+    if (!studioActiveProjectId && rows.length) { studioActiveProjectId=rows[0].id; try{localStorage.setItem('garaj_studio_selected_project',studioActiveProjectId);}catch(e){} }
+    if (setup.classList.contains('hidden')===false) return;
+    if (!rows.length) { welcome.classList.remove('hidden'); dashboard.classList.add('hidden'); return; }
+    welcome.classList.add('hidden'); dashboard.classList.remove('hidden');
+    const select=document.getElementById('studioProjectSelect');
+    if (select) select.innerHTML=rows.map(p=>`<option value="${garajimHtmlEsc(p.id)}" ${String(p.id)===String(studioActiveProjectId)?'selected':''}>${garajimHtmlEsc(p.title || studioProjectName(p))} · ${garajimHtmlEsc(studioProjectName(p))}</option>`).join('');
+    const p=rows.find(x=>String(x.id)===String(studioActiveProjectId))||rows[0];
+    const content=document.getElementById('studioProjectContent'); if (!content) return;
+    const tabs=[['design','fa-palette','Tasarım'],['parts','fa-screwdriver-wrench','Parça & bütçe'],['journal','fa-book-open','Proje günlüğü']];
+    content.innerHTML=`<div class="flex gap-1 p-1 rounded-2xl border border-white/10 bg-white/5 mb-4">${tabs.map(t=>`<button onclick="studioSetView('${t[0]}')" class="studio-tab flex-1 ${studioSubView===t[0]?'active':''}"><i class="fa-solid ${t[1]} mr-1.5"></i>${t[2]}</button>`).join('')}</div>${studioSubView==='design'?studioRenderDesign(p):studioSubView==='parts'?studioRenderParts(p):studioRenderJournal(p)}<p class="text-center text-[9px] studio-muted pt-1">Proje verileri bu cihazda saklanır · Ayarlar → Yedekle ile dışa aktarılabilir</p>`;
+  }
+  
   function aiClearChat() {
     if (aiChat.length && !confirm('Sohbet temizlensin mi?')) return;
     aiChat = [];
@@ -7850,6 +8528,8 @@ ${buildGarageContext()}
   }
   setTimeout(checkWidgetAction, 700);                         // widget'tan soğuk açılış
   setTimeout(checkWidgetAction, 2500);
+  // İlk açılışta kısa tanıtım; sonraki açılışlarda tek, atlanabilir ipucu. PIN ekranından sonra da kontrol edilir.
+  setTimeout(discoveryMaybeBoot, 3200);
 </script>
 </body>
 </html>

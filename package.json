@@ -1,6 +1,6 @@
 {
   "name": "garajim-app",
-  "version": "1.4.2",
+  "version": "1.4.6",
   "private": true,
   "scripts": {
     "build:web": "node build-web.js",
