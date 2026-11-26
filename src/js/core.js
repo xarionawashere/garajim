@@ -139,6 +139,68 @@ let vehicles = JSON.parse(localStorage.getItem('garaj_v4') || '[]');
       return;
     }
     if (a === 'wear_request_sync') { try { rideWearPush(); } catch (e) {} return; }
+    if (a === 'wear_fuel_save' || a === 'wear_km_save') {
+      try {
+        const payload = JSON.parse(String(vid || '{}'));
+        const v = vehicles.find(x => String(x.id) === String(payload.vehicleId));
+        const km = Number(String(payload.km == null ? '' : payload.km).replace(',', '.'));
+        if (!v || !Number.isFinite(km) || km <= 0) { toast('Saat kaydı doğrulanamadı'); return; }
+        const oldKm = Number(v.km) || 0;
+        if (km < oldKm) { toast('Saat kaydı eski KM içeriyor; araç bilgisi yenilendi'); return; }
+        if (a === 'wear_km_save') {
+          const increased = km > oldKm;
+          if (increased) achievementRecordOdometer(v, oldKm, km, 'manual');
+          v.km = String(Math.round(km));
+          persist();
+          if (increased) { achievementRecordActivity('odometer'); achievementEvaluate('odometer'); }
+          toast((v.plate || 'Araç') + ' için KM kaydı kaydedildi');
+          return;
+        }
+        const liters = Number(String(payload.liters == null ? '' : payload.liters).replace(',', '.'));
+        const rawCost = payload.cost == null ? '' : String(payload.cost).trim();
+        const cost = rawCost === '' ? 0 : Number(rawCost.replace(',', '.'));
+        const entryId = String(payload.entryId || '');
+        if (!entryId || !Number.isFinite(liters) || liters <= 0 || !Number.isFinite(cost) || cost < 0) {
+          toast('Saat yakıt kaydı doğrulanamadı'); return;
+        }
+        if (!v.fuelLogs) v.fuelLogs = [];
+        if (v.fuelLogs.some(f => String(f.wearId || '') === entryId)) {
+          toast('Yakıt kaydı zaten işlendi'); return;
+        }
+        const entry = {
+          date: /^\d{4}-\d{2}-\d{2}$/.test(String(payload.date || '')) ? String(payload.date) : todayStr(),
+          km: String(Math.round(km)),
+          liters: String(payload.liters),
+          cost: rawCost === '' ? '' : String(cost),
+          full: payload.full !== false,
+          receipt: null,
+          station: null,
+          fuelType: null,
+          wearId: entryId
+        };
+        if (km > oldKm) achievementRecordOdometer(v, oldKm, km, 'fuel');
+        v.fuelLogs.push(entry);
+        if (km > oldKm) v.km = String(Math.round(km));
+        if (cost > 0) {
+          if (!v.history) v.history = [];
+          v.history.push({
+            date: entry.date,
+            km: entry.km,
+            desc: 'Yakıt · ' + entry.liters + ' L',
+            cost: entry.cost,
+            cat: 'yakit'
+          });
+        }
+        persist();
+        achievementRecordActivity('fuel');
+        achievementEvaluate('fuel');
+        toast((v.plate || 'Araç') + ' için yakıt kaydı kaydedildi');
+      } catch (e) {
+        console.warn('Saat kaydı işlenemedi', e);
+        toast('Saat kaydı işlenemedi; Garajım’ı açıp yeniden eşitle');
+      }
+      return;
+    }
     if (a === 'wear_fuel_quick' || a === 'wear_km_quick') {
       try {
         const requestedId = vid || currentId || localStorage.getItem('garaj_ride_vehicle');

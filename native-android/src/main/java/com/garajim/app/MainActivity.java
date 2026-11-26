@@ -18,6 +18,7 @@ public class MainActivity extends BridgeActivity {
     static final String WEAR_QUEUE_PREFS = "garajim_wear_queue";
     private static final String WEAR_COMMANDS_KEY = "commands_json";
     private static final long WEAR_COMMAND_TTL_MS = 25_000L;
+    private static final long WEAR_LOG_COMMAND_TTL_MS = 7L * 24 * 60 * 60 * 1000;
     private static final int WEAR_COMMAND_QUEUE_LIMIT = 16;
 
     /**
@@ -41,7 +42,7 @@ public class MainActivity extends BridgeActivity {
         MainActivity target = active.get();
         boolean canDeliver = target != null && !target.isFinishing()
                 && target.getBridge() != null && target.getBridge().getWebView() != null;
-        boolean quickLog = "wear_fuel_quick".equals(action) || "wear_km_quick".equals(action);
+        boolean quickLog = isWearQuickLogAction(action);
 
         // Fuel/KM forms belong to the WebView. Preserve the request if the phone UI is not open.
         if (quickLog) {
@@ -51,8 +52,10 @@ public class MainActivity extends BridgeActivity {
                 return true;
             }
             if (!enqueueWearCommand(context, action, vehicleId)) return false;
-            GarajimWearSync.pushAlertLive(context, "info",
-                    "Kaydı tamamlamak için telefonda Garajım’ı aç; form sıraya alındı.");
+            String queuedMessage = isWearLogSaveAction(action)
+                    ? "Saat kaydı telefona alındı; Garajım açılınca araç kaydına işlenecek."
+                    : "Kaydı tamamlamak için telefonda Garajım’ı aç; form sıraya alındı.";
+            GarajimWearSync.pushAlertLive(context, "info", queuedMessage);
             return true;
         }
 
@@ -87,6 +90,18 @@ public class MainActivity extends BridgeActivity {
                 && target.getBridge() != null && target.getBridge().getWebView() != null;
     }
 
+    private static boolean isWearLogSaveAction(String action) {
+        return "wear_fuel_save".equals(action) || "wear_km_save".equals(action);
+    }
+
+    private static boolean isWearQuickLogAction(String action) {
+        return isWearLogSaveAction(action) || "wear_fuel_quick".equals(action) || "wear_km_quick".equals(action);
+    }
+
+    private static long wearCommandTtlMs(String action) {
+        return isWearLogSaveAction(action) ? WEAR_LOG_COMMAND_TTL_MS : WEAR_COMMAND_TTL_MS;
+    }
+
     private static synchronized boolean enqueueWearCommand(Context context, String action, String vehicleId) {
         if (context == null || action == null || action.trim().isEmpty()) return false;
         SharedPreferences prefs = context.getApplicationContext().getSharedPreferences(WEAR_QUEUE_PREFS, Context.MODE_PRIVATE);
@@ -98,11 +113,20 @@ public class MainActivity extends BridgeActivity {
                 JSONObject item = old.optJSONObject(i);
                 if (item == null) continue;
                 long createdAt = item.optLong("createdAt", 0L);
-                if (createdAt > 0 && now - createdAt <= WEAR_COMMAND_TTL_MS) cleaned.put(item);
+                long ttl = wearCommandTtlMs(item.optString("action", ""));
+                if (createdAt > 0 && now - createdAt <= ttl) cleaned.put(item);
             }
         } catch (Exception ignored) { }
 
-        while (cleaned.length() >= WEAR_COMMAND_QUEUE_LIMIT) cleaned.remove(0);
+        while (cleaned.length() >= WEAR_COMMAND_QUEUE_LIMIT) {
+            int removable = -1;
+            for (int i = 0; i < cleaned.length(); i++) {
+                JSONObject queued = cleaned.optJSONObject(i);
+                if (queued != null && !isWearLogSaveAction(queued.optString("action", ""))) { removable = i; break; }
+            }
+            if (removable < 0) return false; // Bekleyen yakıt/KM kayıtlarını sessizce silme.
+            cleaned.remove(removable);
+        }
         JSONObject next = new JSONObject();
         try {
             next.put("action", action.trim());
@@ -129,7 +153,8 @@ public class MainActivity extends BridgeActivity {
                 JSONObject item = old.optJSONObject(i);
                 if (item == null) continue;
                 long createdAt = item.optLong("createdAt", 0L);
-                if (createdAt <= 0 || now - createdAt > WEAR_COMMAND_TTL_MS) continue;
+                long ttl = wearCommandTtlMs(item.optString("action", ""));
+                if (createdAt <= 0 || now - createdAt > ttl) continue;
                 if (!consumed) {
                     String action = item.optString("action", "");
                     String vehicle = item.optString("vehicle", "");

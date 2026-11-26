@@ -55,9 +55,16 @@ public class GarajimWearListener extends WearableListenerService {
             return;
         }
 
+        if (isWearLogSaveAction(action) && !isValidWearLogPayload(action, arg)) {
+            GarajimWearSync.pushAck(this, ackId, false, "Saat kaydı okunamadı; bilgileri kontrol edip yeniden dene.");
+            return;
+        }
         boolean delivered = MainActivity.dispatchWearCommand(this, action, arg);
         if (delivered) {
-            GarajimWearSync.pushAck(this, ackId, true, "Telefon komutu aldı");
+            String ackMessage = isWearLogSaveAction(action)
+                    ? "Kayıt telefonda sıraya alındı; Garajım açılınca işlenecek."
+                    : "Telefon komutu aldı";
+            GarajimWearSync.pushAck(this, ackId, true, ackMessage);
             // Bağlantı nabzı
             GarajimWearSync.pushLink(this, true, "ok");
         } else {
@@ -74,6 +81,27 @@ public class GarajimWearListener extends WearableListenerService {
             GarajimWearSync.pushAck(this, ackId, soft, msg);
             GarajimWearSync.pushAlert(this, "info", msg);
         }
+    }
+
+    private static boolean isWearLogSaveAction(String action) {
+        return "wear_fuel_save".equals(action) || "wear_km_save".equals(action);
+    }
+
+    private static boolean isValidWearLogPayload(String action, String raw) {
+        try {
+            JSONObject payload = new JSONObject(raw == null ? "" : raw);
+            String vehicleId = payload.optString("vehicleId", "").trim();
+            String entryId = payload.optString("entryId", "").trim();
+            double km = payload.optDouble("km", Double.NaN);
+            if (vehicleId.isEmpty() || entryId.isEmpty() || Double.isNaN(km) || Double.isInfinite(km) || km <= 0) return false;
+            if ("wear_fuel_save".equals(action)) {
+                double liters = payload.optDouble("liters", Double.NaN);
+                double cost = payload.optDouble("cost", 0);
+                return !Double.isNaN(liters) && !Double.isInfinite(liters) && liters > 0
+                        && !Double.isNaN(cost) && !Double.isInfinite(cost) && cost >= 0;
+            }
+            return true;
+        } catch (Exception ignored) { return false; }
     }
 
     private static String firstNonBlank(JSONObject object, String... keys) {
@@ -107,6 +135,8 @@ public class GarajimWearListener extends WearableListenerService {
             case "park_where": return "wear_park_where";
             case "fuel_quick": return "wear_fuel_quick";
             case "km_quick": return "wear_km_quick";
+            case "fuel_save": return "wear_fuel_save";
+            case "km_save": return "wear_km_save";
             case "voice_pin": return "wear_voice_pin";
             case "ping": return "wear_request_sync";
             case "wear_toggle": case "wear_pause": case "wear_stop_request":
@@ -114,6 +144,7 @@ public class GarajimWearListener extends WearableListenerService {
             case "wear_summary_save": case "wear_summary_discard": case "wear_request_sync":
             case "wear_music_next": case "wear_music_prev": case "wear_music_playpause":
             case "wear_park_where": case "wear_fuel_quick": case "wear_km_quick":
+            case "wear_fuel_save": case "wear_km_save":
             case "wear_voice_pin": case "wear_start": case "wear_resume":
                 return cmd.toLowerCase(Locale.ROOT).trim();
             default: return "";

@@ -680,7 +680,8 @@ function computeTCO(v) {
         try {
           N.pushWearVehicles(JSON.stringify(vehicles.slice(0, 60).map(v => ({
             id: String(v.id || ''), plate: String(v.plate || ''),
-            name: String(v.name || ''), brand: String(v.brand || ''), model: String(v.model || '')
+            name: String(v.name || ''), brand: String(v.brand || ''), model: String(v.model || ''),
+            km: String(v.km || '0')
           }))));
         } catch (e) {}
       }

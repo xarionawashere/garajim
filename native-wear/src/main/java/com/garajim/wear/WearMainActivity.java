@@ -16,11 +16,15 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.view.View;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -62,6 +66,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final String PATH_LINK = "/garajim/link";
     private static final String PATH_THEME = "/garajim/theme";
     private static final String PENDING_PREFS = "garajim_wear_pending_command";
+    private static final String VEHICLE_PREFS = "garajim_wear_vehicle";
     private static final String KEY_PENDING_ID = "id";
     private static final String KEY_PENDING_TEXT = "command";
     private static final String KEY_PENDING_AT = "createdAt";
@@ -128,9 +133,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final int REQ_POST_NOTIFICATIONS = 6811;
 
     private static final class VehicleOption {
-        final String id, plate, name, brand, model;
-        VehicleOption(String id, String plate, String name, String brand, String model) {
-            this.id = id; this.plate = plate; this.name = name; this.brand = brand; this.model = model;
+        final String id, plate, name, brand, model, km;
+        VehicleOption(String id, String plate, String name, String brand, String model, String km) {
+            this.id = id; this.plate = plate; this.name = name; this.brand = brand; this.model = model; this.km = km;
         }
         String label() {
             String title = !plate.isEmpty() ? plate : (!name.isEmpty() ? name : (brand + " " + model).trim());
@@ -155,6 +160,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.activity_wear);
+        selectedVehicleId = getSharedPreferences(VEHICLE_PREFS, MODE_PRIVATE).getString("id", "");
+        selectedPlate = getSharedPreferences(VEHICLE_PREFS, MODE_PRIVATE).getString("plate", "");
         restorePendingCommand();
         speed = findViewById(R.id.wearSpeed);
         meta = findViewById(R.id.wearMeta);
@@ -199,9 +206,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         if (status != null) status.setText("Hazır");
         updateConnectionUi();
         View fuelQ = findViewById(R.id.btnFuelQuick);
-        if (fuelQ != null) wirePress(fuelQ, v -> send("fuel_quick"));
+        if (fuelQ != null) wirePress(fuelQ, v -> showQuickFuelEntry());
         View kmQ = findViewById(R.id.btnKmQuick);
-        if (kmQ != null) wirePress(kmQ, v -> send("km_quick"));
+        if (kmQ != null) wirePress(kmQ, v -> showQuickKmEntry());
         View voice = findViewById(R.id.btnVoicePin);
         if (voice != null) wirePress(voice, v -> {
             try {
@@ -311,6 +318,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     VehicleOption v = vehicles.get(which);
                     selectedVehicleId = v.id;
                     selectedPlate = v.plate.isEmpty() ? v.label() : v.plate;
+                    getSharedPreferences(VEHICLE_PREFS, MODE_PRIVATE).edit().putString("id", selectedVehicleId).putString("plate", selectedPlate).apply();
                     updateVehicleButton();
                     dialog.dismiss();
                     send("select_vehicle|" + v.id);
@@ -331,6 +339,179 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         } else {
             btnVehicle.setText("Araç seç");
         }
+    }
+
+    private VehicleOption quickEntryVehicle() {
+        if (vehicles.isEmpty()) {
+            send("request_sync");
+            Toast.makeText(this, "Araç listesi telefondan bekleniyor", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+        VehicleOption chosen = findVehicle(selectedVehicleId);
+        if (chosen != null) return chosen;
+        if (vehicles.size() == 1) {
+            chosen = vehicles.get(0);
+            selectedVehicleId = chosen.id;
+            selectedPlate = chosen.plate.isEmpty() ? chosen.label() : chosen.plate;
+            getSharedPreferences(VEHICLE_PREFS, MODE_PRIVATE).edit().putString("id", selectedVehicleId).putString("plate", selectedPlate).apply();
+            updateVehicleButton();
+            return chosen;
+        }
+        showVehiclePicker();
+        return null;
+    }
+
+    private EditText quickNumberField(String hint, String value, boolean decimal) {
+        EditText field = new EditText(this);
+        field.setSingleLine(true);
+        field.setSelectAllOnFocus(true);
+        field.setTextSize(16f);
+        field.setTextColor(themeText);
+        field.setHintTextColor(themeMuted);
+        field.setHint(hint);
+        field.setInputType(decimal
+                ? InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL
+                : InputType.TYPE_CLASS_NUMBER);
+        if (value != null && !value.trim().isEmpty() && !"0".equals(value.trim())) field.setText(value);
+        field.setPadding(dp(12), dp(4), dp(12), dp(4));
+        return field;
+    }
+
+    private void addQuickField(LinearLayout form, EditText field) {
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(46));
+        params.topMargin = dp(4);
+        params.bottomMargin = dp(4);
+        form.addView(field, params);
+    }
+
+    private double readQuickNumber(EditText field) {
+        if (field == null || field.getText() == null) return Double.NaN;
+        String value = field.getText().toString().trim().replace(',', '.');
+        if (value.isEmpty()) return Double.NaN;
+        try { return Double.parseDouble(value); }
+        catch (NumberFormatException ignored) { return Double.NaN; }
+    }
+
+    private double storedVehicleKm(String value) {
+        if (value == null || value.trim().isEmpty()) return 0;
+        try { return Double.parseDouble(value.trim().replace(',', '.')); }
+        catch (NumberFormatException ignored) { return 0; }
+    }
+
+    private void showQuickKmEntry() {
+        VehicleOption vehicle = quickEntryVehicle();
+        if (vehicle == null) return;
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(16), dp(8), dp(16), dp(4));
+        TextView caption = new TextView(this);
+        caption.setText(vehicle.label() + "\nSon kayıt: " + (vehicle.km.isEmpty() ? "—" : vehicle.km) + " km");
+        caption.setTextColor(themeMuted);
+        caption.setTextSize(12f);
+        form.addView(caption);
+        EditText kmField = quickNumberField("Güncel kilometre", vehicle.km, false);
+        addQuickField(form, kmField);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("KM kaydı")
+                .setView(form)
+                .setNegativeButton("Vazgeç", null)
+                .setPositiveButton("Kaydet", (d, w) -> { })
+                .create();
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            double km = readQuickNumber(kmField);
+            double oldKm = storedVehicleKm(vehicle.km);
+            if (Double.isNaN(km) || Double.isInfinite(km) || km <= 0) {
+                Toast.makeText(this, "Geçerli bir KM gir", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!Double.isNaN(oldKm) && km < oldKm) {
+                Toast.makeText(this, "KM son kayıttan düşük olamaz", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                JSONObject payload = new JSONObject();
+                payload.put("vehicleId", vehicle.id);
+                payload.put("km", Math.round(km));
+                payload.put("entryId", UUID.randomUUID().toString());
+                send("km_save", payload.toString());
+                dialog.dismiss();
+                Toast.makeText(this, "KM kaydı telefona gönderildi", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(this, "KM kaydı hazırlanamadı", Toast.LENGTH_SHORT).show();
+            }
+        }));
+        dialog.show();
+    }
+
+    private void showQuickFuelEntry() {
+        VehicleOption vehicle = quickEntryVehicle();
+        if (vehicle == null) return;
+        ScrollView scroll = new ScrollView(this);
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(16), dp(6), dp(16), dp(6));
+        TextView caption = new TextView(this);
+        caption.setText(vehicle.label() + "\nSon kayıt: " + (vehicle.km.isEmpty() ? "—" : vehicle.km) + " km");
+        caption.setTextColor(themeMuted);
+        caption.setTextSize(12f);
+        form.addView(caption);
+        EditText kmField = quickNumberField("Yakıt alırken KM", vehicle.km, false);
+        EditText litersField = quickNumberField("Litre", "", true);
+        EditText costField = quickNumberField("Tutar ₺ · isteğe bağlı", "", true);
+        addQuickField(form, kmField);
+        addQuickField(form, litersField);
+        addQuickField(form, costField);
+        CheckBox fullTank = new CheckBox(this);
+        fullTank.setText("Depo doldu");
+        fullTank.setTextColor(themeText);
+        fullTank.setChecked(true);
+        form.addView(fullTank);
+        scroll.setFillViewport(true);
+        scroll.addView(form);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Yakıt kaydı")
+                .setView(scroll)
+                .setNegativeButton("Vazgeç", null)
+                .setPositiveButton("Kaydet", (d, w) -> { })
+                .create();
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            double km = readQuickNumber(kmField);
+            double liters = readQuickNumber(litersField);
+            String costText = costField.getText() == null ? "" : costField.getText().toString().trim().replace(',', '.');
+            double cost = costText.isEmpty() ? 0 : readQuickNumber(costField);
+            double oldKm = storedVehicleKm(vehicle.km);
+            if (Double.isNaN(km) || Double.isInfinite(km) || km <= 0 || (!Double.isNaN(oldKm) && km < oldKm)) {
+                Toast.makeText(this, "Geçerli ve güncel bir KM gir", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (Double.isNaN(liters) || Double.isInfinite(liters) || liters <= 0) {
+                Toast.makeText(this, "Litre bilgisini gir", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (Double.isNaN(cost) || Double.isInfinite(cost) || cost < 0) {
+                Toast.makeText(this, "Tutarı kontrol et", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                JSONObject payload = new JSONObject();
+                payload.put("vehicleId", vehicle.id);
+                payload.put("km", Math.round(km));
+                payload.put("liters", liters);
+                payload.put("cost", costText.isEmpty() ? "" : cost);
+                payload.put("full", fullTank.isChecked());
+                payload.put("date", new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new java.util.Date()));
+                payload.put("entryId", UUID.randomUUID().toString());
+                send("fuel_save", payload.toString());
+                dialog.dismiss();
+                Toast.makeText(this, "Yakıt kaydı telefona gönderildi", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(this, "Yakıt kaydı hazırlanamadı", Toast.LENGTH_SHORT).show();
+            }
+        }));
+        dialog.show();
     }
 
     private void showPendingSummaryDialog() {
@@ -377,7 +558,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 String id = o.optString("id", "");
                 if (id.isEmpty()) continue;
                 parsed.add(new VehicleOption(id, o.optString("plate", ""), o.optString("name", ""),
-                        o.optString("brand", ""), o.optString("model", "")));
+                        o.optString("brand", ""), o.optString("model", ""), o.optString("km", "0")));
             }
         } catch (Exception ignored) { }
         runOnUiThread(() -> {
@@ -385,8 +566,14 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             vehicles.addAll(parsed);
             if (!selectedVehicleId.isEmpty()) {
                 VehicleOption chosen = findVehicle(selectedVehicleId);
-                if (chosen != null) selectedPlate = chosen.plate;
+                if (chosen != null) selectedPlate = chosen.plate.isEmpty() ? chosen.label() : chosen.plate;
                 else { selectedVehicleId = ""; selectedPlate = ""; }
+            }
+            if (selectedVehicleId.isEmpty() && vehicles.size() == 1) {
+                VehicleOption only = vehicles.get(0);
+                selectedVehicleId = only.id;
+                selectedPlate = only.plate.isEmpty() ? only.label() : only.plate;
+                getSharedPreferences(VEHICLE_PREFS, MODE_PRIVATE).edit().putString("id", selectedVehicleId).putString("plate", selectedPlate).apply();
             }
             updateVehicleButton();
         });
@@ -776,6 +963,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         runOnUiThread(() -> {
             if (!accepted) {
                 Toast.makeText(this, safeMessage.isEmpty() ? "Telefon komutu kabul etmedi" : safeMessage, Toast.LENGTH_LONG).show();
+            } else if (command.startsWith("fuel_save") || command.startsWith("km_save")) {
+                Toast.makeText(this, safeMessage, Toast.LENGTH_LONG).show();
             } else if (command.startsWith("request_sync") || command.startsWith("select_vehicle|")
                     || command.startsWith("summary_save|") || command.startsWith("summary_discard|")) {
                 Toast.makeText(this, "Telefon komutu aldı", Toast.LENGTH_SHORT).show();
@@ -994,8 +1183,13 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (distanceView != null) distanceView.setText(String.format(Locale.US, "%.2f km", distM / 1000.0));
             if (durationView != null) durationView.setText(String.format(Locale.US, "%d:%02d", m, s));
             if (maxSpeedView != null) maxSpeedView.setText(String.format(Locale.US, "%.0f km/sa", maxKmh));
-            selectedVehicleId = vehicleId == null ? "" : vehicleId;
-            selectedPlate = plate == null ? "" : plate;
+            if (vehicleId != null && !vehicleId.isEmpty()) {
+                selectedVehicleId = vehicleId;
+                getSharedPreferences(VEHICLE_PREFS, MODE_PRIVATE).edit().putString("id", selectedVehicleId).apply();
+            }
+            VehicleOption selected = findVehicle(selectedVehicleId);
+            if (plate != null && !plate.isEmpty()) selectedPlate = plate;
+            else if (selected != null) selectedPlate = selected.plate.isEmpty() ? selected.label() : selected.plate;
             updateVehicleButton();
             updateConnectionUi();
             String st;
@@ -1293,12 +1487,15 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         } catch (Exception ignored) { }
     }
 
-    private void send(String cmd) {
+    private void send(String cmd) { send(cmd, null); }
+
+    private void send(String cmd, String arg) {
         if (cmd == null || cmd.trim().isEmpty()) return;
         final long now = System.currentTimeMillis();
-        // Saat ekranında çift dokunuşun aynı komutu iki kez göndermesini önle.
-        if (cmd.equals(lastCommandSent) && now - lastCommandSentAt < 700L) return;
-        lastCommandSent = cmd;
+        // Aynı içeriğin çift dokunuşla iki kez gitmesini engelle; farklı kayıtlar ayrı kalsın.
+        String dedupeKey = cmd + (arg == null ? "" : "|" + arg);
+        if (dedupeKey.equals(lastCommandSent) && now - lastCommandSentAt < 700L) return;
+        lastCommandSent = dedupeKey;
         lastCommandSentAt = now;
         final String commandId = UUID.randomUUID().toString();
         final String payload;
@@ -1306,6 +1503,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             JSONObject envelope = new JSONObject();
             envelope.put("id", commandId);
             envelope.put("cmd", cmd);
+            if (arg != null && !arg.trim().isEmpty()) envelope.put("arg", arg);
             payload = envelope.toString();
         } catch (Exception e) {
             Toast.makeText(this, "Komut hazırlanamadı", Toast.LENGTH_SHORT).show();
