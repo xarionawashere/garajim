@@ -1195,6 +1195,19 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       <button onclick="closeSettings()" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
+    <section id="wearPairCard" class="mb-6 rounded-2xl border border-sky-400/20 bg-gradient-to-br from-sky-500/10 via-white/[.03] to-transparent p-4 overflow-hidden relative">
+      <div class="absolute -right-5 -top-7 w-24 h-24 rounded-full bg-sky-400/10 blur-2xl pointer-events-none animate-pulse"></div>
+      <div class="relative flex items-center gap-3">
+        <div class="shrink-0 w-12 h-12 rounded-2xl bg-sky-400/10 border border-sky-300/20 flex items-center justify-center text-sky-300 animate-pulse"><i class="fa-solid fa-mobile-screen-button"></i><span class="mx-1 text-sky-300/60">↔</span><i class="fa-regular fa-clock"></i></div>
+        <div class="min-w-0 flex-1"><p id="wearPairTitle" class="text-sm font-bold">Saatini Garajım’a bağla</p><p id="wearPairStatus" class="text-[11px] text-slate-400 mt-0.5">Saat uygulaması isteğe bağlı; telefonda her özellik kullanılabilir.</p></div>
+      </div>
+      <div class="relative flex gap-2 mt-3">
+        <button id="wearPairAction" onclick="wearPairManage()" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 border border-sky-300/20 text-sky-200 text-xs font-semibold transition-all active:scale-[.98]">Saati bağla</button>
+        <button id="wearPairRefresh" onclick="wearPairRefresh()" class="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs" aria-label="Bağlantı durumunu yenile"><i class="fa-solid fa-rotate"></i></button>
+      </div>
+      <button id="wearPairLater" onclick="wearPairLater()" class="relative mt-2 text-[10px] text-slate-500">Şimdilik telefonda kullan</button>
+    </section>
+
     <p class="text-xs text-slate-500 uppercase mb-2">Tema</p>
     <div class="grid grid-cols-3 gap-2 mb-4">
       <button class="theme-opt seg" data-t="dark" onclick="setTheme('dark')"><i class="fa-solid fa-moon mr-1.5"></i>Koyu</button>

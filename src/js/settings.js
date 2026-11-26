@@ -155,6 +155,56 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
   }
 
   // ---------- AYARLAR ----------
+  function wearPairReadStatus() {
+    try {
+      const N = window.GarajimNative;
+      const raw = N && typeof N.getWearStatus === 'function' ? N.getWearStatus() : '';
+      return raw ? JSON.parse(raw) : { connected: false, unavailable: true };
+    } catch (e) { return { connected: false, unavailable: true }; }
+  }
+  function wearPairRender() {
+    const card = document.getElementById('wearPairCard');
+    if (!card) return;
+    const state = wearPairReadStatus();
+    const title = document.getElementById('wearPairTitle');
+    const detail = document.getElementById('wearPairStatus');
+    const action = document.getElementById('wearPairAction');
+    if (state.connected) {
+      if (title) title.textContent = state.name ? state.name + ' bağlı' : 'Saatin Garajım’a bağlı';
+      if (detail) detail.textContent = 'Telefon ve saat Garajım verilerini eşitliyor.';
+      if (action) action.textContent = 'Bağlantıyı kes';
+      card.classList.add('wear-pair-connected');
+    } else {
+      if (title) title.textContent = 'Saatini Garajım’a bağla';
+      if (detail) detail.textContent = 'Saat uygulaması isteğe bağlı; telefonda her özellik kullanılabilir.';
+      if (action) action.textContent = 'Saati bağla';
+      card.classList.remove('wear-pair-connected');
+    }
+  }
+  function wearPairRefresh() {
+    try { if (typeof rideWearPush === 'function') rideWearPush(); } catch (e) {}
+    wearPairRender();
+    setTimeout(wearPairRender, 900);
+    toast('Saat bağlantısı kontrol ediliyor');
+  }
+  function wearPairManage() {
+    const state = wearPairReadStatus();
+    const message = state.connected
+      ? 'Garajım telefon-saat sistem eşleşmesini kendisi silemez. Bağlantıyı kesmek için saati Wear OS veya Galaxy Wearable içinden kaldırabilirsin.'
+      : 'Saati önce Wear OS veya Galaxy Wearable uygulamasından telefona eşleştir; sonra Garajım’ı iki cihazda da aç. Bağlantı otomatik bulunur.';
+    if (!confirm(message + '\n\nİlgili cihaz ayarını açalım mı?')) return;
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.openWearSettings === 'function') N.openWearSettings();
+      else toast('Eşleştirme Wear OS veya Galaxy Wearable içinden yapılır');
+    } catch (e) { toast('Wear OS veya Galaxy Wearable uygulamasını aç'); }
+  }
+  function wearPairLater() {
+    localStorage.setItem('garaj_wear_pair_later', '1');
+    closeSettings();
+    toast('Saat olmadan da Garajım’ı kullanabilirsin');
+  }
+
   function openSettings() {
     updatePinUI();
     applyTheme();
@@ -164,6 +214,8 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     updateBackupInfo();
     updateAutoBackupUI();
     discoveryUpdateSettingsUI();
+    wearPairRender();
+    setTimeout(wearPairRender, 900);
     const ai = aiGetSettings();
     const prov = document.getElementById('aiProvider');
     const key = document.getElementById('aiApiKey');
@@ -195,7 +247,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     { kind:'fuel', icon:'fa-gas-pump', tag:'MASRAFLARINI GÖR', title:'Yakıtın ve masrafların kontrolünde', body:'Yakıt fişini kaydet, tüketimi ve kilometre başına maliyeti takip et. Tahmin yerine kendi kayıtlarınla ilerle.', points:['Fiş fotoğrafıyla kayıt oluşturmayı dene','Araç geçmişindeki giderleri karşılaştır'] },
     { kind:'navigation', icon:'fa-route', tag:'YOLA ÇIK', title:'Rotanı oluştur, yola odaklan', body:'Açık Dünya üzerinden konumunu gör, hedef ara ve rota seçeneklerini karşılaştır. Kaydettiğin park yerine de geri dönebilirsin.', points:['Haritada hedef seçme ve adres arama','GPS doğruluğu ile rota durumunu izleme'] },
     { kind:'dna', icon:'fa-dna', tag:'SÜRÜŞÜNÜ KEŞFET', title:'Sürüş DNA’n zamanla oluşur', body:'Nitelikli sürüşlerin sekiz farklı profil için ipucu verir. Yeterli veri birikmeden kesin bir profil varsayılmaz.', points:['DNA puanlarını ve veri yeterliliğini incele','Başarı hedeflerini gerçek sürüşlerinle tamamla'] },
-    { kind:'watch', icon:'fa-clock', tag:'SAATİNLE BİRLİKTE', title:'Garajım bileğinde de seninle', body:'Uyumlu Wear OS saatinle sürüş bilgilerini, araç seçimini ve başarım kutlamalarını deneyimle.', points:['Saat uygulamasında bağlantı durumunu kontrol et','Gizli test menüsüyle kutlamayı rozet kazanmadan dene'] },
+    { kind:'watch', icon:'fa-clock', tag:'İSTEĞE BAĞLI', title:'Garajım bileğinde de seninle', body:'Saatini Wear OS veya Galaxy Wearable üzerinden telefona eşleştir; Garajım bağlantıyı bulup verileri eşitler. Saatin yoksa telefon uygulamasının tüm özellikleri kullanılabilir.', points:['Bağlantıyı Ayarlar bölümünden yönet','Saat olmadan da aracı, bakımı ve yakıtı telefondan takip et'] },
     { kind:'backup', icon:'fa-shield-halved', tag:'VERİNİ KORU', title:'Yedeğini almadan yola çıkma', body:'Araç ve uygulama kayıtlarını düzenli dışa aktar. Yedek dosyanı güvenli bir konumda sakla.', points:['Ayarlar → Yedekle ile dosya oluştur','Yeni cihaza geçmeden önce geri yüklemeyi planla'] }
   ];
   const DISCOVERY_TIPS = [

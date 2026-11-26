@@ -196,6 +196,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         }
 
         wirePress(btnToggle, v -> onTogglePressed());
+        wirePress(findViewById(R.id.btnWearPair), v -> showWearPairingDialog());
         wirePress(findViewById(R.id.btnStop), v -> confirmStopOnWatch());
         wirePress(findViewById(R.id.btnNext), v -> send("next"));
         wirePress(findViewById(R.id.btnPrev), v -> send("prev"));
@@ -239,6 +240,26 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             press(view);
             click.onClick(view);
         });
+    }
+
+    private void showWearPairingDialog() {
+        refreshPhoneConnection();
+        String message = phoneConnected
+                ? "Telefon bağlı. Sistem eşleştirmesini kaldırmak için telefonun Wear OS veya Galaxy Wearable uygulamasını kullan."
+                : "Saati önce telefondaki Wear OS veya Galaxy Wearable uygulamasından eşleştir. Garajım bağlantıyı bulunca otomatik eşitler.";
+        new AlertDialog.Builder(this)
+                .setTitle(phoneConnected ? "Saat bağlantısı" : "Telefonu bağla")
+                .setMessage(message)
+                .setPositiveButton("Bağlantıyı yenile", (d, which) -> {
+                    refreshPhoneConnection();
+                    send("request_sync");
+                })
+                .setNeutralButton("Bluetooth ayarları", (d, which) -> {
+                    try { startActivity(new android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS)); }
+                    catch (Exception e) { Toast.makeText(this, "Bağlantıyı Wear OS uygulamasından yönet", Toast.LENGTH_LONG).show(); }
+                })
+                .setNegativeButton("Kapat", null)
+                .show();
     }
 
     private void onTogglePressed() {

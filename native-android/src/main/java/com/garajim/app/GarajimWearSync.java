@@ -318,26 +318,30 @@ public final class GarajimWearSync {
     /** Telefonun gördüğü Wear düğüm özeti (JS durum çipi için). */
     public static String getStatusJson(Context ctx) {
         if (ctx == null) return "{\"connected\":false,\"count\":0,\"nearby\":0}";
-        try {
-            java.util.List<Node> nodes = Tasks.await(Wearable.getNodeClient(ctx.getApplicationContext()).getConnectedNodes());
-            int count = nodes == null ? 0 : nodes.size();
-            int nearby = 0;
-            String name = "";
-            if (nodes != null) {
-                for (Node n : nodes) {
-                    if (n.isNearby()) nearby++;
-                    if (name.isEmpty()) name = n.getDisplayName() == null ? "" : n.getDisplayName();
+        final Context app = ctx.getApplicationContext();
+        android.content.SharedPreferences prefs = app.getSharedPreferences("garajim_wear_status", Context.MODE_PRIVATE);
+        String cached = prefs.getString("status", "{\"connected\":false,\"count\":0,\"nearby\":0}");
+        EX.execute(() -> {
+            try {
+                java.util.List<Node> nodes = Tasks.await(Wearable.getNodeClient(app).getConnectedNodes());
+                int count = nodes == null ? 0 : nodes.size();
+                int nearby = 0;
+                String name = "";
+                if (nodes != null) for (Node node : nodes) {
+                    if (node.isNearby()) nearby++;
+                    if (name.isEmpty()) name = node.getDisplayName() == null ? "" : node.getDisplayName();
                 }
+                org.json.JSONObject o = new org.json.JSONObject();
+                o.put("connected", count > 0);
+                o.put("count", count);
+                o.put("nearby", nearby);
+                o.put("name", name);
+                o.put("ts", System.currentTimeMillis());
+                prefs.edit().putString("status", o.toString()).apply();
+            } catch (Exception e) {
+                Log.w(TAG, "getStatusJson: " + e.getMessage());
             }
-            org.json.JSONObject o = new org.json.JSONObject();
-            o.put("connected", count > 0);
-            o.put("count", count);
-            o.put("nearby", nearby);
-            o.put("name", name);
-            o.put("ts", System.currentTimeMillis());
-            return o.toString();
-        } catch (Exception e) {
-            return "{\"connected\":false,\"count\":0,\"nearby\":0,\"error\":true}";
-        }
+        });
+        return cached;
     }
 }

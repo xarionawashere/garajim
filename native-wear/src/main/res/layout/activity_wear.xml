@@ -14,6 +14,9 @@
 
         <TextView android:id="@+id/wearConnection" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:gravity="center" android:text="● Telefon aranıyor…" android:textColor="#FBBF24" android:textSize="10sp" android:textStyle="bold"/>
+        <Button android:id="@+id/btnWearPair" android:layout_width="match_parent" android:layout_height="38dp"
+            android:layout_marginTop="3dp" android:text="Bağlantıyı yönet" android:textAllCaps="false"
+            android:background="@drawable/btn_secondary" android:textColor="#7DD3FC"/>
 
         <Button android:id="@+id/btnVehicle" android:layout_width="match_parent" android:layout_height="44dp"
             android:layout_marginTop="6dp" android:text="Araç seç" android:textAllCaps="false"

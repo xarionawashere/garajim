@@ -238,6 +238,26 @@ public class GarajimNativeBridge {
     }
 
     @JavascriptInterface
+    public void openWearSettings() {
+        try {
+            activity.runOnUiThread(() -> {
+                String[] packages = { "com.google.android.wearable.app", "com.samsung.android.app.watchmanager" };
+                for (String packageName : packages) {
+                    android.content.Intent launch = context.getPackageManager().getLaunchIntentForPackage(packageName);
+                    if (launch != null) {
+                        launch.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(launch);
+                        return;
+                    }
+                }
+                android.content.Intent settings = new android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+                settings.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(settings);
+            });
+        } catch (Exception ignored) { }
+    }
+
+    @JavascriptInterface
     public String getWearStatus() {
         try { return GarajimWearSync.getStatusJson(context); } catch (Exception e) { return "{\"connected\":false}"; }
     }
