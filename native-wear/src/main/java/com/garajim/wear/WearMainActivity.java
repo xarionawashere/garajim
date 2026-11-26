@@ -60,6 +60,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final String PATH_CMD = "/garajim/cmd";
     private static final String PATH_ACK = "/garajim/ack";
     private static final String PATH_LINK = "/garajim/link";
+    private static final String PATH_THEME = "/garajim/theme";
     private static final String PENDING_PREFS = "garajim_wear_pending_command";
     private static final String KEY_PENDING_ID = "id";
     private static final String KEY_PENDING_TEXT = "command";
@@ -70,6 +71,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
     private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus, navStrip, limitTxt, goalTxt, badgeTxt, convoyTxt;
     private android.view.View pageCockpit, pageMore;
+    private final java.util.ArrayList<LinearLayout> wearPages = new java.util.ArrayList<>();
+    private TextView wearPageDots;
+    private int currentWearPage = 0;
+    private float swipeDownX, swipeDownY;
+    private int themeBg = Color.rgb(10,10,10), themeSurface = Color.rgb(20,20,20), themeAccent = Color.rgb(239,68,68), themeText = Color.rgb(241,245,249), themeMuted = Color.rgb(148,163,184);
     private MiniRouteView miniMap;
     private Button btnToggle, btnVehicle, btnPendingSummary;
     private View speedRing;
@@ -133,6 +139,17 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (!detail.isEmpty() && !detail.equalsIgnoreCase(title)) return title + " · " + detail;
             return title;
         }
+    }
+
+    @Override public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        if (ev.getAction()==android.view.MotionEvent.ACTION_DOWN) { swipeDownX=ev.getX(); swipeDownY=ev.getY(); }
+        if (ev.getAction()==android.view.MotionEvent.ACTION_UP) {
+            float dx=ev.getX()-swipeDownX, dy=ev.getY()-swipeDownY;
+            if (!wearPages.isEmpty() && Math.abs(dx)>dp(48) && Math.abs(dx)>Math.abs(dy)*1.35f) {
+                showWearPage(currentWearPage + (dx<0 ? 1 : -1)); return true;
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override protected void onCreate(Bundle b) {
@@ -201,7 +218,8 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         View tabM = findViewById(R.id.tabMore);
         if (tabC != null) tabC.setOnClickListener(v -> showWearPage(true));
         if (tabM != null) tabM.setOnClickListener(v -> showWearPage(false));
-        showWearPage(true);
+        setupWearPages();
+        showWearPage(0);
         requestAchievementNotificationPermission();
         handleAchievementIntent(getIntent());
 
@@ -459,6 +477,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                     DataMap map = DataMapItem.fromDataItem(item).getDataMap();
                     if (PATH_STATE.equals(path)) applyState(map);
                     else if (PATH_VEHICLES.equals(path)) applyVehicles(map.getString("json", "[]"));
+                    else if (PATH_THEME.equals(path)) applyPhoneTheme(map.getString("pack", "dark-red"), map.getString("mode", "dark"));
                     else if (path.startsWith(PATH_ACK + "/")) {
                         processAck(map.getString("id", ""), map.getBoolean("accepted", false),
                                 map.getString("message", "Telefon yanıt verdi."));
@@ -829,6 +848,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 DataMap map = DataMapItem.fromDataItem(e.getDataItem()).getDataMap();
                 if (PATH_STATE.equals(path)) applyState(map);
                 else if (PATH_VEHICLES.equals(path)) applyVehicles(map.getString("json", "[]"));
+                else if (PATH_THEME.equals(path)) applyPhoneTheme(map.getString("pack", "dark-red"), map.getString("mode", "dark"));
                 else if (PATH_ALERT.equals(path)) applyAlert(map);
                     else if (PATH_LINK.equals(path)) { phoneConnected = map.getBoolean("online", true); runOnUiThread(this::updateConnectionUi); }
                 else if (path.startsWith(PATH_ACK + "/")) {
@@ -1079,18 +1099,124 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         }
     }
 
-    private void showWearPage(boolean cockpit) {
-        if (pageCockpit != null) pageCockpit.setVisibility(cockpit ? View.VISIBLE : View.GONE);
-        if (pageMore != null) pageMore.setVisibility(cockpit ? View.GONE : View.VISIBLE);
-        View tabC = findViewById(R.id.tabCockpit);
-        View tabM = findViewById(R.id.tabMore);
-        if (tabC instanceof android.widget.Button) {
-            ((android.widget.Button) tabC).setText(cockpit ? "● Kokpit" : "Kokpit");
-        }
-        if (tabM instanceof android.widget.Button) {
-            ((android.widget.Button) tabM).setText(!cockpit ? "● Daha fazla" : "Daha fazla");
+    private void setupWearPages() {
+        try {
+            android.widget.ScrollView scroll = (android.widget.ScrollView) findViewById(android.R.id.content).getRootView().findViewById(R.id.wearConnection).getParent().getParent();
+            // Existing XML has one content column. Move its existing controls into four real pages
+            // without recreating IDs, so the mature ride/navigation/media wiring remains intact.
+            View contentCandidate = findViewById(R.id.wearConnection);
+            ViewGroup content = (ViewGroup) contentCandidate.getParent();
+            while (content != null && !(content instanceof LinearLayout && content.getParent() instanceof android.widget.ScrollView)) content = (ViewGroup) content.getParent();
+            if (!(content instanceof LinearLayout)) return;
+            LinearLayout column = (LinearLayout) content;
+            java.util.ArrayList<View> old = new java.util.ArrayList<>();
+            for (int i=0; i<column.getChildCount(); i++) old.add(column.getChildAt(i));
+            column.removeAllViews();
+            String[] names = {"◉  KOKPİT", "♫  MÜZİK", "➤  NAVİGASYON", "▦  GARAJ"};
+            for (int p=0; p<4; p++) {
+                LinearLayout page = new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setGravity(Gravity.CENTER_HORIZONTAL);
+                page.setPadding(dp(8), dp(5), dp(8), dp(5)); page.setTag("wear-page-"+p);
+                TextView heading = new TextView(this); heading.setText(names[p]); heading.setGravity(Gravity.CENTER); heading.setTextSize(10); heading.setLetterSpacing(.12f); heading.setTextColor(themeAccent);
+                LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(-1, dp(24)); hp.bottomMargin=dp(3); page.addView(heading,hp);
+                wearPages.add(page); column.addView(page, new LinearLayout.LayoutParams(-1, -2));
+            }
+            for (int i=0; i<old.size(); i++) {
+                View v=old.get(i); int id=v.getId(); int target;
+                if (i==14 || id==R.id.wearTrack || id==R.id.btnPrev || id==R.id.btnPlay || id==R.id.btnNext) target=1;
+                else if (id==R.id.wearNavStrip || id==R.id.wearMapCard || id==R.id.wearMiniMap || id==R.id.wearMapStatus) target=2;
+                else if (i==17 || id==R.id.btnPark || id==R.id.wearPark || id==R.id.btnFuelQuick || id==R.id.btnKmQuick || id==R.id.btnVoicePin || id==R.id.wearBadge || id==R.id.wearConvoy) target=3;
+                else if (id==R.id.pageCockpit || id==R.id.pageMore || id==R.id.tabCockpit || id==R.id.tabMore) continue;
+                else target=0;
+                if (v.getParent() instanceof ViewGroup) ((ViewGroup)v.getParent()).removeView(v);
+                wearPages.get(target).addView(v);
+            }
+            wearPageDots = new TextView(this); wearPageDots.setGravity(Gravity.CENTER); wearPageDots.setTextSize(11); wearPageDots.setTextColor(themeMuted);
+            column.addView(wearPageDots, new LinearLayout.LayoutParams(-1, dp(22)));
+            // Gesture handling lives in dispatchTouchEvent so buttons remain fully clickable.
+            scroll.setOnTouchListener((v, e) -> false);
+        } catch (Exception e) { android.util.Log.w("GarajimWear", "page setup: "+e.getMessage()); }
+    }
+
+    private int dp(float value) { return (int)(value * getResources().getDisplayMetrics().density + .5f); }
+
+    private void showWearPage(boolean cockpit) { showWearPage(cockpit ? 0 : 3); }
+    private void showWearPage(int page) {
+        if (wearPages.isEmpty()) return;
+        currentWearPage = Math.max(0, Math.min(wearPages.size()-1, page));
+        for (int i=0; i<wearPages.size(); i++) wearPages.get(i).setVisibility(i==currentWearPage ? View.VISIBLE : View.GONE);
+        if (wearPageDots != null) {
+            StringBuilder dots=new StringBuilder(); for(int i=0;i<wearPages.size();i++) dots.append(i==currentWearPage ? "●" : "○").append(i==wearPages.size()-1?"":"  ");
+            wearPageDots.setText(dots.toString());
         }
     }
+
+    private void applyPhoneTheme(String pack, String mode) {
+        String id = pack == null ? "dark-red" : pack;
+        int bg=Color.rgb(10,10,10), surface=Color.rgb(20,20,20), accent=Color.rgb(239,68,68), fg=Color.rgb(241,245,249), muted=Color.rgb(148,163,184);
+        switch(id) {
+            case "white-red": bg=0xFFF5F5F7; surface=Color.WHITE; accent=0xFFE11D48; fg=0xFF0F172A; muted=0xFF64748B; break;
+            case "gunmetal": bg=0xFF12141A; surface=0xFF1C1F28; accent=0xFF64748B; fg=0xFFE2E8F0; muted=0xFF94A3B8; break;
+            case "gold": bg=0xFF0C0A09; surface=0xFF1C1917; accent=0xFFEAB308; fg=0xFFFAFAF9; muted=0xFFA8A29E; break;
+            case "carbon-orange": bg=0xFF0A0A0A; surface=0xFF141414; accent=0xFFF97316; fg=0xFFFAFAFA; muted=0xFFA3A3A3; break;
+            case "ocean": bg=0xFF0B1220; surface=0xFF111D30; accent=0xFF0EA5E9; fg=0xFFE0F2FE; muted=0xFF93C5FD; break;
+            case "forest": bg=0xFF0A120E; surface=0xFF102018; accent=0xFF10B981; fg=0xFFECFDF5; muted=0xFF6EE7B7; break;
+            case "royal": bg=0xFF0F0A1A; surface=0xFF1B1230; accent=0xFF8B5CF6; fg=0xFFF5F3FF; muted=0xFFC4B5FD; break;
+            case "rose-gold": bg=0xFF140F10; surface=0xFF241719; accent=0xFFF472B6; fg=0xFFFDF2F8; muted=0xFFF9A8D4; break;
+            case "snow-blue": bg=0xFFF0F7FF; surface=Color.WHITE; accent=0xFF2563EB; fg=0xFF0C1929; muted=0xFF52677F; break;
+            case "cream-brown": bg=0xFFFAF6F1; surface=0xFFFFFCF8; accent=0xFFB45309; fg=0xFF1C1410; muted=0xFF78685B; break;
+            case "neon-mint": bg=0xFF050805; surface=0xFF0D160D; accent=0xFF4ADE80; fg=0xFFF0FDF4; muted=0xFF86EFAC; break;
+            case "mist-teal": bg=0xFF101A1B; surface=0xFF192526; accent=0xFF5F938A; fg=0xFFE3EEEB; muted=0xFFA6BEB8; break;
+            case "lavender-dusk": bg=0xFF18171D; surface=0xFF24222B; accent=0xFF9A88B8; fg=0xFFECE8F1; muted=0xFFB6AEC4; break;
+            case "slate-blue": bg=0xFF131A22; surface=0xFF1D2630; accent=0xFF7798B2; fg=0xFFE5EBF1; muted=0xFFA9BAC8; break;
+            case "soft-sage": bg=0xFFE9EEE5; surface=0xFFF5F7F1; accent=0xFF5E795F; fg=0xFF28352C; muted=0xFF647364; break;
+            case "warm-sand": bg=0xFFEFE7DB; surface=0xFFFAF5EC; accent=0xFF896B4D; fg=0xFF342A20; muted=0xFF756552; break;
+            case "dusty-rose": bg=0xFFF1E7E7; surface=0xFFFBF4F3; accent=0xFF955E67; fg=0xFF382B2E; muted=0xFF78666A; break;
+            case "moss-stone": bg=0xFF171B17; surface=0xFF222720; accent=0xFF84976F; fg=0xFFE5E9DF; muted=0xFFAFB8A6; break;
+            case "plum-ash": bg=0xFF1B181D; surface=0xFF262128; accent=0xFF9A7DA1; fg=0xFFE9E3EA; muted=0xFFBBAFBD; break;
+            case "copper-smoke": bg=0xFF1C1917; surface=0xFF28231F; accent=0xFFA77D5D; fg=0xFFEEE6DF; muted=0xFFB8A99A; break;
+            case "blue-hour": bg=0xFF121A27; surface=0xFF1A2636; accent=0xFF7E97BD; fg=0xFFE2EAF4; muted=0xFFA6B5CC; break;
+            case "soft-olive": bg=0xFFECEEE3; surface=0xFFF7F8F1; accent=0xFF646F4A; fg=0xFF2E3629; muted=0xFF68725E; break;
+            case "paper-ink": bg=0xFFECEBE4; surface=0xFFF7F6EF; accent=0xFF5E7268; fg=0xFF30322E; muted=0xFF696E67; break;
+        }
+        if ("light".equals(mode) && !id.equals("dark-red") && !id.equals("gunmetal") && !id.equals("gold") && !id.equals("carbon-orange") && !id.equals("ocean") && !id.equals("forest") && !id.equals("royal") && !id.equals("rose-gold") && !id.equals("neon-mint")) { /* palette already light */ }
+        themeBg=bg; themeSurface=surface; themeAccent=accent; themeText=fg; themeMuted=muted;
+        runOnUiThread(() -> {
+            View root=findViewById(android.R.id.content); if(root!=null) root.setBackgroundColor(themeBg);
+            for (LinearLayout page: wearPages) { page.setBackgroundColor(themeBg); tintThemeTree(page); if (page.getChildCount()>0 && page.getChildAt(0) instanceof TextView) ((TextView)page.getChildAt(0)).setTextColor(themeAccent); }
+            if (wearPageDots!=null) wearPageDots.setTextColor(themeMuted);
+        });
+    }
+
+    private void tintThemeTree(View view) {
+        if (view instanceof Button) {
+            Button b=(Button)view; GradientDrawable d=new GradientDrawable(); d.setColor(themeSurface); d.setCornerRadius(dp(14)); d.setStroke(dp(1), withAlpha(themeAccent, 150)); b.setBackground(d); b.setTextColor(themeText);
+            if (b.getId()==R.id.btnToggle) { d.setColor(themeAccent); b.setTextColor(contrastText(themeAccent)); }
+        } else if (view instanceof TextView) {
+            TextView t=(TextView)view; int id=t.getId();
+            if (id==R.id.wearConnection || id==R.id.wearAlert || id==R.id.wearBadge) return;
+            if (id==R.id.wearNavStrip || id==R.id.wearMapCard || id==R.id.wearSpeedRing) {
+                GradientDrawable d=new GradientDrawable(); d.setColor(themeSurface); d.setCornerRadius(dp(14)); d.setStroke(dp(1), withAlpha(themeAccent, 80)); t.setBackground(d);
+            }
+            t.setTextColor((id==R.id.wearStatus || id==R.id.wearDuration || id==R.id.wearMaxSpeed || id==R.id.wearDistance || id==R.id.wearMapStatus || id==R.id.wearLimitTxt) ? themeMuted : themeText);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup g=(ViewGroup)view;
+            if (view.getId()==R.id.wearSpeedRing || view.getId()==R.id.wearMapCard || view.getId()==R.id.wearNavStrip) {
+                GradientDrawable d=new GradientDrawable(); d.setColor(themeSurface); d.setCornerRadius(dp(16)); d.setStroke(dp(1), withAlpha(themeAccent, 100)); view.setBackground(d);
+            }
+            for(int i=0;i<g.getChildCount();i++) tintThemeTree(g.getChildAt(i));
+        }
+    }
+    /** Kontrastı korumak için vurgu renginin parlaklığına göre siyah/beyaz metin seçer. */
+    private int contrastText(int color) {
+        double r = Color.red(color) / 255.0, g = Color.green(color) / 255.0, b = Color.blue(color) / 255.0;
+        r = r <= 0.04045 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+        g = g <= 0.04045 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+        b = b <= 0.04045 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+        double luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        return luminance > 0.179 ? 0xFF101010 : Color.WHITE;
+    }
+
+    private int withAlpha(int color, int alpha) { return (color & 0x00FFFFFF) | ((alpha & 0xFF) << 24); }
 
     private void updateConnectionUi() {
         if (connection == null) return;

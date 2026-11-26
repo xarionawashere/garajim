@@ -22,6 +22,7 @@ public final class GarajimWearSync {
     public static final String PATH_ACHIEVEMENT = "/garajim/achievement";
     public static final String PATH_ACK = "/garajim/ack";
     public static final String PATH_LINK = "/garajim/link";
+    public static final String PATH_THEME = "/garajim/theme";
     private static final ExecutorService EX = Executors.newSingleThreadExecutor();
     private static volatile String lastJson = "";
     private static volatile String pendingStateJson = "";
@@ -33,6 +34,25 @@ public final class GarajimWearSync {
     private static volatile long stateSeq = 0;
 
     private GarajimWearSync() {}
+
+
+    /** Telefonun aktif renk temasını kalıcı Wear Data Layer öğesiyle saate eşitler. */
+    public static void pushTheme(Context ctx, String pack, String mode) {
+        if (ctx == null) return;
+        final Context app = ctx.getApplicationContext();
+        final String safePack = (pack == null || pack.trim().isEmpty()) ? "dark-red" : pack.trim();
+        final String safeMode = (mode == null || mode.trim().isEmpty()) ? "dark" : mode.trim();
+        EX.execute(() -> {
+            try {
+                PutDataMapRequest req = PutDataMapRequest.create(PATH_THEME);
+                req.getDataMap().putString("pack", safePack);
+                req.getDataMap().putString("mode", safeMode);
+                req.getDataMap().putLong("updatedAt", System.currentTimeMillis());
+                req.setUrgent();
+                Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
+            } catch (Exception e) { Log.w(TAG, "pushTheme: " + e.getMessage()); }
+        });
+    }
 
     public static void pushState(Context ctx, String json) {
         if (ctx == null || json == null) return;

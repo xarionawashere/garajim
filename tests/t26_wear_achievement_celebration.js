@@ -37,4 +37,4 @@ ok(/buzzAchievementRarity/.test(activity) && /case "legendary"/.test(activity), 
 ok(/GarajimWearCelebrationListener/.test(manifest) && /MESSAGE_RECEIVED/.test(manifest) && /pathPrefix="\/garajim\/achievement"/.test(manifest), 'uygulama kapalıyken mesaj dinleyicisi manifestte kayıtlı');
 ok(/CHANNEL_PREFIX = "garajim_achievement_v2_"/.test(listener) && /vibrateAchievementRarity\(rarity\)/.test(listener) && /notify\(notificationId/.test(listener), 'arka plan başarım bildirimi ve doğrudan nadirlik titreşimi var');
 ok(/POST_NOTIFICATIONS/.test(manifest) && /requestAchievementNotificationPermission/.test(activity), 'saat bildirim izni isteniyor');
-ok(packageJson.version === '1.4.2' && /versionCode 16/.test(gradle) && /versionName "1\.4\.2"/.test(gradle) && /versionCode=14, versionName=1\.4\.2/.test(workflow), 'telefon ve Wear APK sürümleri yükseltildi');
+ok(packageJson.version === '1.4.6' && /versionCode 20/.test(gradle) && /versionName "1\.4\.6"/.test(gradle) && /versionCode=17, versionName=1\.4\.6/.test(workflow), 'telefon ve Wear APK sürümleri yükseltildi');

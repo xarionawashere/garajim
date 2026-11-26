@@ -19,4 +19,4 @@ ok(rideUi.includes('rideToolsOpenBtn') && html.includes('id="rideToolsModal"') &
 ok((rideUi.match(/onclick="rideRecenter\(\)"/g)||[]).length === 1 && (rideUi.match(/onclick="nvOpen\(\)"/g)||[]).length === 1, 'haritada kalıcı ana kontrol sayısı azaltıldı');
 ok(html.includes('Arka planda konum izleyicisi navigasyon sürerken yanlışlıkla kapatılmaz') || html.includes('if (nv.active || (ride.running && !ride.paused)) return false;'), 'navigasyon aktifken ortak GPS izleyicisi durdurulmuyor');
 ok(html.includes('Toplu çevrimdışı harita indirme desteklenmiyor') && html.includes('yeni arama ve rota hesaplama için internet gerekir'), 'çevrimdışı durumu kullanıcıya doğru anlatılıyor');
-ok(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version === '1.4.2', 'kaynak sürümü 1.4.2');
+ok(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version === '1.4.6', 'kaynak sürümü 1.4.6');

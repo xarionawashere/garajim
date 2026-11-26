@@ -29,13 +29,13 @@ check(/case "start": return "wear_start"/.test(fs.readFileSync(path.join(root, '
   'Saat açık başlat/devam komutlarını ayrı yollarla gönderir');
 check(/a === 'wear_start'/.test(html) && /a === 'wear_resume'/.test(html) && /a === 'wear_pause'/.test(html),
   'Telefon başlat/devam/duraklat komutlarını açık ve idempotent işler');
-check(/function backupBundle\(\)[\s\S]*?version:\s*3/.test(html)
+check(/function backupBundle\(\)[\s\S]*?version:\s*4/.test(html)
   && /preferences:\s*backupSafePreferences\(\)/.test(html)
   && /rideDraft:\s*backupReadJson\('garaj_ride_draft'\)/.test(html)
   && /pendingRide:\s*pendingRide/.test(html),
-  'Manuel yedek v3 güvenli tercihleri ve kurtarılabilir sürüş durumunu kapsar');
+  'Manuel yedek v4 güvenli tercihleri ve kurtarılabilir sürüş durumunu kapsar');
 const backupCode = html.match(/function backupSafePreferences\(\)[\s\S]*?function exportData\(/);
-check(!!backupCode && !/garaj_ai_settings|garaj_pin/.test(backupCode[0]) && /Yedek v3[\s\S]*?özellikle dışa aktarılmaz/.test(html),
+check(!!backupCode && !/garaj_ai_settings|garaj_pin/.test(backupCode[0]) && /Yedek v4[\s\S]*?özellikle dışa aktarılmaz/.test(html),
   'PIN ve AI API anahtarı yedek paketinin dışında tutulur');
 
 
@@ -45,8 +45,8 @@ check(!!syncNativeBlock && /pushWearVehicles/.test(syncNativeBlock[1]),
 check(/Tasks\.await\(Wearable\.getDataClient\(app\)\.putDataItem\(req\.asPutDataRequest\(\)\)\)/.test(wearSync)
   && /lastJson = json/.test(wearSync),
   'Saat durumunun gönderim önbelleği yalnızca başarılı yazımdan sonra güncellenir');
-check(/versionCode 16/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
-  && /versionCode=14/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8')),
+check(/versionCode 20/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
+  && /versionCode=17/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8')),
   'Telefon ve saat paket sürüm kodları yükseltilir');
 
 process.exit(failures ? 1 : 0);

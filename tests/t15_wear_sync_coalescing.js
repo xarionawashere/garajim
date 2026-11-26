@@ -20,9 +20,9 @@ check(!/sendingStateJson|sendingStateAt/.test(sync),
   'Eski tek bekleyen-değer işaretçileri kaldırıldı');
 check(/PATH_STATE/.test(sync) && /routeJson/.test(sync) && /summaryId/.test(sync) && /parkDistM/.test(sync),
   'Kokpit rota, özet ve park alanları yeni aktarım yolunda korunur');
-check(/versionCode=14, versionName=1\.4\.2/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8'))
-  && /versionCode 16/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
-  && /"version": "1\.4\.2"/.test(fs.readFileSync(path.join(root, 'package.json'), 'utf8')),
-  'Telefon, saat ve kaynak paket sürümleri 1.4.2 olarak hizalıdır');
+check(/versionCode=17, versionName=1\.4\.6/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8'))
+  && /versionCode 20/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
+  && /"version": "1\.4\.6"/.test(fs.readFileSync(path.join(root, 'package.json'), 'utf8')),
+  'Telefon, saat ve kaynak paket sürümleri 1.4.6 olarak hizalıdır');
 check(/function rideTick\(\)/.test(html), 'Web sürüş döngüsü kaynak pakette korunur');
 process.exit(failures ? 1 : 0);

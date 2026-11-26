@@ -9,8 +9,8 @@ android {
         applicationId "com.garajim.app"
         minSdk 26
         targetSdk 34
-        versionCode 16
-        versionName "1.4.2"
+        versionCode 20
+        versionName "1.4.6"
     }
     buildTypes {
         release { minifyEnabled false }
