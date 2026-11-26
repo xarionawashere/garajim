@@ -18,7 +18,7 @@ const day=n=>new Date(Date.now()-n*864e5).toISOString();
  w1.localStorage.setItem('garaj_ride_draft',JSON.stringify({startedAt:new Date().toISOString(),dist:2500,elapsed:300,maxSpeed:65,pts:[[41,29],[41.001,29.001]],vehicleId:'v1'}));
  w1.localStorage.setItem('garaj_ride_watch_pending',JSON.stringify({id:'pending-1',vehicleId:'v1',date:day(0),dist:2500,time:300,avg:30,max:65,pts:[[41,29],[41.001,29.001]]}));
  await w1.eval('exportData()'); const bundle=JSON.parse(Buffer.from(c1.w.data,'base64').toString('utf8'));
- ok(bundle.app==='garajim'&&bundle.version===3&&bundle.vehicles.length===1&&bundle.rides.length===2&&bundle.parking&&bundle.rideSettings.unit==='mph','yedek v3: araçlar + sürüşler + park + ayarlar');
+ ok(bundle.app==='garajim'&&bundle.version===4&&bundle.vehicles.length===1&&bundle.rides.length===2&&bundle.parking&&bundle.rideSettings.unit==='mph','yedek v4: araçlar + sürüşler + park + ayarlar');
  ok(bundle.preferences.theme==='light'&&bundle.preferences.pack==='neon-mint'&&bundle.preferences.remindDays===14,'güvenli tercihler yedekte (PIN/API anahtarı değil)');
  ok(bundle.rideDraft&&bundle.rideDraft.startedAt&&bundle.rideDraft.pts.length===2,'kurtarılabilir yarım sürüş taslağı yedekte');
  ok(bundle.pendingRide&&bundle.pendingRide.id==='pending-1','bekleyen sürüş özeti yedekte');
