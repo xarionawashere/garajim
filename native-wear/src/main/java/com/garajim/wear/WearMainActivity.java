@@ -29,6 +29,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.garajim.app.LauncherIconManager;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
@@ -85,7 +86,6 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private int currentWearPage = 0;
     private float swipeDownX, swipeDownY;
     private int themeBg = Color.rgb(10,10,10), themeSurface = Color.rgb(20,20,20), themeAccent = Color.rgb(239,68,68), themeText = Color.rgb(241,245,249), themeMuted = Color.rgb(148,163,184);
-    private String selectedBrandLogo = "garage";
     private MiniRouteView miniMap;
     private Button btnToggle, btnVehicle, btnPendingSummary;
     private View speedRing;
@@ -1390,11 +1390,11 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             java.util.ArrayList<View> old = new java.util.ArrayList<>();
             for (int i=0; i<column.getChildCount(); i++) old.add(column.getChildAt(i));
             column.removeAllViews();
-            String[] names = {"KOKPİT", "MÜZİK", "NAVİGASYON", "GARAJ"};
+            String[] names = {"◉  KOKPİT", "♫  MÜZİK", "➤  NAVİGASYON", "▦  GARAJ"};
             for (int p=0; p<4; p++) {
                 LinearLayout page = new LinearLayout(this); page.setOrientation(LinearLayout.VERTICAL); page.setGravity(Gravity.CENTER_HORIZONTAL);
                 page.setPadding(dp(8), dp(5), dp(8), dp(5)); page.setTag("wear-page-"+p);
-                TextView heading = new TextView(this); heading.setText(wearLogoMark() + "  " + names[p]); heading.setGravity(Gravity.CENTER); heading.setTextSize(10); heading.setLetterSpacing(.12f); heading.setTextColor(themeAccent);
+                TextView heading = new TextView(this); heading.setText(names[p]); heading.setGravity(Gravity.CENTER); heading.setTextSize(10); heading.setLetterSpacing(.12f); heading.setTextColor(themeAccent);
                 LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(-1, dp(24)); hp.bottomMargin=dp(3); page.addView(heading,hp);
                 wearPages.add(page); column.addView(page, new LinearLayout.LayoutParams(-1, -2));
             }
@@ -1426,18 +1426,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         }
     }
 
-    private String wearLogoMark() {
-        switch (selectedBrandLogo) {
-            case "monogram": return "Ⓖ";
-            case "route": return "➤";
-            case "sport": return "⚡";
-            default: return "⌂";
-        }
-    }
-
     private void applyPhoneTheme(String pack, String mode, String logoId) {
         String id = pack == null ? "dark-red" : pack;
-        selectedBrandLogo = "monogram".equals(logoId) || "route".equals(logoId) || "sport".equals(logoId) ? logoId : "garage";
+        LauncherIconManager.apply(this, logoId);
         int bg=Color.rgb(10,10,10), surface=Color.rgb(20,20,20), accent=Color.rgb(239,68,68), fg=Color.rgb(241,245,249), muted=Color.rgb(148,163,184);
         switch(id) {
             case "white-red": bg=0xFFF5F5F7; surface=Color.WHITE; accent=0xFFE11D48; fg=0xFF0F172A; muted=0xFF64748B; break;
@@ -1468,15 +1459,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         themeBg=bg; themeSurface=surface; themeAccent=accent; themeText=fg; themeMuted=muted;
         runOnUiThread(() -> {
             View root=findViewById(android.R.id.content); if(root!=null) root.setBackgroundColor(themeBg);
-            String[] pageNames = {"KOKPİT", "MÜZİK", "NAVİGASYON", "GARAJ"};
-            for (int i=0; i<wearPages.size(); i++) {
-                LinearLayout page=wearPages.get(i); page.setBackgroundColor(themeBg); tintThemeTree(page);
-                if (page.getChildCount()>0 && page.getChildAt(0) instanceof TextView) {
-                    TextView heading=(TextView)page.getChildAt(0);
-                    heading.setText(wearLogoMark() + "  " + pageNames[Math.min(i, pageNames.length-1)]);
-                    heading.setTextColor(themeAccent);
-                }
-            }
+            for (LinearLayout page: wearPages) { page.setBackgroundColor(themeBg); tintThemeTree(page); if (page.getChildCount()>0 && page.getChildAt(0) instanceof TextView) ((TextView)page.getChildAt(0)).setTextColor(themeAccent); }
             if (wearPageDots!=null) wearPageDots.setTextColor(themeMuted);
         });
     }
