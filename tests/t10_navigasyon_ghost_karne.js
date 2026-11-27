@@ -29,7 +29,7 @@ ok(errors.length===0,'yüklendi '+errors.join('|'));
 // ---- yönerge metinleri
 const T=(t,m,x)=>ev(`nvText(${JSON.stringify({type:t,modifier:m,exit:x})},'')`);
 ok(T('turn','right')==='Sağa dön'&&T('turn','left')==='Sola dön'&&T('turn','slight left')==='Hafif sola dön'&&T('turn','uturn')==='U dönüşü yap','dönüş metinleri Türkçe');
-ok(T('roundabout',null,2)==='Kavşakta 2. çıkıştan çık'&&T('arrive','left').startsWith('Varış')&&T('fork','right')==='Çatalda sağa tut'&&T('end of road','left')==='Yolun sonunda sola dön','kavşak, varış, çatal, yol sonu');
+ok(T('roundabout',null,2)==='Göbekten 2. çıkıştan devam et'&&T('arrive','left').startsWith('Varış')&&T('fork','right')==='Çatalda sağa tut'&&T('end of road','left')==='Yolun sonunda sola dön','kavşak, varış, çatal, yol sonu');
 // ---- arama + rota
 w.showTab('ride'); await sleep(100); w.nvOpen();
 ok(d.getElementById('nvQuick').textContent.includes('Park yerim'),'hızlı hedef: Park yerim');
