@@ -98,13 +98,49 @@ function nvText(m, name) {
     if (!steps.length) steps.push({vtx:pts.length-1,text:'Varış noktasına ulaştın',rot:0,type:'arrive'});
     return {pts,cum,steps,total:cum[cum.length-1]||Number(o.total)||0,dur:Math.max(0,Number(o.dur)||0),dist:Math.max(0,Number(o.dist)||cum[cum.length-1]||0)};
   }
+  function nvPushWearNavigation(active, route, at) {
+    try {
+      const N = window.GarajimNative;
+      if (!N || typeof N.syncWearNavigation !== 'function') return;
+      const now = Number(at) || Date.now();
+      if (!active || !route || !nv.dest) {
+        N.syncWearNavigation(JSON.stringify({ active: false, syncedAt: now }));
+        return;
+      }
+      const along = Math.max(0, Number(nv.along) || 0);
+      let stepIndex = route.steps.findIndex(st => route.cum[Math.min(st.vtx, route.cum.length - 1)] > along + 8);
+      if (stepIndex < 0) stepIndex = route.steps.length - 1;
+      const step = route.steps[stepIndex] || { text: 'Rotayı takip et', vtx: route.pts.length - 1, rot: 0 };
+      const stepDistance = Math.max(0, (route.cum[Math.min(step.vtx, route.cum.length - 1)] || 0) - along);
+      const remaining = Math.max(0, route.total - along);
+      const start = Math.min(route.pts.length - 1, Math.max(0, Number(nv.idx) || 0));
+      const path = route.pts.slice(start);
+      const current = nvOrigin();
+      if (current && Number.isFinite(current.lat) && Number.isFinite(current.lng)) {
+        const first = path[0];
+        if (!first || rideHav({ lat: current.lat, lng: current.lng }, { lat: first[0], lng: first[1] }) > 8) path.unshift([current.lat, current.lng]);
+      }
+      const cap = 32, compact = [];
+      for (let i = 0; i < Math.min(cap, path.length); i++) {
+        const index = path.length <= cap ? i : Math.round(i * (path.length - 1) / (cap - 1));
+        const p = path[index];
+        if (p && compact.length < cap) compact.push([Number(p[0]), Number(p[1])]);
+      }
+      N.syncWearNavigation(JSON.stringify({
+        active: true, syncedAt: now, destination: String(nv.dest.name || 'Hedef').slice(0, 80),
+        routeJson: JSON.stringify(compact), instruction: String(step.text || 'Rotayı takip et').slice(0, 100),
+        stepDistanceM: stepDistance, remainingM: remaining, rotation: Number(step.rot) || 0,
+        etaSec: route.total > 0 ? Math.max(0, Math.round(route.dur * remaining / route.total)) : 0
+      }));
+    } catch (e) {}
+  }
   function nvPersistSession(force) {
     if (!nv.active || !nv.route || !nv.dest) return false;
     const now = Date.now(); if (!force && now - (nv.lastPersistAt || 0) < 5000) return true;
     try {
       const r = nv.route;
       const row = { version: 1, savedAt: now, dest: { name: String(nv.dest.name || 'Hedef').slice(0,120), lat: Number(nv.dest.lat), lng: Number(nv.dest.lng) }, route: { pts: r.pts.map(p => [Number(p[0].toFixed(5)), Number(p[1].toFixed(5))]), steps: r.steps.map(st => ({vtx:st.vtx,text:st.text,rot:st.rot,type:st.type,distance:st.distance||0,duration:st.duration||0})), total:r.total,dur:r.dur,dist:r.dist }, idx: nv.idx, along: nv.along, speak: nv.speak };
-      localStorage.setItem(NV_SESSION_KEY, JSON.stringify(row)); nv.lastPersistAt = now; return true;
+      localStorage.setItem(NV_SESSION_KEY, JSON.stringify(row)); nv.lastPersistAt = now; nvPushWearNavigation(true, r, now); return true;
     } catch (e) { return false; }
   }
   function nvLoadSession() {
@@ -245,7 +281,7 @@ function nvText(m, name) {
     nvRenderResume();
   }
   function nvStop() {
-    nv.active=false; nv.route=null; nvClearLayers();
+    nv.active=false; nv.route=null; nvPushWearNavigation(false, null, Date.now()); nvClearLayers();
     document.getElementById('navBanner').classList.add('hidden'); rideGhostChipPos();
     const mainBtn=document.getElementById('rideNavPrimaryBtn'); if(mainBtn){mainBtn.classList.remove('text-accent');mainBtn.title='Navigasyon';}
     try { localStorage.removeItem(NV_SESSION_KEY); } catch (e) {}
