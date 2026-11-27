@@ -4,7 +4,7 @@ const { readIndexWithAppSource } = require('./helpers/read-app-source');
 const html = readIndexWithAppSource(root);
 let watchCb=null, errors=[];
 function mkL(){
-  const chain=()=>new Proxy(function(){},{get:(t,k)=>{ if(k==='getContainer') return ()=>({classList:{toggle(){}}}); if(k==='getZoom') return ()=>12; if(k==='getBounds') return ()=>({}); if(k==='getLatLng') return ()=>({lat:41,lng:29}); if(k==='getElement') return ()=>({querySelector:()=>({style:{}})}); if(k==='then') return undefined; return chain();},apply:()=>chain()});
+  const chain=()=>new Proxy(function(){},{get:(t,k)=>{ if(k==='getContainer') return ()=>({classList:{toggle(){}}}); if(k==='getZoom') return ()=>12; if(k==='getBounds') return ()=>({}); if(k==='getLatLng') return ()=>({lat:41,lng:29}); if(k==='getElement') return ()=>({querySelector:()=>({style:{}})}); if(k==='then') return undefined; if(k==='__base') return undefined; return chain();},apply:()=>chain()});
   return {map:()=>chain(),tileLayer:()=>chain(),polyline:()=>({addTo(){return this},setLatLngs(){},getBounds(){return{}}}),marker:()=>({addTo(){return this},setLatLng(){},getLatLng:()=>({lat:41,lng:29}),getElement:()=>({querySelector:()=>({style:{}})})}),divIcon:()=>({}),latLng:(a,b)=>({lat:a,lng:b}),Icon:{Default:{}}};
 }
 const dom=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://localhost/',beforeParse(w){
@@ -80,7 +80,7 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
  // native senkron
  let sent={}; w.GarajimNative={syncWidget:j=>sent.w=j,setReminders:j=>sent.r=j};
  w.eval("vehicles=[{id:'a',plate:'34 ABC 123',brand:'Honda',model:'CB',km:12500,muayene:'2020-01-01'}]"); w.syncNative();
- ok(sent.w&&JSON.parse(sent.w)[0].plate==='34 ABC 123','widget verisi gönderildi'); ok(sent.r!==undefined&&Array.isArray(JSON.parse(sent.r)),'hatırlatma satırları gönderildi: '+sent.r);
+ ok(sent.w&&JSON.parse(sent.w).vehicles[0].plate==='34 ABC 123','widget verisi gönderildi'); ok(sent.r!==undefined&&Array.isArray(JSON.parse(sent.r)),'hatırlatma satırları gönderildi: '+sent.r);
  // AI: foto kaydedilmesin
  w.eval("aiChat=[{role:'user',text:'merhaba',photo:'data:image/jpeg;base64,'+'A'.repeat(5000)},{role:'assistant',text:'selam'}]; aiPersistChat()");
  ok(!w.localStorage.getItem('garaj_ai_chat').includes('AAAA'),'AI sohbetine foto base64 yazılmıyor');
