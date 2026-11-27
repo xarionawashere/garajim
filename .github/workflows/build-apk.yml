@@ -60,6 +60,9 @@ jobs:
           set -e
           mkdir -p android/app/src/main/java/com/garajim/app android/app/src/main/res/layout android/app/src/main/res/xml android/app/src/main/res/drawable
           cp native-android/src/main/java/com/garajim/app/*.java android/app/src/main/java/com/garajim/app/
+          mkdir -p android/wear/src/main/java/com/garajim/app
+          cp native-android/src/main/java/com/garajim/app/LauncherIconManager.java android/wear/src/main/java/com/garajim/app/
+          cp native-wear/src/main/res/drawable/ic_launcher_logo_*.xml android/app/src/main/res/drawable/
           cp native-android/src/main/res/drawable/*.xml android/app/src/main/res/drawable/
           cp native-android/src/main/res/layout/garajim_widget.xml android/app/src/main/res/layout/
           cp native-android/src/main/res/xml/garajim_widget_info.xml android/app/src/main/res/xml/
@@ -128,6 +131,32 @@ jobs:
           if q is None: q = ET.SubElement(root, 'queries')
           if not [x for x in q.findall('package') if x.get(A+'name') == 'com.spotify.music']:
             ET.SubElement(q, 'package', {A+'name': 'com.spotify.music'})
+          # Replace the phone activity's launcher filter with selectable icon aliases.
+          main_activity = next((a for a in app.findall('activity') if (a.get(A+'name') or '').endswith('MainActivity')), None)
+          if main_activity is None:
+            raise SystemExit('Capacitor MainActivity manifest entry was not found')
+          for filt in list(main_activity.findall('intent-filter')):
+            actions = {x.get(A+'name') for x in filt.findall('action')}
+            cats = {x.get(A+'name') for x in filt.findall('category')}
+            if 'android.intent.action.MAIN' in actions and 'android.intent.category.LAUNCHER' in cats:
+              main_activity.remove(filt)
+          for logo_id in ['garage', 'monogram', 'route', 'sport', 'heritage', 'turbo', 'electric', 'rally']:
+            suffix = logo_id[0].upper() + logo_id[1:]
+            alias_name = 'com.garajim.app.LauncherLogo' + suffix
+            if any(x.get(A+'name') == alias_name for x in app.findall('activity-alias')):
+              continue
+            alias = ET.SubElement(app, 'activity-alias', {
+              A+'name': alias_name,
+              A+'targetActivity': 'com.garajim.app.MainActivity',
+              A+'enabled': 'true' if logo_id == 'garage' else 'false',
+              A+'exported': 'true',
+              A+'icon': '@drawable/ic_launcher_logo_' + logo_id,
+              A+'roundIcon': '@drawable/ic_launcher_logo_' + logo_id,
+              A+'label': '@string/app_name'
+            })
+            f = ET.SubElement(alias, 'intent-filter')
+            ET.SubElement(f, 'action', {A+'name': 'android.intent.action.MAIN'})
+            ET.SubElement(f, 'category', {A+'name': 'android.intent.category.LAUNCHER'})
           tree.write(p, encoding='utf-8', xml_declaration=True)
           PY
 
