@@ -124,6 +124,11 @@
   .pin-key:active { transform: scale(.92); background: rgba(var(--accent-rgb), 0.3); }
   .pin-dot { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid var(--accent); transition: background .15s; }
   .pin-dot.on { background: var(--accent); }
+  .brand-logo-option { min-height:78px; padding:10px; border-radius:14px; border:2px solid var(--border); background:var(--card); color:var(--text); text-align:left; display:flex; align-items:center; gap:9px; transition:border-color .15s, transform .12s; }
+  .brand-logo-option:active { transform:scale(.98); }
+  .brand-logo-option.active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .brand-logo-preview { width:38px; height:38px; flex:0 0 38px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(var(--accent-rgb),.12); color:var(--accent); }
+  .brand-logo-preview svg { width:25px; height:25px; }
   .theme-pack {
     width: 100%; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--border);
     background: var(--card); text-align: left; cursor: pointer; transition: border-color .15s, transform .12s;
