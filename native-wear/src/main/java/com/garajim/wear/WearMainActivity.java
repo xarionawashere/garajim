@@ -1201,7 +1201,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             parkDir = incomingParkDir;
             parkSaved = incomingParkSaved;
             if (parkInfo != null && parkInfo.getVisibility() == View.VISIBLE) renderParkInfoText();
-            if (miniMap != null) miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused, navActive);
+            if (miniMap != null) {
+                miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused);
+                miniMap.setNavigationActive(navActive);
+            }
             if (mapStatus != null) {
                 String mapText;
                 int mapColor;
