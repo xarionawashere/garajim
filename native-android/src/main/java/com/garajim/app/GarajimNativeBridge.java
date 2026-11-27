@@ -214,6 +214,12 @@ public class GarajimNativeBridge {
         try { GarajimRideService.syncWebSnapshot(context, json); } catch (Exception ignored) { }
     }
 
+    /** Active phone turn-by-turn navigation sent to the watch route card. */
+    @JavascriptInterface
+    public void syncWearNavigation(String json) {
+        try { GarajimRideService.syncWearNavigation(context, json); } catch (Exception ignored) { }
+    }
+
     /** Native sürüş aktifken JS'nin eski durumla saatin güncel durumunu ezmesini engeller. */
     @JavascriptInterface
     public boolean isNativeRideManaged() {
