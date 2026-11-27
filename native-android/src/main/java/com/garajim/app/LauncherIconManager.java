@@ -10,7 +10,7 @@ public final class LauncherIconManager {
     private static final String PREFS = "garajim_branding";
     private static final String KEY_LOGO = "logoId";
     private static final String[] IDS = {
-        "garage", "monogram", "route", "sport", "heritage", "turbo", "electric", "rally"
+        "garage", "monogram", "route", "sport", "heritage", "turbo", "electric", "rally", "imperial", "platinum", "copper", "midnight", "alpine", "grandtour", "signature", "atelier"
     };
 
     private LauncherIconManager() {}

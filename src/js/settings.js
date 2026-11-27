@@ -3,31 +3,31 @@
 function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
   function packPref() { return localStorage.getItem('garaj_pack') || 'dark-red'; }
   const BRAND_LOGOS = [
-    { id: 'garage', name: 'Garaj', desc: 'Garaj çizgisi', mark: 'G', tier: 'free' },
-    { id: 'monogram', name: 'Monogram', desc: 'Keskin G harfi', mark: 'G', tier: 'free' },
-    { id: 'route', name: 'Rota', desc: 'Yol ve keşif', mark: 'R', tier: 'free' },
-    { id: 'sport', name: 'Sport', desc: 'Turuncu şimşek', mark: 'S', tier: 'free' },
-    { id: 'heritage', name: 'Heritage', desc: 'Klasik otomobil', mark: 'H', tier: 'free' },
-    { id: 'turbo', name: 'Turbo', desc: 'Türbin rozeti', mark: 'T', tier: 'free' },
-    { id: 'electric', name: 'Electric', desc: 'Elektrik enerjisi', mark: 'E', tier: 'free' },
-    { id: 'rally', name: 'Rally', desc: 'Ralli damalı bayrak', mark: 'R', tier: 'free' }
+    { id: 'garage', name: 'Orijinal Garajım', desc: 'Ana logo; aynen korundu', mark: 'G', tier: 'free' },
+    { id: 'monogram', name: 'Obsidyen', desc: 'Altın mühür ve monogram', mark: 'G', tier: 'free' },
+    { id: 'route', name: 'Monaco', desc: 'Lacivert rota mührü', mark: '↗', tier: 'free' },
+    { id: 'sport', name: 'Rosso GT', desc: 'Kırmızı GT otomobili', mark: 'GT', tier: 'free' },
+    { id: 'heritage', name: 'Heritage', desc: 'Klasik koleksiyon rozeti', mark: 'H', tier: 'free' },
+    { id: 'turbo', name: 'Apex', desc: 'Titanyum türbin mührü', mark: 'A', tier: 'free' },
+    { id: 'electric', name: 'E-Motion', desc: 'Zümrüt elektrik amblemi', mark: 'E', tier: 'free' },
+    { id: 'rally', name: 'Carbon GT', desc: 'Karbon yarış arması', mark: 'GT', tier: 'free' },
+    { id: 'imperial', name: 'Sovereign', desc: 'Kraliyet altın arması', mark: 'S', tier: 'free' },
+    { id: 'platinum', name: 'Platinum', desc: 'Platin garaj çizgisi', mark: 'P', tier: 'free' },
+    { id: 'copper', name: 'Copperline', desc: 'Bakır işçilik mührü', mark: 'C', tier: 'free' },
+    { id: 'midnight', name: 'Midnight', desc: 'Gece mavisi otomobil', mark: 'M', tier: 'free' },
+    { id: 'alpine', name: 'Alpine', desc: 'Alp zirvesi ve rota', mark: 'A', tier: 'free' },
+    { id: 'grandtour', name: 'Grand Tour', desc: 'Klasik touring şeridi', mark: 'GT', tier: 'free' },
+    { id: 'signature', name: 'Signature', desc: 'Zümrüt imza mührü', mark: 'G', tier: 'free' },
+    { id: 'atelier', name: 'Atelier', desc: 'Özel üretim kalkanı', mark: 'A', tier: 'free' }
   ];
   function brandLogoPref() {
     const id = localStorage.getItem('garaj_logo_v1') || 'garage';
     return BRAND_LOGOS.some(x => x.id === id) ? id : 'garage';
   }
   function brandLogoSvg(id) {
-    const icons = {
-      garage: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14 16 4l13 10"/><path d="M7 13v14h18V13"/><path d="M12 27v-9h8v9"/></svg>',
-      monogram: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M25 9a12 12 0 1 0 2 11h-9"/><path d="M19 20h8v-7"/></svg>',
-      route: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="25" r="2"/><circle cx="25" cy="7" r="2"/><path d="M7 23c0-6 10-3 10-10 0-3 3-4 6-4"/></svg>',
-      sport: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3 7 18h8l-1 11 11-16h-8l1-10Z"/></svg>',
-      heritage: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="13"/><path d="m6 19 2-5 4-2h8l4 3 3 1v4H6Z"/><circle cx="11" cy="20" r="1.5"/><circle cx="22" cy="20" r="1.5"/></svg>',
-      turbo: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="3"/><path d="M16 13V5M19 16h8M16 19v8M13 16H5M18 14l5-5M18 18l5 5M14 18l-5 5M14 14 9 9"/></svg>',
-      electric: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3H7v26h18V3h-6"/><path d="M13 3h6v5h-6z"/><path d="m18 11-7 10h5l-2 6 8-11h-5l1-5Z"/></svg>',
-      rally: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 27V5"/><path d="M8 6h17v12H8"/><path d="M8 6h6v6H8zm12 0h5v6h-5zM14 12h6v6h-6z"/><path d="M5 27h4"/></svg>'
-    };
-    return icons[id] || icons.garage;
+    const artwork = {"garage":"<path d=\"M3 14 16 4l13 10\" stroke=\"#ef4444\" stroke-width=\"2.6\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M7 14v13h18V14\" stroke=\"#f1f5f9\" stroke-width=\"1.8\" fill=\"#151515\"/><path d=\"M11 25v-8h10v8\" fill=\"#ef4444\"/><path d=\"M12 19h8l2 3H10z\" fill=\"#f1f5f9\"/>","monogram":"<circle cx=\"16\" cy=\"16\" r=\"13\" fill=\"#101114\" stroke=\"#D7B975\"/><path d=\"M22 9a8 8 0 1 0 2 10h-7v-3h11v3a12 12 0 1 1-2-12z\" fill=\"#D7B975\"/>","route":"<circle cx=\"16\" cy=\"16\" r=\"13\" fill=\"#071B2B\" stroke=\"#D9B775\"/><path d=\"M8 24c0-7 9-3 9-10 0-3 3-5 7-6\" stroke=\"#75C5D6\" fill=\"none\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><path d=\"m22 5 5 2-4 4\" fill=\"#D9B775\"/>","sport":"<path d=\"M5 20 8 14l5-3h7l6 4 2 5v4H5z\" fill=\"#D93B42\"/><path d=\"M12 13h7l4 4H9z\" fill=\"#E9D9C5\"/><circle cx=\"10\" cy=\"23\" r=\"2\" fill=\"#E9D9C5\"/><circle cx=\"24\" cy=\"23\" r=\"2\" fill=\"#E9D9C5\"/>","heritage":"<circle cx=\"16\" cy=\"16\" r=\"13\" fill=\"#E7D9BD\" stroke=\"#6C472B\" stroke-width=\"2\"/><path d=\"m5 18 2-4 4-2h8l4 3 4 1v4H5z\" fill=\"#6C472B\"/><circle cx=\"10\" cy=\"21\" r=\"1.7\" fill=\"#6C472B\"/><circle cx=\"22\" cy=\"21\" r=\"1.7\" fill=\"#6C472B\"/>","turbo":"<circle cx=\"16\" cy=\"16\" r=\"13\" fill=\"#17151B\" stroke=\"#B5BBC4\"/><path d=\"M15 14V6c0-2 3-2 3 0v8m1 1 6-5c2-1 4 1 2 3l-7 5m0 2 7 1c2 0 2 3 0 3l-8-1m-3-1 5 6c1 2-1 4-3 2l-5-7m-2-4-6 4c-2 1-4-1-2-3l7-5\" fill=\"#B5BBC4\"/><circle cx=\"16\" cy=\"16\" r=\"3\" fill=\"#E14D45\"/>","electric":"<rect x=\"8\" y=\"5\" width=\"16\" height=\"23\" rx=\"3\" fill=\"#071B1A\" stroke=\"#54D8B5\" stroke-width=\"1.8\"/><path d=\"M13 3h6v3h-6z\" fill=\"#54D8B5\"/><path d=\"m18 9-7 10h5l-2 7 8-12h-5z\" fill=\"#E3FFF8\"/>","rally":"<path d=\"M8 4v24\" stroke=\"#F1EBDD\" stroke-width=\"2\"/><path d=\"M10 5h15v11H10z\" fill=\"#D9473D\"/><path d=\"M10 5h7v5h-7zm7 5h8v6h-8z\" fill=\"#F1EBDD\"/><path d=\"m5 22 3-4h10l5 3 4 1 1 3H5z\" fill=\"#F1EBDD\"/>","imperial":"<path d=\"m5 10 6 4 5-8 5 8 6-4-2 9H7z\" fill=\"#D9B56F\"/><path d=\"M7 19h18v5l-9 5-9-5z\" fill=\"#101015\" stroke=\"#D9B56F\"/><path d=\"m10 23 2-3h7l3 3\" stroke=\"#F7E9C7\" fill=\"none\"/>","platinum":"<path d=\"m4 18 12-12 12 12M8 20v8h16v-8\" stroke=\"#D5D9DF\" stroke-width=\"2\" fill=\"none\"/><path d=\"M10 22h12v4H10z\" fill=\"#D5D9DF\"/>","copper":"<path d=\"m4 16 12-11 12 11\" stroke=\"#C47A50\" stroke-width=\"2.5\" fill=\"none\"/><path d=\"M8 16v10h16V16\" stroke=\"#F2D1B4\" fill=\"none\"/><path d=\"m9 22 3-4h8l3 4v3H9z\" fill=\"#C47A50\"/>","midnight":"<path d=\"M4 22c4-8 7-11 12-11s9 3 12 11v3H4z\" fill=\"#D5F7FF\"/><path d=\"m11 14h10l4 5H7z\" fill=\"#07131F\"/><circle cx=\"9\" cy=\"24\" r=\"2\" fill=\"#4BA7C7\"/><circle cx=\"23\" cy=\"24\" r=\"2\" fill=\"#4BA7C7\"/>","alpine":"<path d=\"m3 19 8-11 4 6 4-9 10 14\" stroke=\"#C9D6DE\" stroke-width=\"2\" fill=\"none\"/><path d=\"m17 11 2-6 4 7-3-1-2 3z\" fill=\"#F0F7F9\"/><path d=\"M5 24q6-5 11 0t11 0v4H5z\" fill=\"#C9D6DE\"/>","grandtour":"<path d=\"M5 4h3v24H5zm5 0h2v24h-2z\" fill=\"#D9C79B\"/><path d=\"m5 19 4-5h10l6 4 3 1v5H5z\" fill=\"#F8F0DE\"/><circle cx=\"10\" cy=\"24\" r=\"2\" fill=\"#D9C79B\"/><circle cx=\"23\" cy=\"24\" r=\"2\" fill=\"#D9C79B\"/>","signature":"<circle cx=\"16\" cy=\"16\" r=\"13\" fill=\"#F0E9DA\" stroke=\"#B69152\" stroke-width=\"1.6\"/><path d=\"M22 9a8 8 0 1 0 2 10h-7v-3h11v3a12 12 0 1 1-2-12z\" fill=\"#183D35\"/>","atelier":"<path d=\"m16 2 13 7v14l-13 7L3 23V9z\" fill=\"#17111F\" stroke=\"#C8A5D6\" stroke-width=\"1.5\"/><path d=\"m16 7 8 7h-3v8H11v-8H8z\" fill=\"#F4EAF7\"/><path d=\"m12 17 2-3h4l2 3v2h-8z\" fill=\"#17111F\"/>"};
+    const art = artwork[id] || artwork.garage;
+    return '<svg viewBox="0 0 32 32" aria-hidden="true">' + art + '</svg>';
   }
   function applyBrandLogo() {
     const id = brandLogoPref();

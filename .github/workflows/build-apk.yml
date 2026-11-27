@@ -142,7 +142,7 @@ jobs:
             cats = {x.get(A+'name') for x in filt.findall('category')}
             if 'android.intent.action.MAIN' in actions and 'android.intent.category.LAUNCHER' in cats:
               main_activity.remove(filt)
-          for logo_id in ['garage', 'monogram', 'route', 'sport', 'heritage', 'turbo', 'electric', 'rally']:
+          for logo_id in ["garage","monogram","route","sport","heritage","turbo","electric","rally","imperial","platinum","copper","midnight","alpine","grandtour","signature","atelier"]:
             suffix = logo_id[0].upper() + logo_id[1:]
             alias_name = 'com.garajim.app.LauncherLogo' + suffix
             if any(x.get(A+'name') == alias_name for x in app.findall('activity-alias')):
@@ -152,8 +152,8 @@ jobs:
               A+'targetActivity': 'com.garajim.app.MainActivity',
               A+'enabled': 'true' if logo_id == 'garage' else 'false',
               A+'exported': 'true',
-              A+'icon': '@drawable/ic_launcher_logo_' + logo_id,
-              A+'roundIcon': '@drawable/ic_launcher_logo_' + logo_id,
+              A+'icon': ('@mipmap/ic_launcher' if logo_id == 'garage' else '@drawable/ic_launcher_logo_' + logo_id),
+              A+'roundIcon': ('@mipmap/ic_launcher_round' if logo_id == 'garage' else '@drawable/ic_launcher_logo_' + logo_id),
               A+'label': '@string/app_name'
             })
             f = ET.SubElement(alias, 'intent-filter')
