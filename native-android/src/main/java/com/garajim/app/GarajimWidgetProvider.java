@@ -230,12 +230,12 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
             String itemName = item.optString("name", "");
             String itemKm = item.optString("km", item.optString("mileage", ""));
             try { if (!itemKm.isEmpty()) itemKm = fmt((long) Double.parseDouble(itemKm)); } catch (Exception ignored) { }
-            if (vehicleLines.length() > 0) vehicleLines.append("\\n");
+            if (vehicleLines.length() > 0) vehicleLines.append("\n");
             vehicleLines.append("• ").append(itemPlate);
             if (!itemName.isEmpty()) vehicleLines.append(" · ").append(itemName);
             if (!itemKm.isEmpty()) vehicleLines.append("  —  ").append(itemKm).append(" km");
         }
-        if (all.length() > 3) vehicleLines.append("\\n+ ").append(all.length()-3).append(" araç daha");
+        if (all.length() > 3) vehicleLines.append("\n+ ").append(all.length()-3).append(" araç daha");
         views.setTextViewText(R.id.widget_card_list, vehicleLines.length() == 0 ? "İlk aracını ekle" : vehicleLines.toString());
         views.setTextViewText(R.id.widget_card_km, vehicleKm(v));
         views.setTextViewText(R.id.widget_card_total, all.length() + " ARAÇ");
