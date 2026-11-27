@@ -33,7 +33,7 @@ const fs=ev("fuelStats(vehicles[0])");
 ok(fs&&Math.abs(fs.last-3.5)<0.01&&Math.abs(fs.prevAvg-4.0)<0.01&&Math.abs(fs.change+12.5)<0.1&&Math.abs(fs.avg-26/700*100)<0.01,'L/100km: son 3.5, önceki 4.0, değişim %-12.5 (kısmi dolum doğru toplandı) '+JSON.stringify(fs&&{l:+fs.last.toFixed(2),a:+fs.avg.toFixed(2),c:+fs.change.toFixed(1)}));
 ok(ev("fuelStats({fuelLogs:[{km:100,liters:5}]})")===null,'tek kayıtla tüketim hesaplanmaz');
 ok(ev("fuelStats({fuelLogs:[{km:100,liters:5},{km:110,liters:50}]})")===null,'saçma değer (10 km/50 L) elenir');
-w.syncNative(); ok(JSON.parse(w.__w).vehicles[0].cons==='3.7','widget\'a tüketim gönderildi: '+JSON.parse(w.__w)[0].cons);
+w.syncNative(); ok(JSON.parse(w.__w).vehicles[0].cons==='3.7','widget\'a tüketim gönderildi: '+JSON.parse(w.__w).vehicles[0].cons);
 // detay kartı
 w.openDetail('v1'); const html=w.document.getElementById('detailView').innerHTML;
 ok(html.includes('L/100 km')&&html.includes('-13%')||html.includes('-12%'),'detay ekranında tüketim kartı');
