@@ -24,11 +24,112 @@
             android:taskAffinity=""
             android:label="@string/app_name"
             android:theme="@style/GarajimWear">
+
+        </activity>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoGarage"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_garage"
+            android:roundIcon="@drawable/ic_launcher_logo_garage"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoMonogram"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_monogram"
+            android:roundIcon="@drawable/ic_launcher_logo_monogram"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoRoute"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_route"
+            android:roundIcon="@drawable/ic_launcher_logo_route"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoSport"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_sport"
+            android:roundIcon="@drawable/ic_launcher_logo_sport"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoHeritage"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_heritage"
+            android:roundIcon="@drawable/ic_launcher_logo_heritage"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoTurbo"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_turbo"
+            android:roundIcon="@drawable/ic_launcher_logo_turbo"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoElectric"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_electric"
+            android:roundIcon="@drawable/ic_launcher_logo_electric"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.garajim.app.LauncherLogoRally"
+            android:targetActivity="com.garajim.wear.WearMainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_logo_rally"
+            android:roundIcon="@drawable/ic_launcher_logo_rally"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <service
             android:name=".GarajimWearCelebrationListener"
             android:enabled="true"
