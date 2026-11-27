@@ -1,3 +1,9 @@
+## 1.4.7 — Kayıt güvenilirliği ve GitHub sürümü
+- Kilometre, yakıt ve servis kayıtlarında boş, negatif veya tutarsız değerler engellenir; kilometre düşüşünde kullanıcıdan onay alınır.
+- Yakıt kaydında hızlı çift dokunuşla yinelenen kayıt oluşması önlenir; kayıt başarısız olursa geçici değişiklikler geri alınır.
+- Bu davranışlar için regresyon kontrolleri genişletildi.
+- Telefon ve Wear OS için imzalı APK'lar ile SHA-256 özetini içeren GitHub Release dağıtımı hazırlandı.
+
 ## 1.4.6 — Garajım Studio
 - Asistan sekmesi, araç tasarımı ve modifikasyon projesi çalışma alanı olarak yeniden tasarlandı.
 - Kayıtlı garaj aracından proje oluşturma veya plaka zorunluluğu olmadan bağımsız araç profili açma eklendi; yaygın marka/model hızlı seçim listesi ve serbest metin girişi birlikte destekleniyor.

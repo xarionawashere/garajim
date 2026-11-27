@@ -10,7 +10,7 @@
 
 Garajım, araç sahipliğinin günlük takibini tek bir yerde toplar: aracını tanımla, bakım planını ve hatırlatmalarını düzenle, yakıt ile masrafları kaydet ve zaman içindeki değişimi gör. GPS sürüş kaydı ve uyumlu Wear OS saat kontrolleri bu günlük araç defterini tamamlar.
 
-**Kaynak sürümü: 1.4.6.** Bu depo Android telefon uygulamasını ve ayrı Wear OS uygulamasını üretmek için gereken kaynakları içerir. Telefon ve saat paketleri aynı sürüm numarasıyla üretilir. Etiketli bir sürümün test ve imzalı derleme adımları başarılı olursa iki APK, GitHub Releases sayfasında kalıcı indirme dosyaları olarak yayımlanır.
+**Kaynak sürümü: 1.4.7.** Bu depo Android telefon uygulamasını ve ayrı Wear OS uygulamasını üretmek için gereken kaynakları içerir. Telefon ve saat paketleri aynı sürüm numarasıyla üretilir. Etiketli bir sürümün test ve imzalı derleme adımları başarılı olursa iki APK, GitHub Releases sayfasında kalıcı indirme dosyaları olarak yayımlanır.
 
 ## Günlük kullanımın ana akışı
 
