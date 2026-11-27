@@ -63,4 +63,20 @@ w.nvToggleVoice(); const n0=said.length; ev("nvSpeak('x')"); ok(said.length===n0
 w.showTab('garage'); w.showTab('ride'); await sleep(60); w.rideToggle(); await sleep(120);
 ok(!!ev('ride.ghost')&&ev('ride.ghost.id')==='g1','ghost seçildi (başlangıç noktası yakın, zaman damgalı tur)');
 fix(41.010,29); ev('ride.elapsed=50'); ev('rideGhostUpdate()'); ok(/50 sn önde/.test(d.getElementById('rideGhostChip').textContent),'ghost 100 sn\'de geldiği yere ben 50 sn\'de geldim: '+d.getElementById('rideGhostChip').textContent);
-ev('ride.elapsed=150'); ev('rideGhostUpdate()'); ok(/50 sn geride/.test(d.getElementById('rideGhostChip').text
+ev('ride.elapsed=150'); ev('rideGhostUpdate()'); ok(/50 sn geride/.test(d.getElementById('rideGhostChip').textContent),'150 sn\'de → 50 sn geride');
+const gm=ev("ride.ghost.marker.getLatLng()"); ok(gm.lat>41.012&&gm.lat<41.016,'ghost motoru zamanla ilerliyor: '+gm.lat.toFixed(4));
+fix(41.0,29.05); ev('rideGhostUpdate()'); ok(/rota dışı/.test(d.getElementById('rideGhostChip').textContent),'rotadan ayrılınca "rota dışı"');
+ev("ride.pts=ride.pts.length?ride.pts:[[41,29,1.7e12,10],[41.001,29,1.7e12+9000,40]]"); w.rideStopConfirm(); await sleep(300);
+ok(ev('ride.ghost')===null&&!vis('rideGhostChip'),'sürüş bitince ghost kaldırıldı');
+// ---- karne
+const kp=Array.from({length:60},(_,i)=>[41+i*0.0004,29+Math.sin(i/7)*0.004,1.7e12+i*5000,[25,55,85,110,50,35][Math.floor(i/10)]]);
+const S={id:'k',vehicleId:'v1',date:new Date().toISOString(),dist:24000,time:2400,avg:36,max:112,pts:kp,corners:{n:14,avg:84,perfect:6,aggressive:1},roughHits:5,hardBrakes:2,dna:{label:'Akıcı gezgin'},ghostDelta:12};
+const kr=ev("rideKarneRows("+JSON.stringify(S)+")"); ok(kr.rows.length>=3&&kr.overall>0,'karne notları: '+kr.rows.map(r=>r.k+' '+r.v).join(', ')+' → genel '+kr.overall);
+ok(ev("rideGrade(95)+rideGrade(80)+rideGrade(65)+rideGrade(10)")==='ABCD','harf notları A/B/C/D');
+ev("ride.pendingSummary="+JSON.stringify(S)); await w.rideShareKarne(); const png=Buffer.from(shared.data,'base64');
+ok(shared.path.includes('karne')&&png.slice(1,4).toString()==='PNG','karne PNG olarak paylaşıldı'); const shareTestDir=pth.join(__dirname,'.tmp');fsx.mkdirSync(shareTestDir,{recursive:true});fsx.writeFileSync(pth.join(shareTestDir,'karne.png'),png);
+const dim=[png.readUInt32BE(16),png.readUInt32BE(20)]; ok(dim[0]===1080&&dim[1]===1920,'boyut 1080x1920');
+ok(d.getElementById('rideSummaryModal').innerHTML.includes('rideShareKarne()'),'özet ekranında Karne düğmesi');
+ok(errors.length===0,'sayfa hatası yok '+errors.join('|'));
+process.exit(process.exitCode||0);})();
+
