@@ -18,6 +18,7 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
     static final String EXTRA_ACTION = "garajim_action";
     static final String EXTRA_VEHICLE = "garajim_vehicle";
     static final String ACTION_SWITCH = "com.garajim.app.WIDGET_SWITCH";
+    static final int TYPE_CONTROL = 0, TYPE_GARAGE = 1, TYPE_MAINTENANCE = 2, TYPE_FUEL = 3, TYPE_ACHIEVEMENT = 4;
 
     @Override public void onReceive(Context context, Intent intent) {
         if (intent != null && ACTION_SWITCH.equals(intent.getAction())) {   // widget'tan araç değiştir
@@ -33,6 +34,29 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
     }
 
     static SharedPreferences prefs(Context c) { return c.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE); }
+
+    /** Accepts both legacy vehicle arrays and the richer widget payload. */
+    static void sync(Context context, String json) {
+        if (context == null || json == null) return;
+        try {
+            SharedPreferences.Editor edit = prefs(context).edit();
+            JSONArray list = null;
+            JSONObject payload = null;
+            String trimmed = json.trim();
+            if (trimmed.startsWith("[")) list = new JSONArray(trimmed);
+            else {
+                payload = new JSONObject(trimmed);
+                list = payload.optJSONArray("vehicles");
+            }
+            if (list != null) edit.putString("vehicles_json", list.toString()).putInt("count", list.length());
+            if (payload != null && payload.has("achievements")) {
+                JSONObject achievements = payload.optJSONObject("achievements");
+                if (achievements != null) edit.putString("achievement_json", achievements.toString());
+            }
+            edit.apply();
+            refresh(context);
+        } catch (Exception ignored) { }
+    }
 
     static JSONArray vehicles(SharedPreferences p) {
         try { return new JSONArray(p.getString("vehicles_json", "[]")); } catch (Exception e) { return new JSONArray(); }
@@ -143,9 +167,163 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
         manager.updateAppWidget(id, views);
     }
 
+    static void updateTyped(Context context, AppWidgetManager manager, int id, int type) {
+        if (type == TYPE_CONTROL) { updateOne(context, manager, id); return; }
+        if (type == TYPE_GARAGE) { updateGarageCard(context, manager, id); return; }
+        if (type == TYPE_MAINTENANCE) { updateMaintenance(context, manager, id); return; }
+        if (type == TYPE_FUEL) { updateFuel(context, manager, id); return; }
+        if (type == TYPE_ACHIEVEMENT) { updateAchievements(context, manager, id); return; }
+    }
+
+    private static void unusedTypeMarker() {
+    }
+
+    static void updateTypedLegacy(Context context, AppWidgetManager manager, int id, int type) {
+        if (type == TYPE_GARAGE) updateGarageCard(context, manager, id);
+        else if (type == TYPE_MAINTENANCE) updateMaintenance(context, manager, id);
+        else if (type == TYPE_FUEL) updateFuel(context, manager, id);
+        else if (type == TYPE_ACHIEVEMENT) updateAchievements(context, manager, id);
+        else updateOne(context, manager, id);
+    }
+
+    private static JSONObject selectedVehicle(SharedPreferences p, JSONArray all) {
+        return all.length() > 0 ? all.optJSONObject(selectedIndex(p, all)) : null;
+    }
+
+    private static String vehicleName(JSONObject v) {
+        if (v == null) return "Garajın hazır";
+        String name = v.optString("name", "Aracınız");
+        return name.isEmpty() ? "Aracınız" : name;
+    }
+
+    private static String vehiclePlate(JSONObject v) {
+        if (v == null) return "İlk aracını ekle";
+        String plate = v.optString("plate", "");
+        return plate.isEmpty() ? "Plaka eklenmedi" : plate;
+    }
+
+    private static String vehicleKm(JSONObject v) {
+        if (v == null) return "— km";
+        String km = v.optString("km", "");
+        try { return km.isEmpty() ? "— km" : fmt((long) Double.parseDouble(km)) + " km"; }
+        catch (Exception ignored) { return km + " km"; }
+    }
+
+    private static PendingIntent switchIntent(Context context) {
+        Intent sw = new Intent(context, GarajimWidgetProvider.class).setAction(ACTION_SWITCH);
+        return PendingIntent.getBroadcast(context, 7420, sw,
+                PendingIntent.FLAG_UPDATE_CURRENT | (android.os.Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
+    }
+
+    private static void setVehicleSwitch(Context context, RemoteViews views, int viewId, JSONArray all) {
+        if (all.length() > 1) {
+            views.setViewVisibility(viewId, View.VISIBLE);
+            views.setTextViewText(viewId, "⇄ " + (selectedIndex(prefs(context), all) + 1) + "/" + all.length());
+            views.setOnClickPendingIntent(viewId, switchIntent(context));
+        } else views.setViewVisibility(viewId, View.GONE);
+    }
+
+    private static void attachOpen(Context context, RemoteViews views, String vehicleId) {
+        PendingIntent open = actionIntent(context, "open", 7402, vehicleId);
+        if (open != null) views.setOnClickPendingIntent(R.id.widget_root, open);
+    }
+
+    private static void updateGarageCard(Context context, AppWidgetManager manager, int id) {
+        SharedPreferences p = prefs(context); JSONArray all = vehicles(p); JSONObject v = selectedVehicle(p, all);
+        String vid = v == null ? "" : v.optString("id", "");
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_garage_card);
+        views.setTextViewText(R.id.widget_card_name, vehicleName(v));
+        views.setTextViewText(R.id.widget_card_plate, vehiclePlate(v));
+        views.setTextViewText(R.id.widget_card_km, vehicleKm(v));
+        views.setTextViewText(R.id.widget_card_total, all.length() + (all.length() == 1 ? " ARAÇ" : " ARAÇ"));
+        String cons = v == null ? "" : v.optString("cons", "");
+        int fuelCount = v == null ? 0 : v.optInt("fuelCount", 0);
+        views.setTextViewText(R.id.widget_card_fuel, !cons.isEmpty() ? cons + " L/100" : fuelCount > 0 ? fuelCount + " yakıt kaydı" : "Yakıt kaydı ekle");
+        JSONObject svc = v == null ? null : v.optJSONObject("svc");
+        if (svc == null) views.setTextViewText(R.id.widget_card_service, "Bakım planını takip et");
+        else {
+            int rem = svc.optInt("remaining", 0); String state = svc.optString("state", "ok");
+            views.setTextViewText(R.id.widget_card_service, rem <= 0 ? "Bakım zamanı · " + fmt(Math.abs((long)rem)) + " km geçti" : "Bakıma " + fmt(rem) + " km kaldı");
+            views.setTextColor(R.id.widget_card_service, Color.parseColor("bad".equals(state) ? "#F17870" : "warn".equals(state) ? "#F6C35B" : "#7FE0B1"));
+        }
+        setVehicleSwitch(context, views, R.id.widget_card_switch, all);
+        attachOpen(context, views, vid);
+        manager.updateAppWidget(id, views);
+    }
+
+    private static void updateMaintenance(Context context, AppWidgetManager manager, int id) {
+        SharedPreferences p = prefs(context); JSONArray all = vehicles(p); JSONObject v = selectedVehicle(p, all);
+        String vid = v == null ? "" : v.optString("id", "");
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_maintenance);
+        views.setTextViewText(R.id.widget_maintenance_vehicle, v == null ? "Garajım" : vehiclePlate(v) + " · " + vehicleName(v));
+        JSONObject svc = v == null ? null : v.optJSONObject("svc");
+        if (svc == null) {
+            views.setTextViewText(R.id.widget_maintenance_title, "Bu araç için bakım kilometresi ekle");
+            views.setTextViewText(R.id.widget_maintenance_value, "Plan bekleniyor");
+            views.setTextViewText(R.id.widget_maintenance_detail, "Uygulamada araç detayından bakım planı oluştur.");
+            views.setProgressBar(R.id.widget_maintenance_progress, 100, 0, false);
+            views.setProgressBar(R.id.widget_maintenance_progress, 100, 0, false);
+        } else {
+            int rem = svc.optInt("remaining", 0), pct = Math.max(0, Math.min(100, svc.optInt("percent", 0)));
+            String state = svc.optString("state", "ok");
+            views.setTextViewText(R.id.widget_maintenance_title, "Periyodik bakım · " + vehicleKm(v));
+            views.setTextViewText(R.id.widget_maintenance_value, rem <= 0 ? fmt(Math.abs((long)rem)) + " km geçti" : fmt(rem) + " km kaldı");
+            views.setTextColor(R.id.widget_maintenance_value, Color.parseColor("bad".equals(state) ? "#F17870" : "warn".equals(state) ? "#F6C35B" : "#7FE0B1"));
+            views.setProgressBar(R.id.widget_maintenance_progress, 100, pct, false);
+            views.setProgressBar(R.id.widget_maintenance_progress, 100, pct, false);
+            views.setProgressBarTintList(R.id.widget_maintenance_progress, ColorStateList.valueOf(Color.parseColor("bad".equals(state) ? "#F17870" : "warn".equals(state) ? "#F6C35B" : "#63D6A5")));
+            views.setTextViewText(R.id.widget_maintenance_detail, "Bakım uyarılarını görmek için Garajım'ı aç.");
+        }
+        attachOpen(context, views, vid);
+        manager.updateAppWidget(id, views);
+    }
+
+    private static void updateFuel(Context context, AppWidgetManager manager, int id) {
+        SharedPreferences p = prefs(context); JSONArray all = vehicles(p); JSONObject v = selectedVehicle(p, all);
+        String vid = v == null ? "" : v.optString("id", "");
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_fuel);
+        views.setTextViewText(R.id.widget_fuel_vehicle, v == null ? "Garajım" : vehiclePlate(v));
+        String cons = v == null ? "" : v.optString("cons", "");
+        views.setTextViewText(R.id.widget_fuel_avg, cons.isEmpty() ? "—" : cons);
+        views.setTextViewText(R.id.widget_fuel_km, vehicleKm(v));
+        int fuelCount = v == null ? 0 : v.optInt("fuelCount", 0);
+        views.setTextViewText(R.id.widget_fuel_count, fuelCount + " dolum kaydı");
+        views.setTextViewText(R.id.widget_fuel_summary, fuelCount == 0 ? "İlk yakıt kaydını ekle" : "Tüketim ve kilometre takibin güncel");
+        PendingIntent fuel = actionIntent(context, "fuel", 7411, vid);
+        if (fuel != null) views.setOnClickPendingIntent(R.id.widget_fuel_summary, fuel);
+        attachOpen(context, views, vid);
+        manager.updateAppWidget(id, views);
+    }
+
+    private static void updateAchievements(Context context, AppWidgetManager manager, int id) {
+        SharedPreferences p = prefs(context); JSONArray all = vehicles(p); JSONObject v = selectedVehicle(p, all);
+        String vid = v == null ? "" : v.optString("id", "");
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_achievements);
+        JSONObject a;
+        try { a = new JSONObject(p.getString("achievement_json", "{}")); } catch (Exception ignored) { a = new JSONObject(); }
+        int count = Math.max(0, a.optInt("count", 0)), total = Math.max(1, a.optInt("total", 53));
+        String next = a.optString("nextName", count >= total ? "Koleksiyon tamamlandı" : "İlk aracını ekle");
+        int current = Math.max(0, a.optInt("current", 0)), target = Math.max(1, a.optInt("target", 1));
+        views.setTextViewText(R.id.widget_achievement_count, count + " / " + total + " kazanıldı");
+        views.setTextViewText(R.id.widget_achievement_next, next);
+        views.setProgressBar(R.id.widget_achievement_progress, target, Math.min(current, target), false);
+        views.setTextViewText(R.id.widget_achievement_progress_text, current + " / " + target);
+        attachOpen(context, views, vid);
+        manager.updateAppWidget(id, views);
+    }
+
+    private static void refreshProvider(Context context, AppWidgetManager manager, Class<?> provider, int type) {
+        int[] ids = manager.getAppWidgetIds(new ComponentName(context, provider));
+        for (int id : ids) updateTyped(context, manager, id, type);
+    }
+
     public static void refresh(Context context) {
+        if (context == null) return;
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        int[] ids = manager.getAppWidgetIds(new ComponentName(context, GarajimWidgetProvider.class));
-        for (int id : ids) updateOne(context, manager, id);
+        refreshProvider(context, manager, GarajimWidgetProvider.class, TYPE_CONTROL);
+        refreshProvider(context, manager, GarajimGarageCardWidgetProvider.class, TYPE_GARAGE);
+        refreshProvider(context, manager, GarajimMaintenanceWidgetProvider.class, TYPE_MAINTENANCE);
+        refreshProvider(context, manager, GarajimFuelWidgetProvider.class, TYPE_FUEL);
+        refreshProvider(context, manager, GarajimAchievementWidgetProvider.class, TYPE_ACHIEVEMENT);
     }
 }
