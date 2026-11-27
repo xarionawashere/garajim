@@ -8,11 +8,17 @@
 
 ---
 
-Garajım, araç sahipliğinin günlük işlerini daha düzenli hâle getirmek için tasarlanmış kişisel araç ve sürüş uygulamasıdır. Garajını oluştur, bakım tarihlerini takip et, yakıt ve masraflarını kaydet, GPS sürüşlerini incele; uyumlu Wear OS saatin varsa temel sürüş kontrollerine bileğinden ulaş.
+Garajım, araç sahipliğinin günlük takibini tek bir yerde toplar: aracını tanımla, bakım planını ve hatırlatmalarını düzenle, yakıt ile masrafları kaydet ve zaman içindeki değişimi gör. GPS sürüş kaydı ve uyumlu Wear OS saat kontrolleri bu günlük araç defterini tamamlar.
 
 **Kaynak sürümü: 1.4.6.** Bu depo Android telefon uygulamasını ve ayrı Wear OS uygulamasını üretmek için gereken kaynakları içerir. Telefon ve saat paketleri aynı sürüm numarasıyla üretilir. Etiketli bir sürümün test ve imzalı derleme adımları başarılı olursa iki APK, GitHub Releases sayfasında kalıcı indirme dosyaları olarak yayımlanır.
 
-## Garajım ile neler yapabilirsin?
+## Günlük kullanımın ana akışı
+
+1. **Aracını ekle:** Kilometre ve araç bilgilerini bir kez kaydet; garajında araç profiline ve geçmişine ulaş.
+2. **Bakımını takip et:** Servis, muayene, sigorta ve lastik tarihlerini plana ekle; yaklaşan kilometre ve tarih uyarılarını gör.
+3. **Kayıtlarını tut:** Yakıt dolumunu veya masrafını ekle; yakıt tüketimini ve kilometre başına maliyeti kayıtların oluştukça incele. Saat bağlıysa yakıt ve kilometre girişini bileğinden başlat.
+
+## Tüm özellikler
 
 ### Araçlarını tek yerde yönet
 
@@ -24,7 +30,7 @@ Bakım planına periyodik servis, muayene, trafik sigortası, kasko ve mevsimlik
 
 Yakıt dolumlarını litre, tutar, tarih, kilometre ve depo dolumu bilgileriyle kaydet. Servis ve diğer harcamaları kategorilere ayır; zaman içindeki toplamları, yakıt tüketimini ve kilometre başına maliyeti grafiklerde incele. Uygulamadaki sağlık skoru ve maliyet tahminleri kayıtlarından hesaplanan yardımcı göstergelerdir.
 
-Fiş fotoğrafından veya kilometre sayacı görüntüsünden OCR ile veri okunması denenebilir. Okunan değerler kaydedilmeden önce senin kontrolüne sunulur; sonucu gözden geçirip düzeltmen gerekir.
+Fiş fotoğrafından veya kilometre sayacı görüntüsünden OCR ile gelen değerleri kaydetmeden önce kontrol edip düzenleyebilirsin; elle giriş her zaman kullanılabilir.
 
 ### Gerçek sürüşlerini kaydet
 
@@ -76,7 +82,7 @@ Studio, gerçek fotoğrafı otomatik olarak boyamaz ve parçaların araca uyumlu
 - **Raporlar:** Araç veya genel PDF raporu; masraflar için CSV; desteklenen veriler için JSON yedeği ve sürüş rotası için GPX.
 - **Garajım'ı Keşfet:** İlk kullanım turu ve uygulama içinden tekrar açılabilen kısa öneriler.
 
-Sosyal alan, bu kaynak sürümünde cihaz içi bir akıştır. Bu özellik, gönderileri başka kullanıcıların cihazlarına ulaştıran veya hesaplar arasında senkronize eden merkezi bir sosyal ağ değildir.
+Uygulama içi akış, bu sürümde cihazda saklanan kişisel bir alandır. Gönderiler çevrim içi bir topluluğa veya başka kullanıcıların cihazlarına aktarılmaz.
 
 ## Verilerin ve gizliliğin
 
@@ -123,7 +129,7 @@ Depo kökünde sırasıyla çalıştır:
 npm run build:web
 npm test</code></pre>
 
-GitHub Actions bağımlılıkları kurar, yerel web paketini oluşturur ve otomatik kontrolleri çalıştırır. Başarısız testte APK adımlarına geçilmez. Normal derlemeler iki APK'yı süreli Actions Artifacts olarak sunar. `vMAJOR.MINOR.PATCH` etiketi ise testler ve imzalı Android derlemesi başarılı olduktan sonra iki APK'yı SHA-256 özetiyle GitHub Release'e yükler. Telefon ve saat `versionCode`/`versionName` değerleri aynı sürümden üretilir. Kaynak testleri gerçek cihaz GPS'i, izinleri, pil davranışını ve ekran kullanımını doğrulamaz.
+GitHub Actions kilitli bağımlılık listesini kurar, yerel web paketini oluşturur ve otomatik kontrolleri çalıştırır. Başarısız testte APK adımlarına geçilmez. Normal derlemeler iki APK'yı süreli Actions Artifacts olarak sunar. `vMAJOR.MINOR.PATCH` etiketi ise testler ve imzalı Android derlemesi başarılı olduktan sonra iki APK'yı SHA-256 özetiyle GitHub Release'e yükler. Telefon ve saat `versionCode`/`versionName` değerleri aynı sürümden üretilir. Kaynak testleri gerçek cihaz GPS'i, izinleri, pil davranışını ve ekran kullanımını doğrulamaz.
 
 ### Kaynak yapısı
 
@@ -133,7 +139,7 @@ GitHub Actions bağımlılıkları kurar, yerel web paketini oluşturur ve otoma
 | native-android/ | Capacitor Android köprüsü, sürüş foreground servisi, medya kontrolü, widget, hatırlatma ve Wear OS bağlantısı |
 | native-wear/ | Wear OS arayüzü, sürüş kontrolleri ve mini rota çizimi |
 | build-web.js | Web kaynaklarını derlemeye ve gerekli arayüz kütüphanelerini yerel pakete koymaya hazırlar |
-| package.json | Doğrudan uygulama bağımlılıklarını tanımlar |
+| package.json / package-lock.json | Doğrudan bağımlılıkları ve tekrarlanabilir kurulum için sabitlenmiş sürümleri tanımlar |
 | scripts/ci-version.py | Telefon ve Wear OS APK sürüm numaralarını tek kaynaktan üretir |
 | .github/workflows/build-apk.yml | Testleri çalıştırır, telefon ve Wear OS sürümlerini eşitler, iki APK'yı derler ve etiketli sürümlerde GitHub Release yayımlar |
 | tests/ | Kaynak ve özellik sözleşmelerine yönelik otomatik kontroller |
