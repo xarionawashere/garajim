@@ -124,11 +124,6 @@
   .pin-key:active { transform: scale(.92); background: rgba(var(--accent-rgb), 0.3); }
   .pin-dot { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid var(--accent); transition: background .15s; }
   .pin-dot.on { background: var(--accent); }
-  .brand-logo-option { min-height:78px; padding:10px; border-radius:14px; border:2px solid var(--border); background:var(--card); color:var(--text); text-align:left; display:flex; align-items:center; gap:9px; transition:border-color .15s, transform .12s; }
-  .brand-logo-option:active { transform:scale(.98); }
-  .brand-logo-option.active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
-  .brand-logo-preview { width:38px; height:38px; flex:0 0 38px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(var(--accent-rgb),.12); color:var(--accent); }
-  .brand-logo-preview svg { width:25px; height:25px; }
   .theme-pack {
     width: 100%; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--border);
     background: var(--card); text-align: left; cursor: pointer; transition: border-color .15s, transform .12s;
@@ -378,7 +373,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   <header class="relative z-40 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 px-3 pt-3 pb-2">
     <div class="flex items-center justify-between">
       <div>
-        <div class="flex items-center gap-2"><span id="garajBrandMark" class="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 bg-white/5 text-[var(--accent)] text-lg font-black" aria-hidden="true">⌂</span><h1 class="text-2xl font-extrabold tracking-tight"><span class="text-white">Garaj</span><span class="text-red-500">ım</span></h1></div>
+        <h1 class="text-2xl font-extrabold tracking-tight"><span class="text-white">Garaj</span><span class="text-red-500">ım</span></h1>
         <p class="text-xs text-slate-500 mt-0.5" id="stats">0 araç</p>
       </div>
       <div class="flex items-center gap-2">
@@ -1220,8 +1215,8 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
       <button class="theme-opt seg" data-t="auto" onclick="setTheme('auto')"><i class="fa-solid fa-circle-half-stroke mr-1.5"></i>Otomatik</button>
     </div>
 
-    <p class="text-xs text-slate-500 uppercase mb-2">Garajım Logosu</p>
-    <p class="text-[11px] text-slate-500 mb-2">Seçimin telefonunda ve bağlı saatte kullanılır.</p>
+    <p class="text-xs text-slate-500 uppercase mb-2">Uygulama Simgesi</p>
+    <p class="text-[11px] text-slate-500 mb-2">Telefonun ve bağlı Wear OS cihazının ana ekran simgesini seç.</p>
     <div id="brandLogoOptions" class="grid grid-cols-2 gap-2 mb-6"></div>
 
     <p class="text-xs text-slate-500 uppercase mb-2">Tema Paketi</p>
