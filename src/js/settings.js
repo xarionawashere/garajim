@@ -2,6 +2,53 @@
 // Classic script: globals are shared with other files in index.html's intentional load order.
 function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
   function packPref() { return localStorage.getItem('garaj_pack') || 'dark-red'; }
+  const BRAND_LOGOS = [
+    { id: 'garage', name: 'Garaj', desc: 'Klasik garaj çizgisi', mark: '⌂', tier: 'free' },
+    { id: 'monogram', name: 'Monogram', desc: 'Garajım harfi', mark: 'G', tier: 'free' },
+    { id: 'route', name: 'Rota', desc: 'Yolculuk ve keşif', mark: '➤', tier: 'free' },
+    { id: 'sport', name: 'Sport', desc: 'Dinamik çizgi', mark: '⚡', tier: 'free' }
+  ];
+  function brandLogoPref() {
+    const id = localStorage.getItem('garaj_logo_v1') || 'garage';
+    return BRAND_LOGOS.some(x => x.id === id) ? id : 'garage';
+  }
+  function brandLogoSvg(id) {
+    if (id === 'monogram') return '<svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="23" text-anchor="middle" font-family="Inter, sans-serif" font-size="23" font-weight="800" fill="currentColor">G</text></svg>';
+    if (id === 'route') return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25c0-5 8-3 8-8s-8-3-8-8"/><path d="M21 5h5v5"/><path d="M26 5l-8 8"/></svg>';
+    if (id === 'sport') return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3 7 18h8l-1 11 11-16h-8l1-10Z"/></svg>';
+    return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14 16 4l13 10"/><path d="M7 13v14h18V13"/><path d="M12 27v-9h8v9"/></svg>';
+  }
+  function applyBrandLogo() {
+    const id = brandLogoPref();
+    const mark = document.getElementById('garajBrandMark');
+    if (mark) mark.innerHTML = brandLogoSvg(id);
+    document.querySelectorAll('.brand-logo-option').forEach(b => {
+      const active = b.dataset.logoId === id;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+  function buildBrandLogoOptions() {
+    const box = document.getElementById('brandLogoOptions');
+    if (!box) return;
+    const current = brandLogoPref();
+    box.innerHTML = BRAND_LOGOS.map(logo => `
+      <button type="button" class="brand-logo-option ${logo.id === current ? 'active' : ''}" data-logo-id="${logo.id}" aria-pressed="${logo.id === current ? 'true' : 'false'}" onclick="setBrandLogo('${logo.id}')">
+        <span class="brand-logo-preview">${brandLogoSvg(logo.id)}</span>
+        <span class="min-w-0"><span class="block text-xs font-bold">${logo.name}</span><span class="block text-[10px] text-slate-500 mt-0.5">${logo.desc}</span></span>
+      </button>`).join('');
+  }
+  function setBrandLogo(id) {
+    if (!BRAND_LOGOS.some(logo => logo.id === id)) return;
+    localStorage.setItem('garaj_logo_v1', id);
+    applyBrandLogo();
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(packPref(), themePref(), id);
+    } catch (e) {}
+    toast((BRAND_LOGOS.find(logo => logo.id === id) || {}).name + ' logosu seçildi');
+  }
+
 
   // ---------- HARİTA KARELERİ ----------
   // Harita sağlayıcısının HTTP önbellek yönergelerini tarayıcıya bırak.
@@ -112,7 +159,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     const titleSpans = document.querySelectorAll('h1 span');
     if (titleSpans[1]) titleSpans[1].style.color = p.accent;
     document.querySelectorAll('.theme-pack').forEach(b => b.classList.toggle('active', b.dataset.id === p.id));
-    try { const N = window.GarajimNative; if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(p.id, themePref()); } catch (e) {}
+    try { const N = window.GarajimNative; if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(p.id, themePref(), brandLogoPref()); } catch (e) {}
   }
   function applyTheme() {
     // light class only for legacy light toggle compatibility
@@ -153,6 +200,8 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
   if (window.matchMedia) {
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (themePref() === 'auto') applyTheme(); });
   }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyBrandLogo); else applyBrandLogo();
 
   // ---------- AYARLAR ----------
   function wearPairReadStatus() {
@@ -209,6 +258,8 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     updatePinUI();
     applyTheme();
     buildThemePacks();
+    buildBrandLogoOptions();
+    applyBrandLogo();
     const rd = getRemindDays();
     document.querySelectorAll('.remind-opt').forEach(b => b.classList.toggle('active', Number(b.dataset.d) === rd));
     updateBackupInfo();
