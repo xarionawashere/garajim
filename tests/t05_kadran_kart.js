@@ -40,7 +40,7 @@ d.getElementById('fuelModal').classList.add('hidden'); q.push('km|v1'); w.garaji
 d.getElementById('kmModal').classList.add('hidden'); q.push('ride|v2'); w.garajimCheckAction(); ok(ev('ride.vehicleId')==='v2','widget "ride|v2" → sürüş v2');
 q.push('park|v1'); w.garajimCheckAction(); await new Promise(r=>setTimeout(r,50)); ok(ev('ride.vehicleId')==='v1'&&ev('parkGet().vehicleId')==='v1','widget "park|v1" → v1 için park kaydı');
 q.push('fuel'); w.showTab('garage'); w.garajimCheckAction(); ok(ev('currentId')==='v1','araç belirtilmezse ilk araç');
-w.syncNative(); const sy=JSON.parse(w.__w); ok(sy.length===2&&sy[0].id==='v1'&&sy[1].id==='v2','widget verisinde araç kimlikleri var');
+w.syncNative(); const sy=JSON.parse(w.__w); ok(sy.vehicles.length===2&&sy.vehicles[0].id==='v1'&&sy.vehicles[1].id==='v2'&&!!sy.achievements,'widget verisinde araçlar ve başarım özeti var');
 w.openDetail('v2'); ok(d.getElementById('detailView').innerHTML.includes("setWidgetVehicle('v2')"),'detayda "Widget\'ta bu aracı göster"'); w.setWidgetVehicle('v2'); ok(calls.bridge[0]==='v2','köprüye seçim gönderildi');
 
 // ---- kadran okuma (arayüz akışı, OCR sahte)
