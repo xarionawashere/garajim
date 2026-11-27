@@ -6,7 +6,6 @@ The repository root keeps the project overview and current release history. Supp
 
 - [ARKA-PLAN-SURUS-KURULUM.md](./guides/ARKA-PLAN-SURUS-KURULUM.md)
 - [GITHUB-ACTIONS-TELEFON-WEAROS.txt](./guides/GITHUB-ACTIONS-TELEFON-WEAROS.txt)
-- [GITHUB-MANUEL-YUKLEME.md](./guides/GITHUB-MANUEL-YUKLEME.md)
 - [GUNCELLEME-GUVENILIR-SURUS-VE-SAAT.md](./guides/GUNCELLEME-GUVENILIR-SURUS-VE-SAAT.md)
 - [LOGO_VE_NATIVE_NOTLAR.txt](./guides/LOGO_VE_NATIVE_NOTLAR.txt)
 - [NATIVE_WIDGET_BILDIRIMLER.txt](./guides/NATIVE_WIDGET_BILDIRIMLER.txt)
@@ -23,6 +22,10 @@ The repository root keeps the project overview and current release history. Supp
 
 These files are retained for historical context; they describe earlier versions and checks.
 
+- [TEST-SONUCLARI-1.4.6-STUDIO-LEGACY.json](./archive/TEST-SONUCLARI-1.4.6-STUDIO-LEGACY.json)
+- [TEST_SONUCLARI-LEGACY.json](./archive/TEST_SONUCLARI-LEGACY.json)
+- [GITHUB-MANUEL-YUKLEME-LEGACY.md](./archive/GITHUB-MANUEL-YUKLEME-LEGACY.md)
+- [WearMainActivity-send-fix.patch](./archive/WearMainActivity-send-fix.patch) (historical patch; already included in current sources)
 - [10_ASAMA_RAPORU.md](./archive/10_ASAMA_RAPORU.md)
 - [DUZELTMELER.txt](./archive/DUZELTMELER.txt)
 - [GARAJIM_6_ASAMA_KONTROL_RAPORU.txt](./archive/GARAJIM_6_ASAMA_KONTROL_RAPORU.txt)

@@ -9,7 +9,9 @@ let failures = 0;
 function check(ok, name) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failures++; }
 
 const push = sync.match(/public static void pushState\(Context ctx, String json\)\s*\{([\s\S]*?)\n    \}/);
-const drain = sync.match(/private static void drainPendingState\(\)\s*\{([\s\S]*?)\n    \}\n\n    \/\*\* Araç listesi/);
+const drainStart = sync.indexOf('private static void drainPendingState()');
+const drainEnd = sync.indexOf('/** Araç listesi', drainStart);
+const drain = drainStart >= 0 && drainEnd > drainStart ? [null, sync.slice(drainStart, drainEnd)] : null;
 check(!!push && /pendingStateJson\s*=\s*json/.test(push[1]) && /stateDrainScheduled/.test(push[1]),
   'Saat durumu güncellendiğinde tek pending snapshot tutulur');
 check(!!drain && /pendingStateJson\s*=\s*""/.test(drain[1]) && /EX\.execute\(GarajimWearSync::drainPendingState\)/.test(drain[1]),
@@ -21,8 +23,9 @@ check(!/sendingStateJson|sendingStateAt/.test(sync),
   'Eski tek bekleyen-değer işaretçileri kaldırıldı');
 check(/PATH_STATE/.test(sync) && /routeJson/.test(sync) && /summaryId/.test(sync) && /parkDistM/.test(sync),
   'Kokpit rota, özet ve park alanları yeni aktarım yolunda korunur');
-check(/versionCode=17, versionName=1\.4\.6/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8'))
-  && /versionCode 20/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
+check(/python3 scripts\/ci-version\.py/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8'))
+  && /versionCode\s+20/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
+  && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(root, 'scripts/ci-version.py'), 'utf8'))
   && /"version": "1\.4\.6"/.test(fs.readFileSync(path.join(root, 'package.json'), 'utf8')),
   'Telefon, saat ve kaynak paket sürümleri 1.4.6 olarak hizalıdır');
 check(/function rideTick\(\)/.test(html), 'Web sürüş döngüsü kaynak pakette korunur');

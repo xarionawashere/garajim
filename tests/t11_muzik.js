@@ -5,6 +5,7 @@ const srv=http.createServer((rq,rs)=>{const f=pth.join(ROOT,decodeURIComponent(r
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const mk=async(withBridge,state,calls)=>{await new Promise(r=>srv.listening?r():srv.on('listening',r));
  const dom=await JSDOM.fromURL('http://localhost:'+srv.address().port+'/',{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,beforeParse(w){
+  w.TextEncoder = require('util').TextEncoder; w.TextDecoder = require('util').TextDecoder;
  w.matchMedia=()=>({matches:false,addListener(){},addEventListener(){}}); w.confirm=()=>true; w.alert=()=>{}; w.scrollTo=()=>{};
  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{}; w.HTMLCanvasElement.prototype.getContext=()=>null; w.SVGSVGElement.prototype.createSVGRect=function(){return{}};
  w.navigator.geolocation={getCurrentPosition:ok_=>ok_({coords:{latitude:41,longitude:29,accuracy:5,speed:0,heading:null},timestamp:Date.now()}),watchPosition:()=>1,clearWatch(){}};

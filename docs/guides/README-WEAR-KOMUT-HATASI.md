@@ -7,13 +7,13 @@ GitHub `main` dalındaki Wear OS `send()` metodu `select_vehicle|ARAÇ_ID` ve `s
 ## Pakette bulunanlar
 
 - `native-android/.../GarajimWearListener.java`: Alternatif JSON alanlarını, eski `komut|argüman` zarfını, camelCase ve eski komut adlarını kabul eden telefon dinleyicisi. Tanınmayan komutu günlük kaydına ayrıntılı yazar.
-- `WearMainActivity-send-fix.patch`: Mevcut GitHub `main` dalındaki `WearMainActivity.java` dosyasına yalnızca gerekli gönderim düzeltmesini uygular; `cmd` ve `arg` ayrı JSON alanları olur.
+- Bu rehber ve yama dosyası tarihî bir hata çözümünü belgeliyor. Düzeltme güncel kaynakta bulunduğundan yamayı güncel depo üzerine uygulama.
 - `tests/t12_wear_reliability.js` ve `tests/t24_wear_command_protocol.js`: Komut protokolü için regresyon kontrolleri.
 
-## GitHub projesine uygulama
+## Tarihî uygulama adımları
 
 1. Bu ZIP'i Garajım depo köküne çıkart; klasör yolları `native-android` ve `tests` olacak şekilde kaynak dosyalarının üzerine yaz.
-2. Depo kökünde terminal açıp şu komutu çalıştır: `git apply WearMainActivity-send-fix.patch`.
+2. Eski paketteki `WearMainActivity-send-fix.patch` yalnızca o dönemki kaynak sürümünde kullanılmak içindi; güncel sürümde uygulanmamalı.
 3. `git status` ile dört değişiklik olduğunu doğrula; sonra şu dosyaları commit et ve `main` dalına gönder:
    - `native-android/src/main/java/com/garajim/app/GarajimWearListener.java`
    - `native-wear/src/main/java/com/garajim/wear/WearMainActivity.java`

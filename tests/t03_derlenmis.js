@@ -8,6 +8,8 @@ const srv=http.createServer((rq,rs)=>{const f=pth.join(require('path').join(__di
 await new Promise(r=>srv.on('listening',r)); const PORT=srv.address().port;
 const dom=await JSDOM.fromURL('http://localhost:'+PORT+'/',{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,
  beforeParse(w){
+  w.TextEncoder = require('util').TextEncoder;
+  w.TextDecoder = require('util').TextDecoder;
   w.matchMedia=()=>({matches:false,addListener(){},addEventListener(){}}); w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{};
   w.confirm=()=>true; w.alert=()=>{}; w.scrollTo=()=>{};
   w.HTMLCanvasElement.prototype.getContext=()=>null; w.SVGSVGElement.prototype.createSVGRect=function(){return {}};

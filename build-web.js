@@ -57,7 +57,8 @@ for (const l of ['tur', 'eng']) copy(nm(`@tesseract.js-data/${l}/4.0.0_best_int/
 cp.execSync(`npx tailwindcss -c tailwind.config.js -i tw-input.css -o ${path.join(V, 'tailwind.css')} --minify`, { stdio: 'inherit' });
 
 // --- index.html -> yerel yollar
-let h = fs.readFileSync('index.html', 'utf8');
+// Keep exact substitutions stable when the source checkout uses Windows CRLF.
+let h = fs.readFileSync('index.html', 'utf8').replace(/\r\n/g, '\n');
 function sub(from, to) {
   if (!h.includes(from)) throw new Error('index.html içinde bulunamadı: ' + from);
   h = h.replace(from, to);

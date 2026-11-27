@@ -4,6 +4,7 @@ const srv=http.createServer((rq,rs)=>{const f=pth.join(require('path').join(__di
 let watchCb=null;
 const mk=async(seed)=>{await new Promise(r=>srv.listening?r():srv.on('listening',r));
  const dom=await JSDOM.fromURL('http://localhost:'+srv.address().port+'/',{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,beforeParse(w){
+  w.TextEncoder = require('util').TextEncoder; w.TextDecoder = require('util').TextDecoder;
  w.matchMedia=()=>({matches:false,addListener(){},addEventListener(){}}); w.confirm=()=>true; w.alert=()=>{}; w.scrollTo=()=>{};
  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{}; w.HTMLCanvasElement.prototype.getContext=()=>null; w.SVGSVGElement.prototype.createSVGRect=function(){return{}};
  const P=(la,lo,sp)=>({coords:{latitude:la,longitude:lo,accuracy:6,speed:sp,heading:null},timestamp:Date.now()});

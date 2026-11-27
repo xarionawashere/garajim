@@ -5,6 +5,7 @@ const srv=http.createServer((rq,rs)=>{const f=pth.join(require('path').join(__di
 await new Promise(r=>srv.on('listening',r));
 const calls={w:[],s:[],bridge:[]}; let q=[];
 const dom=await JSDOM.fromURL('http://localhost:'+srv.address().port+'/',{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,beforeParse(w){
+ w.TextEncoder = require('util').TextEncoder; w.TextDecoder = require('util').TextDecoder;
  w.matchMedia=()=>({matches:false,addListener(){},addEventListener(){}}); w.confirm=()=>true; w.alert=()=>{}; w.scrollTo=()=>{};
  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{}; w.SVGSVGElement.prototype.createSVGRect=function(){return{}};
  w.HTMLCanvasElement.prototype.getContext=function(t){ if(!this.__n||this.__n.width!==this.width||this.__n.height!==this.height) this.__n=createCanvas(this.width||300,this.height||150); return this.__n.getContext(t) };
@@ -61,7 +62,7 @@ calls.w.length=0; calls.s.length=0;
 w.showTab('ride'); w.openVehicleRidePreview('v1',0); ok(d.getElementById('rideSummaryModal').innerHTML.includes('rideShareCard()'),'özet ekranında Kart düğmesi');
 await w.rideShareCard(); const f=calls.w[0];
 ok(f&&f.path.endsWith('.png')&&Buffer.from(f.data,'base64').slice(1,4).toString()==='PNG','kart PNG olarak paylaşıldı');
-try{fsx.mkdirSync('/tmp/lint',{recursive:true})}catch(e){} fsx.writeFileSync('/tmp/lint/card.png',Buffer.from(f.data,'base64'));
+const shareTestDir=pth.join(__dirname,'.tmp');fsx.mkdirSync(shareTestDir,{recursive:true});fsx.writeFileSync(pth.join(shareTestDir,'card.png'),Buffer.from(f.data,'base64'));
 ok(calls.s.length===1&&calls.s[0].url.endsWith('.png'),'paylaşım menüsü açıldı');
 process.exit(process.exitCode||0);
 })();

@@ -10,7 +10,7 @@
 
 Garajım, araç sahipliğinin günlük işlerini daha düzenli hâle getirmek için tasarlanmış kişisel araç ve sürüş uygulamasıdır. Garajını oluştur, bakım tarihlerini takip et, yakıt ve masraflarını kaydet, GPS sürüşlerini incele; uyumlu Wear OS saatin varsa temel sürüş kontrollerine bileğinden ulaş.
 
-**Kaynak sürümü: 1.4.6.** Bu depo Android telefon uygulamasını ve ayrı Wear OS uygulamasını üretmek için gereken kaynakları içerir. Hazır APK'lar GitHub Actions başarılı derlemelerinde ayrı paketler olarak oluşturulur.
+**Kaynak sürümü: 1.4.6.** Bu depo Android telefon uygulamasını ve ayrı Wear OS uygulamasını üretmek için gereken kaynakları içerir. Telefon ve saat paketleri aynı sürüm numarasıyla üretilir. Etiketli bir sürümün test ve imzalı derleme adımları başarılı olursa iki APK, GitHub Releases sayfasında kalıcı indirme dosyaları olarak yayımlanır.
 
 ## Garajım ile neler yapabilirsin?
 
@@ -68,8 +68,9 @@ Studio, gerçek fotoğrafı otomatik olarak boyamaz ve parçaların araca uyumlu
 
 ### İlerlemeni takip et, uygulamayı kendine göre düzenle
 
-- **51 başarım rozeti ve 8 Sürüş DNA profili:** Garaj, bakım, yakıt, kilometre, yedekleme ve sürüş hedeflerindeki ilerlemeni izle.
+- **53 başarım rozeti ve 8 Sürüş DNA profili:** Garaj, bakım, yakıt, kilometre, yedekleme, ilk kayıt ve ilk logo değişimi gibi hedeflerdeki ilerlemeni izle.
 - **24 tema paketi:** Koyu/açık görünüm ve Wear OS ile eşitlenen renk seçenekleri.
+- **15 ek uygulama simgesi:** Özgün Garajım simgesini koruyarak telefon başlatıcısında seçilebilir alternatifler sunar.
 - **Android ana ekran widget'ları:** Garajım Kartı (araç listesi ve kilometreler), Bakım Takibi, Yakıt & KM, Rozet Koleksiyonu ve hızlı işlem widget'ı.
 - **Hatırlatmalar:** Uygulamaya girilmiş bakım ve belge bilgileri için bildirim akışlarını kullan.
 - **Raporlar:** Araç veya genel PDF raporu; masraflar için CSV; desteklenen veriler için JSON yedeği ve sürüş rotası için GPX.
@@ -91,59 +92,4 @@ Yedekleme kapsamı dışa aktarma türüne göre değişir. Telefonu değiştirm
 
 ## Bilmen gerekenler
 
-Garajım araç yönetimi ve sürüş kaydı için yardımcı bir uygulamadır; araç elektronik kontrol ünitesine/OBD-II sistemine bağlanmaz. Hız ve konum değerleri GPS kalitesine, cihaza ve çevre koşullarına bağlıdır. Navigasyon için internet gerekir; canlı trafik bilgisi sunulmaz. Harita ve rota sağlayıcılarının herkese açık uç noktaları hizmet garantisi vermez.
-
-Arka plan konum takibi Android izinlerine, GPS'in açık olmasına, görünür servis bildirimine ve cihazın pil yönetimine bağlıdır. Telefon uygulamasını zorla durdurmak arka plan servislerini durdurabilir. Bildirim zamanlaması üretici ve Android pil politikalarına göre değişebilir. Sürüş sırasında telefonu veya saati kullanmak yerine işlemleri araç dururken yap.
-
-## Telefon ve saat APK'sını indir
-
-1. [Garajım GitHub deposunda Actions sayfasını](https://github.com/xarionawashere/garajim/actions/workflows/build-apk.yml) aç.
-2. En güncel **başarılı** “APK Olustur” çalıştırmasını seç.
-3. Aynı çalıştırmanın **Artifacts** bölümünden iki paketi indir:
-   - **Garajim-Mobil-APK** — Android telefon
-   - **Garajim-WearOS-APK** — Galaxy Watch / uyumlu Wear OS cihazı
-4. ZIP paketlerini açıp ilgili APK'yı doğru cihaza kur. İlk kullanımda telefonda Garajım'ı aç, gerekli izinleri ver ve saati sistemin Wear OS veya Galaxy Wearable uygulamasıyla eşleştir.
-
-Telefon ve saat APK'larını **aynı başarılı Actions çalıştırmasından** indir. Artifacts süreli saklanır; eski derleme paketlerini güncel kaynaklarla karıştırma. Android, Play Store dışından yüklenen uygulamalar için güvenlik onayı isteyebilir. Bu depo bir Google Play indirme bağlantısı sağlamaz.
-
-Güncelleme sırasında imza uyumsuzluğu görürsen uygulamayı kaldırmadan önce dur. Telefon uygulamasını kaldırmak yerel verileri silebilir. Güncelleme rehberleri: [Telefon kurulumu](docs/guides/TELEFONDAN-KURULUM.txt) · [Wear OS kurulumu](docs/guides/SAAT-KURULUM.txt) · [GitHub Actions ile APK üretimi](docs/guides/GITHUB-ACTIONS-TELEFON-WEAROS.txt).
-
-## Geliştirici kurulumu
-
-### Gereksinimler
-
-- Node.js 20 ve npm
-- Java 17
-- Yerel Android derlemesi için Android SDK ve Gradle
-- Wear OS testleri için eşleştirilmiş uyumlu bir Android telefon ve Wear OS cihazı
-
-### Web paketi ve kaynak kontrolleri
-
-Depo kökünde sırasıyla çalıştır:
-
-<pre><code>npm install --no-audit --no-fund
-npm run build:web
-npm test</code></pre>
-
-GitHub Actions; web bağımlılıklarını kurar, yerel web paketini oluşturur, otomatik kontrolleri çalıştırır ve testler başarılıysa telefon ile Wear OS APK'larını ayrı Artifacts olarak yükler. Başarısız testte APK adımlarına geçilmez. Kaynak testleri telefon veya saatte gerçek GPS, izin, pil davranışı ve ekran kullanımının yerini tutmaz.
-
-### Kaynak yapısı
-
-| Alan | İçerik |
-|---|---|
-| index.html, src/js/ | Telefon arayüzü ve garaj, bakım, yedekleme, sürüş, navigasyon, Studio ve başarım özellikleri |
-| native-android/ | Capacitor Android köprüsü, sürüş foreground servisi, medya kontrolü, widget, hatırlatma ve Wear OS bağlantısı |
-| native-wear/ | Wear OS arayüzü, sürüş kontrolleri ve mini rota çizimi |
-| build-web.js | Web kaynaklarını derlemeye ve gerekli arayüz kütüphanelerini yerel pakete koymaya hazırlar |
-| .github/workflows/build-apk.yml | Testleri çalıştırır, Android modüllerini oluşturur, iki APK'yı derler ve ayrı Artifacts olarak saklar |
-| tests/ | Kaynak ve özellik sözleşmelerine yönelik otomatik kontroller |
-
-Sürümlere göre değişiklikler için [CHANGELOG.md](CHANGELOG.md), kurulum ve geliştirme notları için [belge dizinini](docs/README.md) incele.
-
-## Proje ve dağıtım
-
-Bu depo kaynak kodu sunar. Kök dizinde şu anda bir LICENSE dosyası bulunmadığından, kodu yeniden dağıtma veya ticari kullanım koşullarını otomatik olarak varsayma; kullanım izni ve lisans durumu ayrıca açıklığa kavuşturulmalıdır.
-
-<div align="center">
-  <sub>Garajım · Araçlarını düzenle, sürüşlerini kaydet, projelerini planla.</sub>
-</div>
+Garajım araç yönetimi ve sürüş kaydı için yardımcı bir uygulamadır; araç elektronik kontrol ünitesine/OBD-II sistemine bağlanmaz. Hız ve konum değerleri GPS kalitesine, ciha

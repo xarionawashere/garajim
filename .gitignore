@@ -1,0 +1,26 @@
+# Node dependencies and generated web bundle
+node_modules/
+www/
+tests/.tmp/
+npm-debug.log*
+
+# Local environment and signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+keystore/
+
+# Generated Android/Gradle project output
+android/.gradle/
+android/build/
+android/app/build/
+android/wear/build/
+android/local.properties
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

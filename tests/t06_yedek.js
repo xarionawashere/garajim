@@ -3,6 +3,7 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)process.exitCode=1};
 const srv=http.createServer((rq,rs)=>{const f=pth.join(require('path').join(__dirname,'..','www'),decodeURIComponent(rq.url.split('?')[0]).replace(/\/$/,'/index.html'));fsx.readFile(f,(e,d)=>{if(e){rs.statusCode=404;rs.end();return}rs.end(d)})}).listen(0);
 const mk=async(seed,calls)=>{await new Promise(r=>srv.listening?r():srv.on('listening',r));
  const dom=await JSDOM.fromURL('http://localhost:'+srv.address().port+'/',{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,beforeParse(w){
+  w.TextEncoder = require('util').TextEncoder; w.TextDecoder = require('util').TextDecoder;
   w.matchMedia=()=>({matches:false,addListener(){},addEventListener(){}}); w.confirm=m=>{(calls.conf=calls.conf||[]).push(m);return true}; w.alert=()=>{}; w.scrollTo=()=>{};
   w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{}; w.HTMLCanvasElement.prototype.getContext=()=>null; w.SVGSVGElement.prototype.createSVGRect=function(){return{}};
   w.navigator.geolocation={getCurrentPosition(){},watchPosition:()=>1,clearWatch(){}};

@@ -1,7 +1,7 @@
 // Garajım otomatik testleri: npm test
 // Her test dosyası ayrı süreçte çalışır; hata varsa bir kez daha denenir (zamanlama kaynaklı titremelere karşı).
 const { spawnSync } = require('child_process'), fs = require('fs'), path = require('path');
-try { fs.mkdirSync('/tmp/lint', { recursive: true }); } catch (e) {}
+fs.mkdirSync(path.join(__dirname, '.tmp'), { recursive: true });
 const root = path.join(__dirname, '..');
 if (!fs.existsSync(path.join(root, 'www', 'index.html'))) {
   console.log('www yok, derleniyor...');

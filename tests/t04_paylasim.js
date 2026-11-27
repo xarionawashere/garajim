@@ -6,6 +6,7 @@ const srv=http.createServer((rq,rs)=>{const f=pth.join(require('path').join(__di
 await new Promise(r=>srv.on('listening',r));
 const day=n=>{const d=new Date();d.setDate(d.getDate()-n);d.setHours(12);return d.toISOString()};
 const dom=await JSDOM.fromURL('http://localhost:'+srv.address().port+'/',{runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,beforeParse(w){
+ w.TextEncoder = require('util').TextEncoder; w.TextDecoder = require('util').TextDecoder;
  w.matchMedia=()=>({matches:false,addListener(){},addEventListener(){}}); w.confirm=()=>true; w.alert=()=>{}; w.scrollTo=()=>{};
  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{}; w.HTMLCanvasElement.prototype.getContext=()=>null; w.SVGSVGElement.prototype.createSVGRect=function(){return{}};
  w.navigator.geolocation={getCurrentPosition(){},watchPosition:()=>1,clearWatch(){}};
@@ -72,6 +73,4 @@ const css=fsx.readFileSync(require('path').join(__dirname,'..','www','vendor','t
 w.rideStatsOpen('year'); w.openDetail('v1');
 const toks=new Set(); w.document.querySelectorAll('[class]').forEach(e=>(e.getAttribute('class')||'').split(/\s+/).filter(Boolean).forEach(t=>toks.add(t)));
 const miss=[...toks].filter(t=>{const e=t.replace(/([^a-zA-Z0-9_-])/g,'\\$1');return !t.includes('[')&&!css.includes('.'+e)&&!inl.includes('.'+t)&&!/^(theme-opt|remind-opt|fa-|fas|far|fab|leaflet|ride-|map-|seg|btn|card|status|tab|glass|modal|slide|score|insight|progress|lock|pin|text-accent|bg-accent|border-accent|from-|to-)/.test(t)});
-ok(miss.length===0,'Tailwind kapsama '+(miss.join(' ')||'tamam'));
-process.exit(process.exitCode||0);
-})();
+ok(miss.length===0,'Tailwind kapsama
