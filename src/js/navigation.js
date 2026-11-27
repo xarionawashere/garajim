@@ -1,11 +1,15 @@
 // Route search and turn-by-turn navigation.
 // Classic script: globals are shared with other files in index.html's intentional load order.
 function nvText(m, name) {
-    const t = m.type, mod = m.modifier; let b;
+    const t = String(m.type || '').toLowerCase(), mod = String(m.modifier || '').toLowerCase();
+    const exit = Number(m.exit);
+    const roundabout = ['roundabout', 'rotary', 'roundabout turn', 'exit roundabout', 'roundabout exit'].includes(t)
+      || (Number.isFinite(exit) && exit > 0);
+    let b;
     if (t === 'depart') b = 'Yola çık';
     else if (t === 'arrive') b = 'Varış noktasına ulaştın' + (mod === 'left' ? ' (solda)' : mod === 'right' ? ' (sağda)' : '');
-    else if (t === 'roundabout' || t === 'rotary' || t === 'roundabout turn') b = 'Kavşakta ' + (m.exit || 1) + '. çıkıştan çık';
-    else if (t === 'fork') b = mod && mod.includes('left') ? 'Çatalda sola tut' : mod && mod.includes('right') ? 'Çatalda sağa tut' : 'Çatalda düz devam et';
+    else if (roundabout) b = 'Göbekten ' + (Number.isFinite(exit) && exit > 0 ? Math.floor(exit) : 1) + '. çıkıştan devam et';
+    else if (t === 'fork') b = mod.includes('left') ? 'Çatalda sola tut' : mod.includes('right') ? 'Çatalda sağa tut' : 'Çatalda düz devam et';
     else if (t === 'end of road') b = 'Yolun sonunda ' + (NV_MOD[mod] || 'dön');
     else if (t === 'merge') b = 'Yola katıl';
     else if (t === 'on ramp') b = 'Rampaya gir';
@@ -20,7 +24,16 @@ function nvText(m, name) {
   const nvFmtTime = sec => { const m = Math.max(1, Math.round(sec / 60)); return m < 60 ? m + ' dk' : Math.floor(m / 60) + ' sa ' + (m % 60) + ' dk'; };
   function nvSpeak(t) {
     if (!nv.speak || !t) return;
-    try { if (window.speechSynthesis && window.SpeechSynthesisUtterance) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'tr-TR'; speechSynthesis.speak(u); } } catch (e) {}
+    try {
+      const N = window.GarajimNative;
+      if (N && typeof N.speakNavigation === 'function') { N.speakNavigation(String(t)); return; }
+      const synth = window.speechSynthesis, Utterance = window.SpeechSynthesisUtterance;
+      if (!synth || !Utterance) return;
+      synth.cancel();
+      const u = new Utterance(String(t)); u.lang = 'tr-TR'; u.rate = 1; u.volume = 1;
+      if (typeof synth.resume === 'function') synth.resume();
+      synth.speak(u);
+    } catch (e) {}
   }
   function nvToggleVoice() {
     nv.speak = !nv.speak;
@@ -236,7 +249,8 @@ function nvText(m, name) {
     document.getElementById('navBanner').classList.add('hidden'); rideGhostChipPos();
     const mainBtn=document.getElementById('rideNavPrimaryBtn'); if(mainBtn){mainBtn.classList.remove('text-accent');mainBtn.title='Navigasyon';}
     try { localStorage.removeItem(NV_SESSION_KEY); } catch (e) {}
-    try { if(window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    try { if(window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    try { const N = window.GarajimNative; if (N && typeof N.stopNavigationSpeech === 'function') N.stopNavigationSpeech(); } catch (e) {}
     if (!(ride.running && !ride.paused)) {
       rideBGStop(); rideHideBgNotification();
       if (!rideVisible() && ride.watchId != null) { try { navigator.geolocation.clearWatch(ride.watchId); } catch (e) {} ride.watchId=null; }
