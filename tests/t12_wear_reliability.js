@@ -46,7 +46,7 @@ check(!!syncNativeBlock && /pushWearVehicles/.test(syncNativeBlock[1]),
 check(/Tasks\.await\(Wearable\.getDataClient\(app\)\.putDataItem\(req\.asPutDataRequest\(\)\)\)/.test(wearSync)
   && /lastJson = json/.test(wearSync),
   'Saat durumunun gönderim önbelleği yalnızca başarılı yazımdan sonra güncellenir');
-check(/versionCode\s+20/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
+check(/versionCode\s+1004007/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
   && /python3 scripts\/ci-version\.py/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8'))
   && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(root, 'scripts/ci-version.py'), 'utf8'))
   && /version != package\["version"\]/.test(fs.readFileSync(path.join(root, 'scripts/ci-version.py'), 'utf8')),

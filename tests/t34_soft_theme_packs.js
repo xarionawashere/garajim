@@ -1,4 +1,4 @@
-// Garajım 1.4.6: sakin tema katalogu + ilk çizim + telefon/Wear OS eşlemesi.
+// Garajım 1.4.7: sakin tema katalogu + ilk çizim + telefon/Wear OS eşlemesi.
 const fs = require('fs');
 const path = require('path');
 const htmlPath = process.argv[2] || path.join(__dirname, '..', 'index.html');
@@ -39,7 +39,7 @@ ok(added.every(id => new RegExp(`case \\"${id}\\"`).test(wear)), '12 yeni tema W
 ok(html.includes("typeof N.pushWearTheme === 'function'") && html.includes('N.pushWearTheme(p.id, themePref())'), 'tema seçimi telefondan Wear Data Layer köprüsüne gönderiliyor');
 ok(wear.includes('applyPhoneTheme(map.getString("pack", "dark-red")') && wear.includes('PATH_THEME'), 'saat tema paketini telefonun tema mesajından uyguluyor');
 ok(wear.includes('b.setTextColor(contrastText(themeAccent))') && wear.includes('private int contrastText(int color)'), 'saatin ana düğmesi vurgu rengine göre okunabilir metin rengi seçiyor');
-ok(pkg.version === '1.4.6' && /versionCode\s+20/.test(gradle) && /versionName\s+"1\.4\.6"/.test(gradle), 'web ve Wear OS sürümleri 1.4.6 olarak hizalı');
+ok(pkg.version === '1.4.7' && /versionCode\s+1004007/.test(gradle) && /versionName\s+"1\.4\.7"/.test(gradle), 'web ve Wear OS sürümleri 1.4.7 olarak hizalı');
 
 let missingFields = [], poorContrast = [];
 for (const id of ids) {

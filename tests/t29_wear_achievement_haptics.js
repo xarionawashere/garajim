@@ -17,5 +17,5 @@ ok(/CHANNEL_PREFIX = "garajim_achievement_v2_"/.test(listener), 'eski ve ayarı 
 ok(/channel\.enableVibration\(false\)/.test(listener), 'kanal titreşimi kapalı; çift titreşim yerine tek doğrudan haptik var');
 ok(/setVibrationPattern\(vibrationPattern\(rarity\)\)/.test(listener) === false, 'eski kanal desenine bağlı pasif titreşim davranışı kaldırılmış');
 ok(/android\.permission\.VIBRATE/.test(manifest), 'Wear manifestinde VIBRATE izni mevcut');
-ok(pkg.version === '1.4.6' && /versionCode\s+20/.test(gradle) && /versionName "1\.4\.6"/.test(gradle)
+ok(pkg.version === '1.4.7' && /versionCode\s+1004007/.test(gradle) && /versionName "1\.4\.7"/.test(gradle)
   && /python3 scripts\/ci-version\.py/.test(workflow) && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(root, 'scripts/ci-version.py'), 'utf8')), 'telefon ve saat APK sürümleri ortak sürüm kaynağından üretiliyor');

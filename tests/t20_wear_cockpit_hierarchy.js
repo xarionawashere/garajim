@@ -26,8 +26,8 @@ for (const id of ['btnVehicle', 'btnToggle', 'btnStop', 'btnPendingSummary', 'bt
 check(/android:contentDescription="Önceki parça"/.test(xml)
   && /android:contentDescription="Oynat veya duraklat"/.test(xml)
   && /android:contentDescription="Sonraki parça"/.test(xml), 'Müzik ikonlarında ekran okuyucu adları vardır');
-check(/versionCode\s+20/.test(gradle) && /versionName "1\.4\.6"/.test(gradle)
+check(/versionCode\s+1004007/.test(gradle) && /versionName "1\.4\.7"/.test(gradle)
   && /python3 scripts\/ci-version\.py/.test(workflow)
   && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(root, 'scripts/ci-version.py'), 'utf8'))
-  && /"version": "1\.4\.6"/.test(pkg), 'Telefon, saat ve kaynak paket sürümleri 1.4.6 olarak eşleşir');
+  && /"version": "1\.4\.7"/.test(pkg), 'Telefon, saat ve kaynak paket sürümleri 1.4.7 olarak eşleşir');
 process.exit(failures ? 1 : 0);

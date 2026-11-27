@@ -1,4 +1,4 @@
-// Garajım 1.4.6 — Studio: araç profili, tasarım varyantları, parça planı ve yedekleme.
+// Garajım 1.4.7 — Studio: araç profili, tasarım varyantları, parça planı ve yedekleme.
 const fs = require('fs');
 const path = require('path');
 const htmlPath = process.argv[2] || path.join(__dirname, '..', 'index.html');
@@ -23,6 +23,6 @@ ok(html.includes('function studioUpdatePartFitment(id, value)') && html.includes
 ok(html.includes('function studioAddJournalEntry()') && html.includes('function studioSaveNotes()'), 'Proje günlüğü ve kullanıcı notları saklanıyor');
 ok(html.includes("studioProjects: (typeof studioProjectsGet === 'function' ? studioProjectsGet() : [])") && html.includes("raw.studioProjects"), 'Studio projeleri uygulama yedeğine eklenip geri alınabiliyor');
 ok(html.includes('function studioExportProject()') && html.includes('function studioShareBuild()'), 'Proje JSON olarak dışa aktarılabiliyor ve özet paylaşımı var');
-ok(pkg.version === '1.4.6' && /versionCode\s+20/.test(gradle) && /versionName\s+"1\.4\.6"/.test(gradle) && /python3 scripts\/ci-version\.py/.test(workflow) && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(__dirname, '..', 'scripts/ci-version.py'), 'utf8')), 'Web, telefon ve Wear OS sürümleri ortak kuralla hizalanıyor');
+ok(pkg.version === '1.4.7' && /versionCode\s+1004007/.test(gradle) && /versionName\s+"1\.4\.7"/.test(gradle) && /python3 scripts\/ci-version\.py/.test(workflow) && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(__dirname, '..', 'scripts/ci-version.py'), 'utf8')), 'Web, telefon ve Wear OS sürümleri ortak kuralla hizalanıyor');
 console.log(`\nStudio: ${passed} PASS, ${failed} FAIL`);
 process.exit(failed ? 1 : 0);
