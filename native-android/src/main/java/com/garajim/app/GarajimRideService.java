@@ -49,12 +49,14 @@ public class GarajimRideService extends Service {
     private static final String KEY_WEB_SNAPSHOT = "web_snapshot_json";
     private static final String KEY_VEHICLES = "vehicles_json";
     private static final String KEY_HANDOFFS = "handoffs_json";
+    private static final String KEY_WEAR_NAV = "wear_navigation_json";
 
     private static final String ACTION_ARM = "com.garajim.app.ride.ARM";
     private static final String ACTION_UPDATE = "com.garajim.app.ride.UPDATE";
     private static final String ACTION_COMMAND = "com.garajim.app.ride.COMMAND";
     private static final String ACTION_TAKEOVER = "com.garajim.app.ride.TAKEOVER";
     private static final String ACTION_VEHICLES = "com.garajim.app.ride.VEHICLES";
+    private static final String ACTION_NAVIGATION = "com.garajim.app.ride.NAVIGATION";
     private static final String EXTRA_COMMAND = "command";
     private static final String EXTRA_ARGUMENT = "argument";
     private static final long TICK_MS = 1000L;
@@ -214,6 +216,23 @@ public class GarajimRideService extends Service {
         } catch (Exception e) { Log.w(TAG, "web snapshot: " + e.getMessage()); }
     }
 
+    /** Phone navigation state is stored separately from ride recording and relayed to Wear. */
+    public static void syncWearNavigation(Context ctx, String json) {
+        if (ctx == null || json == null) return;
+        Context app = ctx.getApplicationContext();
+        SharedPreferences p = app.getSharedPreferences(PREFS, MODE_PRIVATE);
+        try {
+            JSONObject nav = new JSONObject(json);
+            nav.put("syncedAt", System.currentTimeMillis());
+            p.edit().putString(KEY_WEAR_NAV, nav.toString()).apply();
+            if (isArmed(app)) {
+                Intent i = new Intent(app, GarajimRideService.class);
+                i.setAction(ACTION_NAVIGATION);
+                startServiceSafely(app, i);
+            }
+        } catch (Exception e) { Log.w(TAG, "Wear navigation state: " + e.getMessage()); }
+    }
+
     public static void setSelectedVehicle(Context ctx, String id) {
         if (ctx == null || id == null || id.trim().isEmpty()) return;
         SharedPreferences p = ctx.getApplicationContext().getSharedPreferences(PREFS, MODE_PRIVATE);
@@ -301,6 +320,9 @@ public class GarajimRideService extends Service {
         } else if (ACTION_VEHICLES.equals(action)) {
             state = readState();
             pushVehiclesSnapshot();
+            publishState();
+        } else if (ACTION_NAVIGATION.equals(action)) {
+            state = readState();
             publishState();
         } else if (ACTION_UPDATE.equals(action)) {
             String title = intent.getStringExtra(EXTRA_TITLE);
@@ -911,7 +933,18 @@ public class GarajimRideService extends Service {
             outgoing.put("mediaDur", hasMedia ? media.optLong("dur", 0) : 0);
             String mediaArt = hasMedia ? GarajimMedia.art(this) : "";
             outgoing.put("mediaArt", mediaArt.length() <= 60000 ? mediaArt : "");
-            outgoing.put("routeJson", buildMiniRouteJson());
+            JSONObject nav = new JSONObject(prefs.getString(KEY_WEAR_NAV, "{}"));
+            boolean navActive = nav.optBoolean("active", false)
+                    && System.currentTimeMillis() - nav.optLong("syncedAt", 0L) < 45_000L;
+            outgoing.put("navActive", navActive);
+            outgoing.put("navDest", navActive ? nav.optString("destination", "") : "");
+            outgoing.put("navRemainingM", navActive ? nav.optDouble("remainingM", -1) : -1);
+            outgoing.put("navStepDistanceM", navActive ? nav.optDouble("stepDistanceM", -1) : -1);
+            outgoing.put("navRotation", navActive ? nav.optDouble("rotation", 0) : 0);
+            outgoing.put("navEtaSec", navActive ? nav.optInt("etaSec", 0) : 0);
+            outgoing.put("navText", navActive ? nav.optString("instruction", "") : "");
+            outgoing.put("navDistM", navActive ? nav.optDouble("stepDistanceM", -1) : -1);
+            outgoing.put("routeJson", navActive ? nav.optString("routeJson", "[]") : buildMiniRouteJson());
             outgoing.put("overLimit", false); outgoing.put("alert", state.optString("alert", ""));
             outgoing.put("pendingSummary", state.optBoolean("pendingSummary", false));
             outgoing.put("summaryId", state.optString("summaryId", ""));
