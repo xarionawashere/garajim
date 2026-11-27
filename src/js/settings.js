@@ -3,25 +3,34 @@
 function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
   function packPref() { return localStorage.getItem('garaj_pack') || 'dark-red'; }
   const BRAND_LOGOS = [
-    { id: 'garage', name: 'Garaj', desc: 'Klasik garaj çizgisi', mark: '⌂', tier: 'free' },
-    { id: 'monogram', name: 'Monogram', desc: 'Garajım harfi', mark: 'G', tier: 'free' },
-    { id: 'route', name: 'Rota', desc: 'Yolculuk ve keşif', mark: '➤', tier: 'free' },
-    { id: 'sport', name: 'Sport', desc: 'Dinamik çizgi', mark: '⚡', tier: 'free' }
+    { id: 'garage', name: 'Garaj', desc: 'Garaj çizgisi', mark: 'G', tier: 'free' },
+    { id: 'monogram', name: 'Monogram', desc: 'Keskin G harfi', mark: 'G', tier: 'free' },
+    { id: 'route', name: 'Rota', desc: 'Yol ve keşif', mark: 'R', tier: 'free' },
+    { id: 'sport', name: 'Sport', desc: 'Turuncu şimşek', mark: 'S', tier: 'free' },
+    { id: 'heritage', name: 'Heritage', desc: 'Klasik otomobil', mark: 'H', tier: 'free' },
+    { id: 'turbo', name: 'Turbo', desc: 'Türbin rozeti', mark: 'T', tier: 'free' },
+    { id: 'electric', name: 'Electric', desc: 'Elektrik enerjisi', mark: 'E', tier: 'free' },
+    { id: 'rally', name: 'Rally', desc: 'Ralli damalı bayrak', mark: 'R', tier: 'free' }
   ];
   function brandLogoPref() {
     const id = localStorage.getItem('garaj_logo_v1') || 'garage';
     return BRAND_LOGOS.some(x => x.id === id) ? id : 'garage';
   }
   function brandLogoSvg(id) {
-    if (id === 'monogram') return '<svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="23" text-anchor="middle" font-family="Inter, sans-serif" font-size="23" font-weight="800" fill="currentColor">G</text></svg>';
-    if (id === 'route') return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 25c0-5 8-3 8-8s-8-3-8-8"/><path d="M21 5h5v5"/><path d="M26 5l-8 8"/></svg>';
-    if (id === 'sport') return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3 7 18h8l-1 11 11-16h-8l1-10Z"/></svg>';
-    return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14 16 4l13 10"/><path d="M7 13v14h18V13"/><path d="M12 27v-9h8v9"/></svg>';
+    const icons = {
+      garage: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14 16 4l13 10"/><path d="M7 13v14h18V13"/><path d="M12 27v-9h8v9"/></svg>',
+      monogram: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M25 9a12 12 0 1 0 2 11h-9"/><path d="M19 20h8v-7"/></svg>',
+      route: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="25" r="2"/><circle cx="25" cy="7" r="2"/><path d="M7 23c0-6 10-3 10-10 0-3 3-4 6-4"/></svg>',
+      sport: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 3 7 18h8l-1 11 11-16h-8l1-10Z"/></svg>',
+      heritage: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="13"/><path d="m6 19 2-5 4-2h8l4 3 3 1v4H6Z"/><circle cx="11" cy="20" r="1.5"/><circle cx="22" cy="20" r="1.5"/></svg>',
+      turbo: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="3"/><path d="M16 13V5M19 16h8M16 19v8M13 16H5M18 14l5-5M18 18l5 5M14 18l-5 5M14 14 9 9"/></svg>',
+      electric: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3H7v26h18V3h-6"/><path d="M13 3h6v5h-6z"/><path d="m18 11-7 10h5l-2 6 8-11h-5l1-5Z"/></svg>',
+      rally: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 27V5"/><path d="M8 6h17v12H8"/><path d="M8 6h6v6H8zm12 0h5v6h-5zM14 12h6v6h-6z"/><path d="M5 27h4"/></svg>'
+    };
+    return icons[id] || icons.garage;
   }
   function applyBrandLogo() {
     const id = brandLogoPref();
-    const mark = document.getElementById('garajBrandMark');
-    if (mark) mark.innerHTML = brandLogoSvg(id);
     document.querySelectorAll('.brand-logo-option').forEach(b => {
       const active = b.dataset.logoId === id;
       b.classList.toggle('active', active);
@@ -44,9 +53,10 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     applyBrandLogo();
     try {
       const N = window.GarajimNative;
+      if (N && typeof N.setLauncherLogo === 'function') N.setLauncherLogo(id);
       if (N && typeof N.pushWearBranding === 'function') N.pushWearBranding(packPref(), themePref(), id);
     } catch (e) {}
-    toast((BRAND_LOGOS.find(logo => logo.id === id) || {}).name + ' logosu seçildi');
+    toast((BRAND_LOGOS.find(logo => logo.id === id) || {}).name + ' uygulama simgesi seçildi');
   }
 
 
