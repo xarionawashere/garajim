@@ -249,6 +249,12 @@ public class GarajimNativeBridge {
         try { GarajimWearSync.pushTheme(context, pack, mode); } catch (Exception ignored) { }
     }
 
+    /** Changes the phone app's launcher icon to the selected design. */
+    @JavascriptInterface
+    public void setLauncherLogo(String logoId) {
+        try { LauncherIconManager.apply(context, logoId); } catch (Exception ignored) { }
+    }
+
     /** Seçilen uygulama logosunu aktif tema ile birlikte Wear OS'a eşitler. */
     @JavascriptInterface
     public void pushWearBranding(String pack, String mode, String logoId) {
