@@ -45,7 +45,7 @@ public final class MiniRouteView extends View {
         setWillNotDraw(false);
     }
 
-    public void setRouteJson(String json, boolean gpsReady, boolean active, boolean paused, boolean navigation) {
+    public void setRouteJson(String json, boolean gpsReady, boolean active, boolean paused) {
         List<GeoPoint> parsed = new ArrayList<>();
         try {
             JSONArray arr = new JSONArray(json == null || json.trim().isEmpty() ? "[]" : json);
@@ -64,6 +64,10 @@ public final class MiniRouteView extends View {
         this.gpsReady = gpsReady;
         this.active = active;
         this.paused = paused;
+        invalidate();
+    }
+
+    public void setNavigationActive(boolean navigation) {
         this.navigation = navigation;
         invalidate();
     }
