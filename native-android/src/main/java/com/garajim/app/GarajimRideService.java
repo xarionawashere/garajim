@@ -225,7 +225,7 @@ public class GarajimRideService extends Service {
             JSONObject nav = new JSONObject(json);
             nav.put("syncedAt", System.currentTimeMillis());
             p.edit().putString(KEY_WEAR_NAV, nav.toString()).apply();
-            if (isArmed(app)) {
+            if (isArmed(app) || nav.optBoolean("active", false)) {
                 Intent i = new Intent(app, GarajimRideService.class);
                 i.setAction(ACTION_NAVIGATION);
                 startServiceSafely(app, i);
