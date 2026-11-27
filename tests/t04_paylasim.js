@@ -53,7 +53,7 @@ ok(ev("costStats({km:100,history:[{km:100,cost:50}],fuelLogs:[]})")===null,'kıs
 w.openDetail('v1'); const h=w.document.getElementById('detailView').innerHTML; ok(h.includes('Yakıt maliyeti')&&h.includes('Tüm masraflar'),'detayda iki maliyet kutusu');
 
 // ---- 3) Widget bakım
-w.syncNative(); const wv=JSON.parse(w.__w)[0];
+w.syncNative(); const wv=JSON.parse(w.__w).vehicles[0];
 ok(wv.svc&&wv.svc.remaining===900&&wv.svc.state==='warn'&&wv.svc.percent===94,'widget bakım: kalan 900 km, durum warn, %94 → '+JSON.stringify(wv.svc));
 ev("vehicles[0].km=21000"); w.syncNative(); const wo=JSON.parse(w.__w).vehicles[0].svc; ok(wo.remaining===-100&&wo.state==='bad','bakım geçince durum bad (-100 km)');
 ev("vehicles[0].nextServiceKm=''"); w.syncNative(); ok(JSON.parse(w.__w).vehicles[0].svc===null,'bakım verisi yoksa svc null');
