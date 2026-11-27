@@ -51,7 +51,7 @@ public final class GarajimWearSync {
         final Context app = ctx.getApplicationContext();
         final String safePack = (pack == null || pack.trim().isEmpty()) ? "dark-red" : pack.trim();
         final String safeMode = (mode == null || mode.trim().isEmpty()) ? "dark" : mode.trim();
-        final String safeLogo = "monogram".equals(logoId) || "route".equals(logoId) || "sport".equals(logoId) ? logoId : "garage";
+        final String safeLogo = LauncherIconManager.normalize(logoId);
         app.getSharedPreferences("garajim_branding", Context.MODE_PRIVATE).edit().putString("logoId", safeLogo).apply();
         EX.execute(() -> {
             try {
