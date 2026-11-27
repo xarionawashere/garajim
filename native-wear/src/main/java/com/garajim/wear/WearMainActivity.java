@@ -75,6 +75,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
 
     private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus, navStrip, limitTxt, goalTxt, badgeTxt, convoyTxt;
+    private android.widget.ImageView musicArt;
+    private android.widget.ProgressBar musicProgress;
+    private Button btnPlay;
+    private String lastMusicArt = null;
     private android.view.View pageCockpit, pageMore;
     private final java.util.ArrayList<LinearLayout> wearPages = new java.util.ArrayList<>();
     private TextView wearPageDots;
@@ -183,6 +187,9 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
 
         alert = findViewById(R.id.wearAlert);
         track = findViewById(R.id.wearTrack);
+        musicArt = findViewById(R.id.wearMusicArt);
+        musicProgress = findViewById(R.id.wearMusicProgress);
+        btnPlay = findViewById(R.id.btnPlay);
         parkInfo = findViewById(R.id.wearPark);
         mapStatus = findViewById(R.id.wearMapStatus);
         miniMap = findViewById(R.id.wearMiniMap);
@@ -200,7 +207,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         wirePress(findViewById(R.id.btnStop), v -> confirmStopOnWatch());
         wirePress(findViewById(R.id.btnNext), v -> send("next"));
         wirePress(findViewById(R.id.btnPrev), v -> send("prev"));
-        wirePress(findViewById(R.id.btnPlay), v -> send("playpause"));
+        wirePress(btnPlay, v -> send("playpause"));
         wirePress(findViewById(R.id.btnPark), v -> { send("park_where"); showPark(); });
         wirePress(btnVehicle, v -> showVehiclePicker());
         wirePress(btnPendingSummary, v -> showPendingSummaryDialog());
@@ -1087,6 +1094,10 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         final boolean incomingGpsReady = map.getBoolean("gpsReady", false);
         final String tr = map.getString("track", "");
         final String ar = map.getString("artist", "");
+        final boolean mediaPlaying = map.getBoolean("playing", false);
+        final long mediaPos = map.getLong("mediaPos", 0L);
+        final long mediaDur = map.getLong("mediaDur", 0L);
+        final String mediaArtwork = map.getString("mediaArt", "");
         final String routeJson = map.getString("routeJson", "[]");
         final double incomingParkDist = map.getDouble("parkDistM", -1);
         final String incomingParkDir = map.getString("parkDir", "");
@@ -1223,10 +1234,30 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             if (status != null) {
                 status.setTextColor(!running ? 0xFF94A3B8 : (paused ? 0xFFFBBF24 : (over ? 0xFFF87171 : 0xFF4ADE80)));
             }
-            if (tr != null && !tr.isEmpty()) {
-                String line = ar != null && !ar.isEmpty() ? (tr + " — " + ar) : tr;
-                if (track != null && !line.contentEquals(track.getText())) {
-                    track.setAlpha(0.4f); track.setText(line); track.animate().alpha(1f).setDuration(200).start();
+            String musicLine = tr != null && !tr.isEmpty()
+                    ? (ar != null && !ar.isEmpty() ? (tr + " — " + ar) : tr) : "Müzik çalmıyor";
+            if (track != null && !musicLine.contentEquals(track.getText())) {
+                track.setAlpha(0.4f); track.setText(musicLine); track.animate().alpha(1f).setDuration(200).start();
+            }
+            if (btnPlay != null) btnPlay.setText(mediaPlaying ? "⏸" : "▶");
+            if (musicProgress != null) {
+                int progress = mediaDur > 0 ? (int) Math.max(0, Math.min(1000, Math.round(mediaPos * 1000.0 / mediaDur))) : 0;
+                musicProgress.setProgress(progress);
+            }
+            if (musicArt != null && !mediaArtwork.equals(lastMusicArt)) {
+                lastMusicArt = mediaArtwork;
+                if (mediaArtwork.isEmpty()) {
+                    musicArt.setImageResource(android.R.drawable.ic_media_play);
+                    musicArt.setColorFilter(0xFFE2E8F0);
+                } else {
+                    try {
+                        byte[] bytes = android.util.Base64.decode(mediaArtwork, android.util.Base64.DEFAULT);
+                        android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        if (bitmap != null) { musicArt.setImageBitmap(bitmap); musicArt.clearColorFilter(); }
+                    } catch (Exception ignored) {
+                        musicArt.setImageResource(android.R.drawable.ic_media_play);
+                        musicArt.setColorFilter(0xFFE2E8F0);
+                    }
                 }
             }
             if (over) {
