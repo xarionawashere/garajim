@@ -67,12 +67,8 @@ public class GarajimNativeBridge {
     /** Tüm araçların özeti (JSON dizisi: id, name, plate, km, cons, svc). Widget seçili aracı gösterir. */
     @JavascriptInterface
     public void syncWidget(String json) {
-        try {
-            JSONArray vehicles = new JSONArray(json == null ? "[]" : json);
-            context.getSharedPreferences("garajim_widget", Context.MODE_PRIVATE).edit()
-                .putString("vehicles_json", vehicles.toString()).putInt("count", vehicles.length()).apply();
-            GarajimWidgetProvider.refresh(context);
-        } catch (Exception ignored) { }
+        try { GarajimWidgetProvider.sync(context, json == null ? "[]" : json); }
+        catch (Exception ignored) { }
     }
 
     /** Uygulamadan "widget'ta bu aracı göster". */
