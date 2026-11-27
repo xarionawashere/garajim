@@ -37,16 +37,18 @@ public final class GarajimWearSync {
 
 
     /** Telefonun aktif renk temasını kalıcı Wear Data Layer öğesiyle saate eşitler. */
-    public static void pushTheme(Context ctx, String pack, String mode) {
+    public static void pushTheme(Context ctx, String pack, String mode, String logoId) {
         if (ctx == null) return;
         final Context app = ctx.getApplicationContext();
         final String safePack = (pack == null || pack.trim().isEmpty()) ? "dark-red" : pack.trim();
         final String safeMode = (mode == null || mode.trim().isEmpty()) ? "dark" : mode.trim();
+        final String safeLogo = "monogram".equals(logoId) || "route".equals(logoId) || "sport".equals(logoId) ? logoId : "garage";
         EX.execute(() -> {
             try {
                 PutDataMapRequest req = PutDataMapRequest.create(PATH_THEME);
                 req.getDataMap().putString("pack", safePack);
                 req.getDataMap().putString("mode", safeMode);
+                req.getDataMap().putString("logoId", safeLogo);
                 req.getDataMap().putLong("updatedAt", System.currentTimeMillis());
                 req.setUrgent();
                 Tasks.await(Wearable.getDataClient(app).putDataItem(req.asPutDataRequest()));
