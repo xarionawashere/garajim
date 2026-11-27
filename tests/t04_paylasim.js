@@ -55,8 +55,8 @@ w.openDetail('v1'); const h=w.document.getElementById('detailView').innerHTML; o
 // ---- 3) Widget bakım
 w.syncNative(); const wv=JSON.parse(w.__w)[0];
 ok(wv.svc&&wv.svc.remaining===900&&wv.svc.state==='warn'&&wv.svc.percent===94,'widget bakım: kalan 900 km, durum warn, %94 → '+JSON.stringify(wv.svc));
-ev("vehicles[0].km=21000"); w.syncNative(); const wo=JSON.parse(w.__w)[0].svc; ok(wo.remaining===-100&&wo.state==='bad','bakım geçince durum bad (-100 km)');
-ev("vehicles[0].nextServiceKm=''"); w.syncNative(); ok(JSON.parse(w.__w)[0].svc===null,'bakım verisi yoksa svc null');
+ev("vehicles[0].km=21000"); w.syncNative(); const wo=JSON.parse(w.__w).vehicles[0].svc; ok(wo.remaining===-100&&wo.state==='bad','bakım geçince durum bad (-100 km)');
+ev("vehicles[0].nextServiceKm=''"); w.syncNative(); ok(JSON.parse(w.__w).vehicles[0].svc===null,'bakım verisi yoksa svc null');
 
 // ---- 5) Sürüş istatistikleri
 const wk=ev("rideStatsData('week')"); ok(wk.n===2&&wk.dist===70000&&wk.time===5400&&wk.max===120&&Math.abs(wk.avg-70000/5400*3.6)<0.01,'hafta: 2 sürüş, 70 km, 1.5 sa, maks 120, ort '+wk.avg.toFixed(1));
