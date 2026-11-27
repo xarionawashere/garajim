@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
+import android.media.AudioAttributes;
 import android.webkit.JavascriptInterface;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,7 +18,51 @@ import org.json.JSONObject;
 public class GarajimNativeBridge {
     private final Context context;
     private final Activity activity;
+    private TextToSpeech navigationTts;
+    private boolean navigationTtsReady;
+    private String pendingNavigationSpeech = "";
     public GarajimNativeBridge(Activity activity) { this.activity = activity; this.context = activity.getApplicationContext(); }
+
+    @JavascriptInterface
+    public void speakNavigation(String text) {
+        final String message = text == null ? "" : text.trim();
+        if (message.isEmpty()) return;
+        activity.runOnUiThread(() -> {
+            pendingNavigationSpeech = message.length() > 240 ? message.substring(0, 240) : message;
+            if (navigationTtsReady && navigationTts != null) {
+                navigationTts.speak(pendingNavigationSpeech, TextToSpeech.QUEUE_FLUSH, null, "garajim-navigation");
+                pendingNavigationSpeech = "";
+                return;
+            }
+            if (navigationTts != null) return;
+            navigationTts = new TextToSpeech(context, status -> {
+                if (status != TextToSpeech.SUCCESS || navigationTts == null) return;
+                try {
+                    navigationTts.setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build());
+                    int language = navigationTts.setLanguage(new java.util.Locale("tr", "TR"));
+                    if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        navigationTts.setLanguage(java.util.Locale.getDefault());
+                    }
+                    navigationTts.setSpeechRate(1.0f);
+                    navigationTtsReady = true;
+                    if (!pendingNavigationSpeech.isEmpty()) {
+                        navigationTts.speak(pendingNavigationSpeech, TextToSpeech.QUEUE_FLUSH, null, "garajim-navigation");
+                        pendingNavigationSpeech = "";
+                    }
+                } catch (Exception ignored) { }
+            });
+        });
+    }
+
+    @JavascriptInterface
+    public void stopNavigationSpeech() {
+        activity.runOnUiThread(() -> {
+            pendingNavigationSpeech = "";
+            try { if (navigationTts != null) navigationTts.stop(); } catch (Exception ignored) { }
+        });
+    }
 
     /** Tüm araçların özeti (JSON dizisi: id, name, plate, km, cons, svc). Widget seçili aracı gösterir. */
     @JavascriptInterface
