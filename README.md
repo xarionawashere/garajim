@@ -119,7 +119,7 @@ Güncelleme sırasında imza uyumsuzluğu görürsen uygulamayı kaldırmadan ö
 
 Depo kökünde sırasıyla çalıştır:
 
-<pre><code>npm install --no-audit --no-fund
+<pre><code>npm ci --no-audit --no-fund
 npm run build:web
 npm test</code></pre>
 
