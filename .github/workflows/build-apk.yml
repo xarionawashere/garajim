@@ -29,7 +29,7 @@ jobs:
           java-version: 17
 
       - name: Bagimliliklari yukle
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
 
       - name: Web uygulamasini hazirla (internetsiz calisacak sekilde gom)
         run: node build-web.js
@@ -135,4 +135,192 @@ jobs:
             alias_name = 'com.garajim.app.LauncherLogo' + suffix
             if any(x.get(A+'name') == alias_name for x in app.findall('activity-alias')):
               continue
-            alias = ET.
+            alias = ET.SubElement(app, 'activity-alias', {
+              A+'name': alias_name,
+              A+'targetActivity': 'com.garajim.app.MainActivity',
+              A+'enabled': 'true' if logo_id == 'garage' else 'false',
+              A+'exported': 'true',
+              A+'icon': ('@mipmap/ic_launcher' if logo_id == 'garage' else '@drawable/ic_launcher_logo_' + logo_id),
+              A+'roundIcon': ('@mipmap/ic_launcher_round' if logo_id == 'garage' else '@drawable/ic_launcher_logo_' + logo_id),
+              A+'label': '@string/app_name'
+            })
+            f = ET.SubElement(alias, 'intent-filter')
+            ET.SubElement(f, 'action', {A+'name': 'android.intent.action.MAIN'})
+            ET.SubElement(f, 'category', {A+'name': 'android.intent.category.LAUNCHER'})
+          tree.write(p, encoding='utf-8', xml_declaration=True)
+          PY
+
+      - name: Uygulama simgelerini ekle
+        run: |
+          if ! command -v convert >/dev/null; then sudo apt-get update && sudo apt-get install -y imagemagick; fi
+          R=android/app/src/main/res
+          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
+            IFS=: read -r n s f <<< "$d"
+            convert icon.png -resize ${s}x${s} "$R/mipmap-$n/ic_launcher.png"
+            convert icon.png -resize ${s}x${s} "$R/mipmap-$n/ic_launcher_round.png"
+            convert icon-foreground.png -resize ${f}x${f} "$R/mipmap-$n/ic_launcher_foreground.png"
+          done
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n  <color name="ic_launcher_background">#0A0A0A</color>\n</resources>\n' > "$R/values/ic_launcher_background.xml"
+
+      - name: Release imzasi yapilandir (varsa)
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            mkdir -p android/keystore
+            echo "$KEYSTORE_BASE64" | base64 -d > android/keystore/garajim.jks
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+            cat >> android/app/build.gradle <<'GRADLE'
+
+            android {
+                signingConfigs {
+                    release {
+                        storeFile file("../keystore/garajim.jks")
+                        storeType "pkcs12"
+                        storePassword System.getenv("KEYSTORE_PASSWORD")
+                        keyAlias System.getenv("KEY_ALIAS")
+                        keyPassword System.getenv("KEY_PASSWORD")
+                    }
+                }
+                buildTypes {
+                    release {
+                        signingConfig signingConfigs.release
+                        minifyEnabled false
+                    }
+                }
+            }
+          GRADLE
+            echo "build_type=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "İmza secrets bulunamadı; güncelleme imzası garanti edilmeyen debug APK üretilecek."
+            echo "build_type=debug" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wear OS senkron ve saat modulu
+        run: |
+          set -e
+          echo "=== settings.gradle (once) ==="
+          cat android/settings.gradle 2>/dev/null || true
+          python3 scripts/ci-wear-setup.py
+          mkdir -p android/wear/src/main/java/com/garajim/app
+          cp native-android/src/main/java/com/garajim/app/LauncherIconManager.java android/wear/src/main/java/com/garajim/app/
+          python3 scripts/ci-lint-relax.py
+          echo "=== settings.gradle (sonra) ==="
+          cat android/settings.gradle 2>/dev/null || true
+          test -f android/wear/build.gradle
+          test -f android/wear/src/main/AndroidManifest.xml
+
+      - name: Telefon ve saat sürümlerini esitle
+        run: python3 scripts/ci-version.py
+
+      # Aynı release sertifikasını telefon ve saat uygulamasında kullan.
+      # Böylece saat APK'sı imzasız bırakılmaz.
+      - name: Wear OS release imzasini yapilandir
+        if: ${{ steps.signing.outputs.build_type == 'release' }}
+        run: |
+          set -e
+          cat >> android/wear/build.gradle <<'GRADLE'
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file("../keystore/garajim.jks")
+                      storeType "pkcs12"
+                      storePassword System.getenv("KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEY_PASSWORD")
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                  }
+              }
+          }
+          GRADLE
+
+      - name: Telefon ve Wear OS APK derle
+        run: |
+          set -e
+          cd android
+          chmod +x gradlew
+          if [ "${{ steps.signing.outputs.build_type }}" = "release" ]; then
+            ./gradlew --no-daemon --stacktrace :app:assembleRelease :wear:assembleRelease
+          else
+            ./gradlew --no-daemon --stacktrace :app:assembleDebug :wear:assembleDebug
+          fi
+          echo "=== Üretilen telefon APK dosyalari ==="
+          find app/build/outputs/apk -type f -name '*.apk' -print
+          echo "=== Üretilen Wear OS APK dosyalari ==="
+          find wear/build/outputs/apk -type f -name '*.apk' -print
+          test -n "$(find app/build/outputs/apk -type f -name '*.apk' -print -quit)" || { echo "Telefon APK'si bulunamadi"; exit 1; }
+          test -n "$(find wear/build/outputs/apk -type f -name '*.apk' -print -quit)" || { echo "Wear OS APK'si bulunamadi"; exit 1; }
+
+      - name: Telefon APK yukle
+        uses: actions/upload-artifact@v6
+        with:
+          name: Garajim-Mobil-APK
+          path: android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Wear OS APK yukle
+        uses: actions/upload-artifact@v6
+        with:
+          name: Garajim-WearOS-APK
+          path: android/wear/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Kalici yayin dosyalarini hazirla
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.signing.outputs.build_type }}" != "release" ]; then
+            echo "GitHub Release için imzalı APK gerekli; release imza secret'ları ayarlı değil."
+            exit 1
+          fi
+          mkdir -p release-assets
+          cp android/app/build/outputs/apk/release/*.apk release-assets/Garajim-Telefon-${GITHUB_REF_NAME}.apk
+          cp android/wear/build/outputs/apk/release/*.apk release-assets/Garajim-WearOS-${GITHUB_REF_NAME}.apk
+          (cd release-assets && sha256sum *.apk > SHA256SUMS.txt)
+
+      - name: Release dosyalarini yukle
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v6
+        with:
+          name: Garajim-Release-${{ github.ref_name }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Release APK dosyalarini indir
+        uses: actions/download-artifact@v6
+        with:
+          name: Garajim-Release-${{ github.ref_name }}
+          path: release-assets
+
+      - name: GitHub Release olustur
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG_NAME" release-assets/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Garajım ${TAG_NAME}" \
+            --generate-notes
+
