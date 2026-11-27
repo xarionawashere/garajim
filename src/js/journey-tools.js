@@ -123,6 +123,7 @@ function rideGhostChipPos() { const c = document.getElementById('rideGhostChip')
       if (st.playing && !mus.open && rideVisible()) musOpenCard(true);
     }
     musRender();
+    try { if (typeof rideWearPush === 'function') rideWearPush(); } catch (e) {}
     if (mus.open && Date.now() - mus.openAt > (mus.peek ? 4500 : 9000)) musClose();
   }
   function musRender() {
