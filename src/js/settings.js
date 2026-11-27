@@ -44,7 +44,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     applyBrandLogo();
     try {
       const N = window.GarajimNative;
-      if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(packPref(), themePref(), id);
+      if (N && typeof N.pushWearTheme === 'function') N.pushWearBranding(packPref(), themePref(), id);
     } catch (e) {}
     toast((BRAND_LOGOS.find(logo => logo.id === id) || {}).name + ' logosu seçildi');
   }
@@ -159,7 +159,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     const titleSpans = document.querySelectorAll('h1 span');
     if (titleSpans[1]) titleSpans[1].style.color = p.accent;
     document.querySelectorAll('.theme-pack').forEach(b => b.classList.toggle('active', b.dataset.id === p.id));
-    try { const N = window.GarajimNative; if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(p.id, themePref(), brandLogoPref()); } catch (e) {}
+    try { const N = window.GarajimNative; if (N && typeof N.pushWearTheme === 'function') N.pushWearTheme(p.id, themePref()); } catch (e) {}
   }
   function applyTheme() {
     // light class only for legacy light toggle compatibility
