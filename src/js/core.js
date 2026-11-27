@@ -80,7 +80,25 @@ let vehicles = JSON.parse(localStorage.getItem('garaj_v4') || '[]');
     try {
       const N = window.GarajimNative;
       if (!N) return;
-      if (typeof N.syncWidget === 'function') N.syncWidget(JSON.stringify(vehicles.map(v => ({ id: v.id, name: v.name || [v.brand, v.model].filter(Boolean).join(' ') || 'Aracınız', plate: v.plate || 'Plaka girilmedi', km: v.km || v.mileage || '', cons: (() => { const f = fuelStats(v); return f ? f.avg.toFixed(1) : ''; })(), svc: (() => { const p = serviceProgress(v); return p ? { remaining: Math.round(p.remaining), percent: Math.round(p.percent), state: p.overdue ? 'bad' : p.warning ? 'warn' : 'ok' } : null; })() }))));
+      if (typeof N.syncWidget === 'function') {
+        const summary = typeof achievementSummary === 'function' ? achievementSummary() : null;
+        const next = typeof achievementNextTarget === 'function' ? achievementNextTarget() : null;
+        N.syncWidget(JSON.stringify({
+          vehicles: vehicles.map(v => ({
+            id: v.id, name: v.name || [v.brand, v.model].filter(Boolean).join(' ') || 'Aracınız',
+            plate: v.plate || 'Plaka girilmedi', km: v.km || v.mileage || '',
+            cons: (() => { const f = fuelStats(v); return f ? f.avg.toFixed(1) : ''; })(),
+            fuelCount: Array.isArray(v.fuelLogs) ? v.fuelLogs.length : 0,
+            svc: (() => { const p = serviceProgress(v); return p ? { remaining: Math.round(p.remaining), percent: Math.round(p.percent), state: p.overdue ? 'bad' : p.warning ? 'warn' : 'ok' } : null; })()
+          })),
+          achievements: summary ? {
+            count: summary.count, total: summary.total,
+            nextName: next ? next.name : 'Tüm rozetler kazanıldı',
+            current: next ? next.current : 0, target: next ? next.target : 1,
+            icon: next ? next.icon : 'fa-medal'
+          } : undefined
+        }));
+      }
       // Araç ekleme/düzenleme/silme sonrası saat listesini anında yenile; heartbeat ayrıca yedek yol sağlar.
       if (typeof N.pushWearVehicles === 'function') N.pushWearVehicles(JSON.stringify(vehicles.slice(0, 60).map(v => ({
         id: String(v.id || ''), plate: String(v.plate || ''), name: String(v.name || ''), brand: String(v.brand || ''), model: String(v.model || '')
