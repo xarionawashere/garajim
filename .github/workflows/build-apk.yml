@@ -60,8 +60,6 @@ jobs:
           set -e
           mkdir -p android/app/src/main/java/com/garajim/app android/app/src/main/res/layout android/app/src/main/res/xml android/app/src/main/res/drawable
           cp native-android/src/main/java/com/garajim/app/*.java android/app/src/main/java/com/garajim/app/
-          mkdir -p android/wear/src/main/java/com/garajim/app
-          cp native-android/src/main/java/com/garajim/app/LauncherIconManager.java android/wear/src/main/java/com/garajim/app/
           cp native-wear/src/main/res/drawable/ic_launcher_logo_*.xml android/app/src/main/res/drawable/
           cp native-android/src/main/res/drawable/*.xml android/app/src/main/res/drawable/
           cp native-android/src/main/res/layout/garajim_widget.xml android/app/src/main/res/layout/
@@ -218,6 +216,8 @@ jobs:
           echo "=== settings.gradle (once) ==="
           cat android/settings.gradle 2>/dev/null || true
           python3 scripts/ci-wear-setup.py
+          mkdir -p android/wear/src/main/java/com/garajim/app
+          cp native-android/src/main/java/com/garajim/app/LauncherIconManager.java android/wear/src/main/java/com/garajim/app/
           python3 scripts/ci-lint-relax.py
           echo "=== settings.gradle (sonra) ==="
           cat android/settings.gradle 2>/dev/null || true
