@@ -123,6 +123,12 @@ public final class GarajimWearSync {
             req.getDataMap().putDouble("parkDistM", o.optDouble("parkDistM", -1));
             req.getDataMap().putString("parkDir", o.optString("parkDir", ""));
             req.getDataMap().putBoolean("parkSaved", o.optBoolean("parkSaved", false));
+            req.getDataMap().putBoolean("navActive", o.optBoolean("navActive", false));
+            req.getDataMap().putString("navDest", o.optString("navDest", ""));
+            req.getDataMap().putDouble("navRemainingM", o.optDouble("navRemainingM", -1));
+            req.getDataMap().putDouble("navStepDistanceM", o.optDouble("navStepDistanceM", -1));
+            req.getDataMap().putDouble("navRotation", o.optDouble("navRotation", 0));
+            req.getDataMap().putInt("navEtaSec", o.optInt("navEtaSec", 0));
             req.getDataMap().putString("navText", o.optString("navText", ""));
             req.getDataMap().putDouble("navDistM", o.optDouble("navDistM", -1));
             req.getDataMap().putDouble("limitKmh", o.optDouble("limitKmh", 0));
