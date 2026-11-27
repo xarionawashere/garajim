@@ -74,7 +74,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private static final long PENDING_RESTORE_TTL_MS = 120_000L;
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
 
-    private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus, navStrip, limitTxt, goalTxt, badgeTxt, convoyTxt;
+    private TextView speed, meta, distanceView, durationView, maxSpeedView, status, connection, alert, track, parkInfo, mapStatus, navInstruction, navDistance, navDestination, navRemaining, navStatus, navArrow, limitTxt, goalTxt, badgeTxt, convoyTxt;
     private android.widget.ImageView musicArt;
     private android.widget.ProgressBar musicProgress;
     private Button btnPlay;
@@ -104,6 +104,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
     private Boolean lastPhoneLinkUi = null; // toast için önceki durum
     private boolean connectionChecked = false;
     private boolean gpsReady = false;
+    private boolean lastNavActive = false;
     private volatile long lastStateAt = 0L;
     private long lastSyncRequestAt = 0L;
     private volatile String lastCommandSent = "";
@@ -174,7 +175,12 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         maxSpeedView = findViewById(R.id.wearMaxSpeed);
         status = findViewById(R.id.wearStatus);
         connection = findViewById(R.id.wearConnection);
-        navStrip = findViewById(R.id.wearNavStrip);
+        navStatus = findViewById(R.id.wearNavStatus);
+        navArrow = findViewById(R.id.wearNavArrow);
+        navDistance = findViewById(R.id.wearNavDistance);
+        navInstruction = findViewById(R.id.wearNavInstruction);
+        navDestination = findViewById(R.id.wearNavDestination);
+        navRemaining = findViewById(R.id.wearNavRemaining);
         limitTxt = findViewById(R.id.wearLimitTxt);
         goalTxt = findViewById(R.id.wearGoal);
         badgeTxt = findViewById(R.id.wearBadge);
@@ -1114,7 +1120,12 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
         final double sumAvg = map.getDouble("summaryAvgKmh", 0);
         final double sumMax = map.getDouble("summaryMaxKmh", 0);
         final String navText = map.getString("navText", "");
-        final double navDistM = map.getDouble("navDistM", -1);
+        final boolean navActive = map.getBoolean("navActive", false);
+        final String navDest = map.getString("navDest", "");
+        final double navDistM = map.getDouble("navStepDistanceM", map.getDouble("navDistM", -1));
+        final double navRemainingM = map.getDouble("navRemainingM", -1);
+        final int navEtaSec = map.getInt("navEtaSec", 0);
+        final double navRotation = map.getDouble("navRotation", 0);
         final double limitKmh = map.getDouble("limitKmh", 0);
         final double dailyKm = map.getDouble("dailyKm", 0);
         final double dailyGoalKm = map.getDouble("dailyGoalKm", 50);
@@ -1131,13 +1142,28 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             running = incomingRunning;
             paused = incomingPaused;
             gpsReady = incomingGpsReady;
-            if (navStrip != null) {
-                if (navText != null && !navText.isEmpty()) {
-                    String nd = navDistM >= 0 ? (navDistM >= 1000 ? String.format(java.util.Locale.US, " · %.1f km", navDistM/1000.0) : String.format(java.util.Locale.US, " · %.0f m", navDistM)) : "";
-                    navStrip.setText("➤ " + navText + nd);
-                    navStrip.setVisibility(View.VISIBLE);
-                } else navStrip.setText("Rota yok");
+            if (navInstruction != null) navInstruction.setText(navActive && navText != null && !navText.isEmpty()
+                    ? navText : "Navigasyonu telefondan başlat");
+            if (navStatus != null) navStatus.setText(navActive ? "AKTİF NAVİGASYON" : "GARAGE NAV · TELEFONDAN BAŞLAT");
+            if (navDistance != null) navDistance.setText(navActive && navDistM >= 0
+                    ? (navDistM >= 1000 ? String.format(Locale.US, "%.1f km", navDistM / 1000.0) : String.format(Locale.US, "%.0f m", navDistM))
+                    : "—");
+            if (navDestination != null) navDestination.setText(navActive && navDest != null && !navDest.isEmpty()
+                    ? "HEDEF · " + navDest : "Hedef, telefondaki navigasyondan gelir");
+            if (navRemaining != null) {
+                if (navActive && navRemainingM >= 0) {
+                    String eta = navEtaSec > 0 ? String.format(Locale.US, " · %d dk", Math.max(1, Math.round(navEtaSec / 60f))) : "";
+                    navRemaining.setText("Kalan " + (navRemainingM >= 1000
+                            ? String.format(Locale.US, "%.1f km", navRemainingM / 1000.0)
+                            : String.format(Locale.US, "%.0f m", navRemainingM)) + eta);
+                } else navRemaining.setText("Rota ve yönler saatte gösterilecek");
             }
+            if (navArrow != null) {
+                navArrow.setRotation(navActive ? (float) navRotation : 0f);
+                navArrow.setText(navActive ? (navRotation < -20 ? "↖" : navRotation > 20 ? "↗" : "↑") : "↗");
+            }
+            if (navActive && !lastNavActive) showWearPage(2);
+            lastNavActive = navActive;
             if (limitTxt != null) {
                 if (limitKmh > 0) {
                     limitTxt.setText(over ? ("Limit " + (int)limitKmh + "+  · AŞILDI") : ("Limit " + (int)limitKmh + " km/sa"));
@@ -1175,15 +1201,17 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
             parkDir = incomingParkDir;
             parkSaved = incomingParkSaved;
             if (parkInfo != null && parkInfo.getVisibility() == View.VISIBLE) renderParkInfoText();
-            if (miniMap != null) miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused);
+            if (miniMap != null) miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused, navActive);
             if (mapStatus != null) {
                 String mapText;
                 int mapColor;
-                if (!incomingGpsReady) { mapText = "GPS BEKLENİYOR"; mapColor = 0xFFFBBF24; }
+                if (navActive && routeJson != null && routeJson.length() > 4) { mapText = "CANLI NAVİGASYON"; mapColor = 0xFF67E8F9; }
+                else if (navActive) { mapText = "ROTA TELEFONDAN AKTARILIYOR"; mapColor = 0xFFFBBF24; }
+                else if (!incomingGpsReady) { mapText = "GPS KONUMU BEKLENİYOR"; mapColor = 0xFFFBBF24; }
                 else if (incomingRunning && incomingPaused) { mapText = "DURAKLATILDI"; mapColor = 0xFFFBBF24; }
-                else if (incomingRunning) { mapText = "CANLI ROTA"; mapColor = 0xFF67E8F9; }
-                else if (routeJson != null && routeJson.length() > 4) { mapText = "SON ROTA"; mapColor = 0xFF93C5FD; }
-                else { mapText = "GPS HAZIR"; mapColor = 0xFF94A3B8; }
+                else if (incomingRunning) { mapText = "CANLI SÜRÜŞ ROTASI"; mapColor = 0xFF67E8F9; }
+                else if (routeJson != null && routeJson.length() > 4) { mapText = "SON SÜRÜŞ ROTASI"; mapColor = 0xFF93C5FD; }
+                else { mapText = "NAVİGASYONU TELEFONDAN BAŞLAT"; mapColor = 0xFF94A3B8; }
                 mapStatus.setText(mapText);
                 mapStatus.setTextColor(mapColor);
             }
