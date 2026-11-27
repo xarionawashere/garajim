@@ -55,6 +55,7 @@ w.openServiceModal(); w.document.getElementById('svcCost').value='-1'; w.saveSer
 ok(ev('vehicles[0].history.length')===serviceCount,'negatif bakım maliyeti kaydedilmedi');
 w.openKmModal(); w.document.getElementById('newKm').value='1000'; w.confirm=()=>false; w.saveKm();
 ok(Number(ev('vehicles[0].km'))===1900,'daha düşük KM yanlışlıkla onaylanmadan yazılmadı');
+w.confirm=()=>true;
 // tavsiye (tüketim %25 artışı)
 ev("vehicles[0].fuelLogs=[{km:1000,liters:10},{km:1300,liters:12},{km:1600,liters:12},{km:1900,liters:16}]");
 ok(ev("buildAssistantTips().some(t=>t.icon==='fa-gas-pump')"),'tüketim artışında asistan uyarısı');
