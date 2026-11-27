@@ -1074,7 +1074,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   <div class="bg-[#111] w-full sm:max-w-sm sm:rounded-3xl rounded-t-3xl border border-white/10 p-5 slide-up">
     <h3 class="text-lg font-bold mb-1">Kilometre Güncelle</h3>
     <p class="text-sm text-slate-500 mb-4" id="kmModalPlate"></p>
-    <input id="newKm" type="number" placeholder="Yeni kilometre" class="w-full rounded-xl px-4 py-3.5 text-base border border-white/10 mb-2 font-semibold">
+    <input id="newKm" type="number" min="0" step="1" inputmode="numeric" placeholder="Yeni kilometre" class="w-full rounded-xl px-4 py-3.5 text-base border border-white/10 mb-2 font-semibold">
     <button type="button" onclick="odoScan('newKm')" class="w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-semibold mb-4"><i class="fa-solid fa-camera mr-2"></i>Kadrandan oku</button>
     <div class="flex gap-3">
       <button onclick="closeKmModal()" class="flex-1 py-3 rounded-2xl bg-white/5 text-slate-300 font-semibold">İptal</button>
@@ -1106,7 +1106,7 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
   <div class="bg-[#111] w-full sm:max-w-sm sm:rounded-3xl rounded-t-3xl border border-white/10 p-5 slide-up max-h-[92vh] overflow-y-auto">
     <div id="fuelForm">
       <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-gas-pump text-amber-400 mr-2"></i>Benzin Alındı</h3>
-      <p class="text-xs text-slate-500 mb-4">Fiş fotoğrafı çek — litre ve tutarı otomatik doldurmayı dener.</p>
+      <p class="text-xs text-slate-500 mb-4">Fişten bilgileri doldur, litre ve tutarı kontrol edip kaydet.</p>
 
       <!-- Fiş fotoğrafı -->
       <div class="mb-4">
@@ -1137,14 +1137,14 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
 
       <div class="grid grid-cols-2 gap-3">
         <div><label class="text-xs text-slate-400 mb-1 block">Tarih</label><input id="fuelDate" type="date" class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
-        <div><label class="text-xs text-slate-400 mb-1 flex items-center justify-between">Güncel KM<button type="button" onclick="odoScan('fuelKm')" class="text-[11px] text-accent font-semibold"><i class="fa-solid fa-camera mr-1"></i>Kadran</button></label><input id="fuelKm" type="number" class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Litre</label><input id="fuelLiters" type="number" step="0.01" class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Tutar ₺</label><input id="fuelCost" type="number" step="0.01" class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
+        <div><label class="text-xs text-slate-400 mb-1 flex items-center justify-between">Güncel KM<button type="button" onclick="odoScan('fuelKm')" class="text-[11px] text-accent font-semibold"><i class="fa-solid fa-camera mr-1"></i>Kadran</button></label><input id="fuelKm" type="number" min="1" step="1" inputmode="numeric" required class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Litre</label><input id="fuelLiters" type="number" min="0.01" step="0.01" inputmode="decimal" required class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Tutar ₺</label><input id="fuelCost" type="number" min="0" step="0.01" inputmode="decimal" class="w-full rounded-xl px-3 py-3 text-sm border border-white/10"></div>
       </div>
       <label class="flex items-center gap-2 mt-3 text-xs text-slate-300"><input type="checkbox" id="fuelFull" checked style="accent-color:var(--accent);width:18px;height:18px"> Depoyu doldurdum <span class="text-slate-500">(L/100 km hesabı için)</span></label>
       <div class="flex gap-3 mt-5">
         <button onclick="closeFuelModal()" class="flex-1 py-3 rounded-2xl bg-white/5 text-slate-300 font-semibold">İptal</button>
-        <button onclick="saveFuel()" class="flex-1 py-3 rounded-2xl bg-amber-500 text-slate-900 font-bold">Kaydet</button>
+        <button id="fuelSaveBtn" onclick="saveFuel()" class="flex-1 py-3 rounded-2xl bg-amber-500 text-slate-900 font-bold">Kaydet</button>
       </div>
     </div>
     <div id="fuelResult" class="hidden"></div>
@@ -1348,3 +1348,4 @@ html.light .ach-shell{background:#f4f6fa;color:#152033;border-color:rgba(15,23,4
 <script src="src/js/app-boot.js"></script>
 </body>
 </html>
+
