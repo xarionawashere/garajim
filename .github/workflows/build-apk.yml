@@ -62,8 +62,8 @@ jobs:
           cp native-android/src/main/java/com/garajim/app/*.java android/app/src/main/java/com/garajim/app/
           cp native-wear/src/main/res/drawable/ic_launcher_logo_*.xml android/app/src/main/res/drawable/
           cp native-android/src/main/res/drawable/*.xml android/app/src/main/res/drawable/
-          cp native-android/src/main/res/layout/garajim_widget.xml android/app/src/main/res/layout/
-          cp native-android/src/main/res/xml/garajim_widget_info.xml android/app/src/main/res/xml/
+          cp native-android/src/main/res/layout/*.xml android/app/src/main/res/layout/
+          cp native-android/src/main/res/xml/*.xml android/app/src/main/res/xml/
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           from pathlib import Path
@@ -85,6 +85,10 @@ jobs:
               root.insert(list(root).index(app) if app is not None else len(root), element)
           receivers = [
             ('com.garajim.app.GarajimWidgetProvider', ['android.appwidget.action.APPWIDGET_UPDATE'], '@xml/garajim_widget_info', True),
+            ('com.garajim.app.GarajimGarageCardWidgetProvider', ['android.appwidget.action.APPWIDGET_UPDATE'], '@xml/garajim_widget_garage_info', True),
+            ('com.garajim.app.GarajimMaintenanceWidgetProvider', ['android.appwidget.action.APPWIDGET_UPDATE'], '@xml/garajim_widget_maintenance_info', True),
+            ('com.garajim.app.GarajimFuelWidgetProvider', ['android.appwidget.action.APPWIDGET_UPDATE'], '@xml/garajim_widget_fuel_info', True),
+            ('com.garajim.app.GarajimAchievementWidgetProvider', ['android.appwidget.action.APPWIDGET_UPDATE'], '@xml/garajim_widget_achievements_info', True),
             ('com.garajim.app.GarajimReminderReceiver', [], None, False),
             ('com.garajim.app.GarajimBootReceiver', ['android.intent.action.BOOT_COMPLETED', 'android.intent.action.MY_PACKAGE_REPLACED'], None, True),
           ]
