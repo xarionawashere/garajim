@@ -668,8 +668,13 @@ function setFilter(f) {
   function closeKmModal() { document.getElementById('kmModal').classList.add('hidden'); }
   function saveKm() {
     const v = vehicles.find(x => x.id === currentId);
-    if (!v || !document.getElementById('newKm').value) return;
-    const oldKm = Number(v.km) || 0, nextKm = Number(document.getElementById('newKm').value) || 0, increased = nextKm > oldKm;
+    const input = document.getElementById('newKm');
+    const raw = input.value.trim(), nextKm = Number(raw);
+    if (!v) return;
+    if (!raw || !Number.isFinite(nextKm) || nextKm < 0) { alert('Geçerli bir kilometre gir.'); input.focus(); return; }
+    const oldKm = Number(v.km) || 0;
+    if (nextKm < oldKm && !confirm('Girilen kilometre mevcut kayıttan düşük. Kilometreyi geriye alarak düzeltmek istiyor musun?')) return;
+    const increased = nextKm > oldKm;
     if (increased) achievementRecordOdometer(v, oldKm, nextKm, 'manual');
     v.km = document.getElementById('newKm').value; persist();
     if (increased) { achievementRecordActivity('odometer'); achievementEvaluate('odometer'); }
@@ -690,15 +695,19 @@ function setFilter(f) {
   function saveService() {
     const v = vehicles.find(x => x.id === currentId);
     if (!v) return;
-    if (!v.history) v.history = [];
     const cat = document.getElementById('svcCat').value;
-    const svcKm = document.getElementById('svcKm').value;
+    const kmInput = document.getElementById('svcKm'), costInput = document.getElementById('svcCost');
+    const svcKm = kmInput.value.trim(), cost = costInput.value.trim();
+    const kmValue = svcKm === '' ? null : Number(svcKm), costValue = cost === '' ? null : Number(cost);
+    if (kmValue !== null && (!Number.isFinite(kmValue) || kmValue < 0)) { alert('Bakım kaydı için geçerli bir kilometre gir.'); kmInput.focus(); return; }
+    if (costValue !== null && (!Number.isFinite(costValue) || costValue < 0)) { alert('Maliyet sıfır veya daha büyük olmalı.'); costInput.focus(); return; }
+    if (!v.history) v.history = [];
     if (Number(svcKm) > Number(v.km || 0)) achievementRecordOdometer(v, v.km, svcKm, 'service');
     v.history.push({
-      date: document.getElementById('svcDate').value,
+      date: document.getElementById('svcDate').value || todayStr(),
       km: svcKm,
       desc: document.getElementById('svcDesc').value.trim(),
-      cost: document.getElementById('svcCost').value,
+      cost,
       cat
     });
     if (svcKm && Number(svcKm) > Number(v.km || 0)) v.km = svcKm;
@@ -733,6 +742,8 @@ function setFilter(f) {
     document.getElementById('fuelOcrStatus').textContent = 'Fiş okununca litre ve tutar dolar';
     document.getElementById('fuelForm').classList.remove('hidden');
     document.getElementById('fuelResult').classList.add('hidden');
+    const saveButton = document.getElementById('fuelSaveBtn');
+    if (saveButton) { saveButton.disabled = false; saveButton.textContent = 'Kaydet'; }
     document.getElementById('fuelModal').classList.remove('hidden');
   }
   function closeFuelModal() { document.getElementById('fuelModal').classList.add('hidden'); }
@@ -1004,22 +1015,37 @@ function setFilter(f) {
   function saveFuel() {
     const v = vehicles.find(x => x.id === currentId);
     if (!v) return;
-    const km = document.getElementById('fuelKm').value;
-    if (!km) { alert('Kilometre gir.'); return; }
+    const saveButton = document.getElementById('fuelSaveBtn');
+    if (saveButton && saveButton.disabled) return;
+    const kmInput = document.getElementById('fuelKm'), litersInput = document.getElementById('fuelLiters'), costInput = document.getElementById('fuelCost');
+    const km = kmInput.value.trim(), liters = litersInput.value.trim(), cost = costInput.value.trim();
+    const kmValue = Number(km), litersValue = Number(liters), costValue = cost === '' ? null : Number(cost);
+    if (!km || !Number.isFinite(kmValue) || kmValue <= 0) { alert('Yakıt kaydı için geçerli kilometre gir.'); kmInput.focus(); return; }
+    if (!liters || !Number.isFinite(litersValue) || litersValue <= 0) { alert('Yakıt litresini sıfırdan büyük gir.'); litersInput.focus(); return; }
+    if (costValue !== null && (!Number.isFinite(costValue) || costValue < 0)) { alert('Tutar sıfır veya daha büyük olmalı.'); costInput.focus(); return; }
+    const date = document.getElementById('fuelDate').value || todayStr();
     if (!v.fuelLogs) v.fuelLogs = [];
-    const prev = v.fuelLogs[v.fuelLogs.length-1];
-    if (Number(km) > Number(v.km || 0)) achievementRecordOdometer(v, v.km, km, 'fuel');
+    const datedLogs = v.fuelLogs.filter(f => f && /^\d{4}-\d{2}-\d{2}$/.test(String(f.date || '')) && Number.isFinite(Number(f.km)) && Number(f.km) > 0);
+    const previousKm = datedLogs.filter(f => f.date < date).reduce((n, f) => Math.max(n, Number(f.km)), 0);
+    const nextKm = datedLogs.filter(f => f.date > date).reduce((n, f) => n === null ? Number(f.km) : Math.min(n, Number(f.km)), null);
+    if (kmValue < previousKm || (nextKm !== null && kmValue > nextKm) || (date >= todayStr() && kmValue < (Number(v.km) || 0))) {
+      alert('Kilometre kaydı diğer yakıt/araç kayıtlarıyla sıraya uymuyor. Tarihi ve kadran değerini kontrol et.'); kmInput.focus(); return;
+    }
+    const prev = datedLogs.filter(f => f.date <= date).sort((a, b) => b.date.localeCompare(a.date) || Number(b.km) - Number(a.km))[0] || null;
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Kaydediliyor…'; }
+    const oldVehicleKm = v.km, oldFuelLogs = v.fuelLogs.slice(), oldHistory = Array.isArray(v.history) ? v.history.slice() : null;
     const entry = {
-      date: document.getElementById('fuelDate').value || todayStr(),
+      date,
       km,
-      liters: document.getElementById('fuelLiters').value,
-      cost: document.getElementById('fuelCost').value,
+      liters,
+      cost,
       full: !document.getElementById('fuelFull') || document.getElementById('fuelFull').checked,
       receipt: document.getElementById('fuelReceiptData').value || null,
       station: document.getElementById('fuelStation')?.value || null,
       fuelType: document.getElementById('fuelTypeOcr')?.value || null
     };
     v.fuelLogs.push(entry);
+    v.fuelLogs.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || Number(a.km) - Number(b.km));
     if (Number(km) > Number(v.km||0)) v.km = km;
     if (entry.cost) {
       if (!v.history) v.history = [];
@@ -1029,7 +1055,16 @@ function setFilter(f) {
       if (entry.liters) descBits.push(entry.liters + ' L');
       v.history.push({ date: entry.date, km, desc: descBits.join(' · '), cost: entry.cost, cat: 'yakit' });
     }
-    persist(); achievementRecordActivity('fuel'); achievementEvaluate('fuel');
+    try { persist(); }
+    catch (e) {
+      v.km = oldVehicleKm;
+      v.fuelLogs = oldFuelLogs;
+      if (oldHistory) v.history = oldHistory; else delete v.history;
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = 'Kaydet'; }
+      return;
+    }
+    if (Number(km) > Number(oldVehicleKm || 0)) achievementRecordOdometer(v, oldVehicleKm, km, 'fuel');
+    achievementRecordActivity('fuel'); achievementEvaluate('fuel');
     let html = prev ? (() => {
       const r = fuelInterval(prev, entry);
       return `<div class="text-center">
@@ -1136,3 +1171,4 @@ function setFilter(f) {
   // ---------- EXPORT / IMPORT ----------
   // Yedek v4: araçlar + Studio projeleri + kayıtlı sürüşler + park/ayarlar + güvenli tercihler + kurtarılabilir sürüş durumu.
   // Gizli veriler (PIN ve yapay zekâ API anahtarı) özellikle dışa aktarılmaz.
+
