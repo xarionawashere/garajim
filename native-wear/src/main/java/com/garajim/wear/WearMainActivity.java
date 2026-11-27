@@ -1072,7 +1072,7 @@ public class WearMainActivity extends Activity implements DataClient.OnDataChang
                 DataMap map = DataMapItem.fromDataItem(e.getDataItem()).getDataMap();
                 if (PATH_STATE.equals(path)) applyState(map);
                 else if (PATH_VEHICLES.equals(path)) applyVehicles(map.getString("json", "[]"));
-                else if (PATH_THEME.equals(path)) applyPhoneTheme(map.getString("pack", "dark-red"), map.getString("mode", "dark"));
+                else if (PATH_THEME.equals(path)) applyPhoneTheme(map.getString("pack", "dark-red"), map.getString("mode", "dark"), map.getString("logoId", "garage"));
                 else if (PATH_ALERT.equals(path)) applyAlert(map);
                     else if (PATH_LINK.equals(path)) { phoneConnected = map.getBoolean("online", true); runOnUiThread(this::updateConnectionUi); }
                 else if (path.startsWith(PATH_ACK + "/")) {
