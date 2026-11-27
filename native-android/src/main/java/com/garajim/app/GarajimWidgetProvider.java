@@ -175,17 +175,6 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
         if (type == TYPE_ACHIEVEMENT) { updateAchievements(context, manager, id); return; }
     }
 
-    private static void unusedTypeMarker() {
-    }
-
-    static void updateTypedLegacy(Context context, AppWidgetManager manager, int id, int type) {
-        if (type == TYPE_GARAGE) updateGarageCard(context, manager, id);
-        else if (type == TYPE_MAINTENANCE) updateMaintenance(context, manager, id);
-        else if (type == TYPE_FUEL) updateFuel(context, manager, id);
-        else if (type == TYPE_ACHIEVEMENT) updateAchievements(context, manager, id);
-        else updateOne(context, manager, id);
-    }
-
     private static JSONObject selectedVehicle(SharedPreferences p, JSONArray all) {
         return all.length() > 0 ? all.optJSONObject(selectedIndex(p, all)) : null;
     }
@@ -235,7 +224,7 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_card_name, vehicleName(v));
         views.setTextViewText(R.id.widget_card_plate, vehiclePlate(v));
         views.setTextViewText(R.id.widget_card_km, vehicleKm(v));
-        views.setTextViewText(R.id.widget_card_total, all.length() + (all.length() == 1 ? " ARAÇ" : " ARAÇ"));
+        views.setTextViewText(R.id.widget_card_total, all.length() + " ARAÇ");
         String cons = v == null ? "" : v.optString("cons", "");
         int fuelCount = v == null ? 0 : v.optInt("fuelCount", 0);
         views.setTextViewText(R.id.widget_card_fuel, !cons.isEmpty() ? cons + " L/100" : fuelCount > 0 ? fuelCount + " yakıt kaydı" : "Yakıt kaydı ekle");
@@ -262,7 +251,6 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_maintenance_value, "Plan bekleniyor");
             views.setTextViewText(R.id.widget_maintenance_detail, "Uygulamada araç detayından bakım planı oluştur.");
             views.setProgressBar(R.id.widget_maintenance_progress, 100, 0, false);
-            views.setProgressBar(R.id.widget_maintenance_progress, 100, 0, false);
         } else {
             int rem = svc.optInt("remaining", 0), pct = Math.max(0, Math.min(100, svc.optInt("percent", 0)));
             String state = svc.optString("state", "ok");
@@ -270,8 +258,6 @@ public class GarajimWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_maintenance_value, rem <= 0 ? fmt(Math.abs((long)rem)) + " km geçti" : fmt(rem) + " km kaldı");
             views.setTextColor(R.id.widget_maintenance_value, Color.parseColor("bad".equals(state) ? "#F17870" : "warn".equals(state) ? "#F6C35B" : "#7FE0B1"));
             views.setProgressBar(R.id.widget_maintenance_progress, 100, pct, false);
-            views.setProgressBar(R.id.widget_maintenance_progress, 100, pct, false);
-            views.setProgressBarTintList(R.id.widget_maintenance_progress, ColorStateList.valueOf(Color.parseColor("bad".equals(state) ? "#F17870" : "warn".equals(state) ? "#F6C35B" : "#63D6A5")));
             views.setTextViewText(R.id.widget_maintenance_detail, "Bakım uyarılarını görmek için Garajım'ı aç.");
         }
         attachOpen(context, views, vid);
