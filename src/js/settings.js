@@ -49,6 +49,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
   }
   function setBrandLogo(id) {
     if (!BRAND_LOGOS.some(logo => logo.id === id)) return;
+    const previousLogo = brandLogoPref();
     localStorage.setItem('garaj_logo_v1', id);
     applyBrandLogo();
     try {
@@ -56,6 +57,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
       if (N && typeof N.setLauncherLogo === 'function') N.setLauncherLogo(id);
       if (N && typeof N.pushWearBranding === 'function') N.pushWearBranding(packPref(), themePref(), id);
     } catch (e) {}
+    if (previousLogo !== id && typeof achievementRecordActivity === 'function') { achievementRecordActivity('logo_change'); achievementEvaluate('logo_change'); }
     toast((BRAND_LOGOS.find(logo => logo.id === id) || {}).name + ' uygulama simgesi seçildi');
   }
 
