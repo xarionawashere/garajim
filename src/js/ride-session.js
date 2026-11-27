@@ -696,7 +696,7 @@ function computeTCO(v) {
       try {
         if (typeof mus !== 'undefined' && mus) {
           media = mus.st || null;
-          mediaArt = String(mus.art || '').replace(/^data:image\\/[^;]+;base64,/, '');
+          mediaArt = String(mus.art || '').replace(/^data:image\/[^;]+;base64,/, '');
         }
         const t = document.getElementById('musTitle');
         const a = document.getElementById('musArtist');
