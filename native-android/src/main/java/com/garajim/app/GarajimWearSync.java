@@ -36,13 +36,23 @@ public final class GarajimWearSync {
     private GarajimWearSync() {}
 
 
-    /** Telefonun aktif renk temasını kalıcı Wear Data Layer öğesiyle saate eşitler. */
+    /** Eski tema çağrılarını, cihazda en son seçilen logoyu koruyarak eşitler. */
+    public static void pushTheme(Context ctx, String pack, String mode) {
+        if (ctx == null) return;
+        String savedLogo = ctx.getApplicationContext()
+                .getSharedPreferences("garajim_branding", Context.MODE_PRIVATE)
+                .getString("logoId", "garage");
+        pushTheme(ctx, pack, mode, savedLogo);
+    }
+
+    /** Telefonun aktif renk temasını ve seçili logosunu kalıcı Wear Data Layer öğesiyle saate eşitler. */
     public static void pushTheme(Context ctx, String pack, String mode, String logoId) {
         if (ctx == null) return;
         final Context app = ctx.getApplicationContext();
         final String safePack = (pack == null || pack.trim().isEmpty()) ? "dark-red" : pack.trim();
         final String safeMode = (mode == null || mode.trim().isEmpty()) ? "dark" : mode.trim();
         final String safeLogo = "monogram".equals(logoId) || "route".equals(logoId) || "sport".equals(logoId) ? logoId : "garage";
+        app.getSharedPreferences("garajim_branding", Context.MODE_PRIVATE).edit().putString("logoId", safeLogo).apply();
         EX.execute(() -> {
             try {
                 PutDataMapRequest req = PutDataMapRequest.create(PATH_THEME);
