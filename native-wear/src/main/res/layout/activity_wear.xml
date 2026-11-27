@@ -22,9 +22,31 @@
             android:layout_marginTop="6dp" android:text="Araç seç" android:textAllCaps="false"
             android:background="@drawable/btn_secondary" android:textColor="#E2E8F0"/>
 
-        <TextView android:id="@+id/wearNavStrip" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:gravity="center" android:background="@drawable/bg_card" android:padding="6dp"
-            android:text="Rota yok" android:textColor="#93C5FD" android:textSize="11sp"/>
+        <LinearLayout android:id="@+id/wearNavStrip" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="5dp" android:orientation="vertical" android:background="@drawable/bg_card" android:padding="9dp">
+            <TextView android:id="@+id/wearNavStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="GARAGE NAV · TELEFONDAN BAŞLAT" android:textColor="#67E8F9" android:textSize="8sp" android:letterSpacing="0.12"
+                android:textStyle="bold"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:gravity="center_vertical" android:orientation="horizontal">
+                <FrameLayout android:layout_width="42dp" android:layout_height="42dp" android:background="@drawable/btn_music">
+                    <TextView android:id="@+id/wearNavArrow" android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:gravity="center" android:text="↗" android:textColor="#67E8F9" android:textSize="26sp" android:textStyle="bold"/>
+                </FrameLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp"
+                    android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:id="@+id/wearNavDistance" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="—" android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
+                    <TextView android:id="@+id/wearNavInstruction" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Navigasyonu telefondan başlat" android:textColor="#CBD5E1" android:textSize="10sp"
+                        android:maxLines="2" android:ellipsize="end"/>
+                </LinearLayout>
+            </LinearLayout>
+            <TextView android:id="@+id/wearNavDestination" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="5dp" android:text="Hedef bekleniyor" android:textColor="#FDE68A" android:textSize="10sp"
+                android:maxLines="1" android:ellipsize="end"/>
+            <TextView android:id="@+id/wearNavRemaining" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="2dp" android:text="Rota burada canlı olarak görünecek" android:textColor="#94A3B8" android:textSize="9sp"/>
+        </LinearLayout>
 
         <FrameLayout android:id="@+id/wearSpeedRing" android:layout_width="112dp" android:layout_height="112dp"
             android:layout_marginTop="6dp" android:background="@drawable/bg_speed_ring">
@@ -72,7 +94,7 @@
 
         <LinearLayout android:id="@+id/wearMapCard" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:layout_marginTop="8dp" android:background="@drawable/bg_card" android:padding="6dp">
-            <com.garajim.wear.MiniRouteView android:id="@+id/wearMiniMap" android:layout_width="match_parent" android:layout_height="72dp"/>
+            <com.garajim.wear.MiniRouteView android:id="@+id/wearMiniMap" android:layout_width="match_parent" android:layout_height="84dp"/>
             <TextView android:id="@+id/wearMapStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:gravity="center" android:text="Mini rota" android:textColor="#64748B" android:textSize="9sp"/>
         </LinearLayout>
