@@ -245,8 +245,8 @@ public class GarajimNativeBridge {
     /** Saat uygulamasına sürüş durumu gönder (JSON). Native servis sürüşün sahibiyse JS yayını bastırılır. */
     /** Tema seçildiğinde telefonun aktif paketini saate anında gönderir. */
     @JavascriptInterface
-    public void pushWearTheme(String pack, String mode) {
-        try { GarajimWearSync.pushTheme(context, pack, mode); } catch (Exception ignored) { }
+    public void pushWearTheme(String pack, String mode, String logoId) {
+        try { GarajimWearSync.pushTheme(context, pack, mode, logoId); } catch (Exception ignored) { }
     }
 
     @JavascriptInterface
