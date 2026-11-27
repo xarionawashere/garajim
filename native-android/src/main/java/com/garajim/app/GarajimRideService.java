@@ -900,7 +900,17 @@ public class GarajimRideService extends Service {
             outgoing.put("plate", state.optString("plate", ""));
             outgoing.put("vehicleId", state.optString("vehicleId", ""));
             outgoing.put("mode", nativeMode ? "Yerel arka plan sürüşü" : "Hazır");
-            outgoing.put("track", ""); outgoing.put("artist", "");
+            JSONObject media = new JSONObject(GarajimMedia.state(this));
+            boolean hasMedia = media.optBoolean("session", false);
+            outgoing.put("track", hasMedia ? media.optString("title", "") : "");
+            outgoing.put("artist", hasMedia ? media.optString("artist", "") : "");
+            outgoing.put("mediaApp", hasMedia ? media.optString("app", "") : "");
+            outgoing.put("mediaAccess", media.optBoolean("access", false));
+            outgoing.put("playing", hasMedia && media.optBoolean("playing", false));
+            outgoing.put("mediaPos", hasMedia ? media.optLong("pos", 0) : 0);
+            outgoing.put("mediaDur", hasMedia ? media.optLong("dur", 0) : 0);
+            String mediaArt = hasMedia ? GarajimMedia.art(this) : "";
+            outgoing.put("mediaArt", mediaArt.length() <= 60000 ? mediaArt : "");
             outgoing.put("routeJson", buildMiniRouteJson());
             outgoing.put("overLimit", false); outgoing.put("alert", state.optString("alert", ""));
             outgoing.put("pendingSummary", state.optBoolean("pendingSummary", false));
