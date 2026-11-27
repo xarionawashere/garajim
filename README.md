@@ -1,383 +1,149 @@
 <div align="center">
-  <img src="icon.png" alt="Garajım uygulama logosu" width="132" />
+  <img src="icon.png" alt="Garajım uygulama simgesi" width="116" />
   <h1>Garajım</h1>
   <p><strong>Aracının dijital garajı. Sürüşün bileğinde.</strong></p>
-  <p>Araçlarını, bakım takvimini, yakıt ve masraflarını, GPS sürüşlerini ve akıllı saat kontrollerini tek bir deneyimde birleştiren kişisel araç yönetim uygulaması.</p>
-  <p>
-    <strong>Android</strong> · <strong>Capacitor</strong> · <strong>Wear OS</strong> · <strong>GPS sürüş takibi</strong>
-  </p>
+  <p>Araç bilgilerini, bakım ve masraflarını, GPS sürüşlerini ve Wear OS kontrollerini tek yerde tut. Garajım Studio ile sıradaki araç projen için planını oluştur.</p>
+  <p><strong>Android</strong> · <strong>Wear OS</strong> · <strong>Türkçe</strong> · <strong>Yerel veri odaklı</strong></p>
 </div>
 
 ---
 
-**Kaynak sürümü: 1.4.6** · 24 renk teması, Wear OS çok sayfalı kokpit ve telefon–saat tema eşitlemesi; artık araç tasarımı, modifikasyon bütçesi ve proje günlüğü için Garajım Studio da içerir.
+Garajım, araç sahipliğinin günlük işlerini daha düzenli hâle getirmek için tasarlanmış kişisel araç ve sürüş uygulamasıdır. Garajını oluştur, bakım tarihlerini takip et, yakıt ve masraflarını kaydet, GPS sürüşlerini incele; uyumlu Wear OS saatin varsa temel sürüş kontrollerine bileğinden ulaş.
 
-## Garajım nedir?
+**Kaynak sürümü: 1.4.6.** Bu depo Android telefon uygulamasını ve ayrı Wear OS uygulamasını üretmek için gereken kaynakları içerir. Hazır APK'lar GitHub Actions başarılı derlemelerinde ayrı paketler olarak oluşturulur.
 
-Garajım, araç sahiplerinin günlük araç yönetimini tek yerde toplamak için tasarlanmış bir uygulamadır. Araç ve plaka bilgilerini kaydetmekle başlayabilir; muayene ve sigorta tarihlerini takip edebilir, yakıt fişlerini işleyebilir, bakım masraflarını karşılaştırabilir ve gerçek sürüşlerini GPS üzerinden kaydedebilirsin. Uyumlu bir Wear OS saatiyle sürüşün temel kontrollerini bileğinden yönetmek de mümkün.
+## Garajım ile neler yapabilirsin?
 
-Garajım'ın yaklaşımı basit: **daha düzenli araç kayıtları, daha görünür maliyetler ve sürüş sırasında daha erişilebilir kontroller.** Büyük ekranlı telefon arayüzü ayrıntılı yönetim için, Galaxy Watch gibi yuvarlak ekranlı saatler ise hızlı sürüş işlemleri için tasarlanmıştır.
+### Araçlarını tek yerde yönet
 
-> Garajım bir OBD-II/araç ECU okuyucusu değildir. Hız ve rota bilgisi cihazın GPS/konum verisine dayanır; doğruluk GPS sinyaline, cihaza ve çevre koşullarına göre değişebilir.
+Birden fazla araç için plaka, marka, model, yıl, kilometre, fotoğraf, renk, yakıt türü ve not bilgilerini tut. Garaj listende araç ara; bir aracın bakım, yakıt, servis ve masraf geçmişine kendi profilinden ulaş.
 
-## Öne çıkanlar
+Bakım planına periyodik servis, muayene, trafik sigortası, kasko ve mevsimlik lastik bilgilerini ekle. Tarih veya kilometre yaklaştığında uygulamadaki durum ve hatırlatma ekranlarını kullan.
 
-- **Dijital garaj:** Birden fazla araç için plaka, marka, model, yıl, kilometre, fotoğraf, araç tipi ve notlar.
-- **Bakım ve resmi tarihler:** Periyodik bakım, muayene, trafik sigortası, kasko ve mevsimlik lastik kayıtları.
-- **Yakıt ve masraf takibi:** Yakıt dolumları, litre/tutar/km bilgileri, servis kayıtları, harcama kategorileri ve maliyet grafikleri.
-- **Fiş ve kilometre OCR:** Kamera veya galeriden alınan görsellerden veri okumayı dener; kullanıcı kaydetmeden önce sonucu kontrol eder.
-- **Açık Dünya sürüşü:** GPS rotası, hız, mesafe, süre, ortalama/maksimum hız, sürüş geçmişi ve rota tekrarı.
-- **Navigasyon ve park yeri:** Adres arama, rota yönergeleri, kayıtlı park konumu ve yön/mesafe bilgisi.
-- **Wear OS kontrolü:** Saatten araç seçme, sürüşü başlatma/duraklatma/devam ettirme/bitirme ve sürüş özetini yönetme.
-- **Başarım ve Sürüş DNA:** 51 rozet, nadirliğe göre telefon kutlaması, Wear OS saatine başarım iletimi, titreşim ve arka plan bildirimi. Gizli test menüsü, gerçek rozet kazanmadan kutlamaları denemeyi sağlar.
-- **Kişiselleştirme:** 24 renk teması (yumuşak ve düşük doygunluklu yeni paletler dahil), telefondaki temanın Wear OS ile eşitlenmesi, karanlık/açık görünüm, dört haneli uygulama PIN'i ve ana ekran widget'ı.
-- **Dışa aktarma:** JSON yedekleme/geri yükleme, CSV masraf çıktısı, PDF raporları ve sürüş rotası için GPX çıktısı.
-- **Garajım Studio:** Fotoğraf referansı, renk deneme maketi, kaydedilebilir tasarım varyantları, modifikasyon listesi, manuel bütçe, parça durumu ve proje günlüğü.
+### Yakıtı ve araç masraflarını görünür kıl
 
-## Özellikler ayrıntılı olarak
+Yakıt dolumlarını litre, tutar, tarih, kilometre ve depo dolumu bilgileriyle kaydet. Servis ve diğer harcamaları kategorilere ayır; zaman içindeki toplamları, yakıt tüketimini ve kilometre başına maliyeti grafiklerde incele. Uygulamadaki sağlık skoru ve maliyet tahminleri kayıtlarından hesaplanan yardımcı göstergelerdir.
 
-### 1. Araç profilleri ve dijital garaj
+Fiş fotoğrafından veya kilometre sayacı görüntüsünden OCR ile veri okunması denenebilir. Okunan değerler kaydedilmeden önce senin kontrolüne sunulur; sonucu gözden geçirip düzeltmen gerekir.
 
-Her araç için aşağıdaki bilgileri bir arada tutabilirsin:
+### Gerçek sürüşlerini kaydet
 
-- Plaka, marka, model, yıl, renk, araç tipi ve fotoğraf.
-- Güncel kilometre ve notlar.
-- Yakıt türü ve referans tüketim bilgisi.
-- Muayene, trafik sigortası ve kasko bitiş tarihleri.
-- Son bakım, sonraki bakım kilometresi ve bakım aralığı.
-- Kış, yaz ve dört mevsim lastiklerinin tarih, marka/ebat ve diş derinliği bilgileri.
-- Araca bağlı yakıt, servis, bakım ve diğer maliyet kayıtları.
+Açık Dünya, telefonun GPS/konum verisiyle sürüş rotanı ve ölçümlerini kaydeder:
 
-Garaj listesinde plaka/marka/model/renk üzerinden arama, uyarısı olan araçları filtreleme ve bu ay masraf kaydı bulunan araçları görüntüleme bulunur. Araç detayında kilometre, bakım durumu, masraf ve yakıt bilgileri bir araya getirilir.
+- Anlık, ortalama ve en yüksek hız
+- Mesafe ve geçen süre
+- Harita üzerinde rota ve mevcut konum
+- Kullanıcı tarafından belirlenen hız limiti uyarıları
+- Sürüş özeti, geçmiş, rota tekrar oynatma ve GPX dışa aktarma
+- Sürüş karşılaştırması, haftalık kilometre hedefi, yol işaretleri ve Sürüş DNA profilleri
 
-### 2. Bakım takvimi ve maliyet görünümü
+Sürüş puanı ve DNA, uygulamanın topladığı GPS örneklerinden üretilen kişisel eğilim göstergeleridir; profesyonel sürüş değerlendirmesi veya araç teşhisi değildir.
 
-Garajım, girilmiş tarih ve kilometre bilgilerine göre yaklaşan veya geçmiş bakım kalemlerini işaretler. Bakım planında şu başlıklar desteklenir:
+### Navigasyon ve park yerini kullan
 
-- Periyodik bakım
-- Muayene
-- Trafik sigortası ve kasko
-- Kış, yaz ve dört mevsim lastik kontrolleri
+Adres veya yer ara, rota seçeneklerini karşılaştır, sıradaki manevraya kalan mesafeyi ve tahmini varış zamanını gör. Navigasyon, sesli yönlendirme ve rota dışına çıkıldığında yeniden rota hesaplama akışlarını içerir. Hedefini Google Haritalar'da açmayı da seçebilirsin.
 
-Bakım/masraf kategorileri arasında periyodik bakım, onarım/yedek parça, lastik/jant, yakıt, vergi/resmî gider, otopark/garaj, otoyol/geçiş, aksesuar, trafik cezası, finansman, hasar, sürücü/işletme, sigorta/kasko ve diğer kalemler bulunur.
+Park yerini kaydet; daha sonra araçla arandaki yaklaşık mesafeyi ve yönü gör. Park konumuna yaya tarifi için harita uygulamasını aç.
 
-Uygulamadaki **araç sağlık skoru**, **90 günlük maliyet tahmini**, kilometre başına maliyet ve yakıt tüketimi gibi göstergeler girilmiş kayıtlar üzerinden hesaplanan yardımcı tahminlerdir. Bunlar servis teşhisi, muhasebe kaydı veya gelecekteki giderlerin garantili tahmini değildir; kayıt kalitesi arttıkça anlamlılıkları da artar.
+### Wear OS ile sürüşe bileğinden ulaş
 
-### 3. Yakıt ve fiş okuma
+Galaxy Watch ve uyumlu Wear OS saatleri için ayrı bir saat uygulaması bulunur. Telefonda Wear OS/Galaxy Wearable üzerinden eşleştirme yaptıktan sonra saatten:
 
-Yakıt kaydında tarih, kilometre, litre, toplam tutar ve depo dolumu bilgisi tutulur. Birden fazla uygun dolum kaydı olduğunda ortalama tüketim ve yakıt maliyeti hesapları üretilebilir.
+- Kayıtlı araçları görüntüleyip araç seç
+- Sürüşü başlat, duraklat, devam ettir veya bitir
+- Sürüş ölçümlerini ve özetini gör; uygun akışta kaydetme, silme veya sonra kararını ver
+- Hız, GPS ve telefon bağlantısı durumlarını takip et
+- Hızlı kilometre/yakıt kaydı, park bilgisi ve müzik kontrollerine eriş
+- Navigasyon sırasında sıradaki yönü, manevraya kalan mesafeyi, hedefi ve rota önizlemesini görüntüle
 
-Fiş fotoğrafı kameradan çekilebilir veya galeriden seçilebilir. OCR, fişteki litre/tutar ve algılanabilen bazı ek bilgileri otomatik doldurmayı dener. **OCR sonucu kesin kabul edilmez:** kaydetmeden önce alanları kontrol edip düzeltmek gerekir.
+Wear OS mini haritası düşük kaynak kullanımı için rota çizgisini şematik bir arka planda gösterir; sokak adları veya tam sokak haritası sunmaz. Saat, telefonla bağlı olmalı ve gerekli izinler verilmelidir.
 
-Kilometre güncelleme, servis kaydı ve yakıt kaydı akışlarında kilometre sayacı fotoğrafından sayı okumayı deneme seçeneği de bulunur. Okunan değeri kullanıcı onaylar; sistem sayacı görür görmez otomatik olarak kaydetmez.
+### Garajım Studio ile araç projesi planla
 
-### 4. Açık Dünya: GPS ile sürüş kaydı
+Studio'yu kayıtlı bir aracından başlatabilir veya plaka zorunluluğu olmadan bağımsız bir araç profili oluşturabilirsin. Araç fotoğrafını referans olarak ekle, renk varyantlarını genel otomobil maketi üzerinde karşılaştır, modifikasyon fikirlerini listele ve manuel bütçe oluştur.
 
-Açık Dünya bölümü, sürüş sırasında telefonun konum verisini kullanarak rota ve sürüş ölçümlerini kaydeder. Ekranda şu bilgiler sunulur:
+Parça veya iş kalemlerine ürün adı, marka/kod, kullanıcı tarafından girilen fiyat ve planlandı/sipariş edildi/takıldı durumu ekle. Proje günlüğünde notlarını sakla; özeti paylaş veya projeyi JSON olarak dışa aktar.
 
-- Anlık GPS hızı, ortalama hız ve en yüksek hız.
-- Mesafe ve geçen süre.
-- Harita üzerinde izlenen rota ve mevcut konum.
-- Kullanıcı tarafından belirlenen hız limiti için uyarılar.
-- Kayıtlı sürüş geçmişi ve sürüş özeti.
-- Rota tekrar oynatma: 1×, 2×, 4× ve zaman verisi uygunsa gerçek zaman hız seçeneği.
-- GPX olarak rota dışa aktarma, harita bağlantısı açma ve sürüş kartı oluşturma.
-- Sürüş skoru, rozetler, yol hikâyeleri ve önceki benzer sürüşü “hayalet” olarak karşılaştırma.
-- Haftalık kilometre hedefi, harita işaretleri ve sürüş görünümü ayarları.
+Studio, gerçek fotoğrafı otomatik olarak boyamaz ve parçaların araca uyumluluğunu kendiliğinden doğrulamaz. Fiyat ve uyumluluk bilgileri kullanıcı tarafından girilir; teknik uygunluğu satın almadan önce ayrıca kontrol et.
 
-Sürüş skoru ve “Sürüş DNA” gibi özetler GPS örneklerinden türetilen eğlence/analiz göstergeleridir; profesyonel sürüş değerlendirmesi değildir.
+### İlerlemeni takip et, uygulamayı kendine göre düzenle
 
-#### Harita ve çevrimdışı kullanım
+- **51 başarım rozeti ve 8 Sürüş DNA profili:** Garaj, bakım, yakıt, kilometre, yedekleme ve sürüş hedeflerindeki ilerlemeni izle.
+- **24 tema paketi:** Koyu/açık görünüm ve Wear OS ile eşitlenen renk seçenekleri.
+- **Garajım widget'ı:** Seçili aracın temel bilgilerine Android ana ekranından bak.
+- **Hatırlatmalar:** Uygulamaya girilmiş bakım ve belge bilgileri için bildirim akışlarını kullan.
+- **Raporlar:** Araç veya genel PDF raporu; masraflar için CSV; desteklenen veriler için JSON yedeği ve sürüş rotası için GPX.
+- **Garajım'ı Keşfet:** İlk kullanım turu ve uygulama içinden tekrar açılabilen kısa öneriler.
 
-Telefon haritasında OpenStreetMap ve Esri taban katmanları bulunur. Görünen alanın bir bölümü çevrimdışı önbelleğe alınabilir; uygulama ayrıca daha önce yüklenmiş bazı harita karelerini saklar. Bu özellik sınırsız bir çevrimdışı harita indirme hizmeti değildir.
+Sosyal alan, bu kaynak sürümünde cihaz içi bir akıştır. Bu özellik, gönderileri başka kullanıcıların cihazlarına ulaştıran veya hesaplar arasında senkronize eden merkezi bir sosyal ağ değildir.
 
-- GPS kayıt mantığı ve yerel sürüş kayıtları cihazda çalışacak şekilde tasarlanmıştır.
-- Çevrimdışı harita görünümü yalnızca daha önce önbelleğe alınmış alanlarla sınırlıdır.
-- Adres arama, çevrimiçi rota hesaplama ve navigasyon için internet gerekir.
-- Trafik yoğunluğu verisi sunulmaz.
+## Verilerin ve gizliliğin
 
-### 5. Navigasyon ve park yeri
+Garajım, kişisel araç verilerini öncelikle cihazındaki uygulama depolamasında tutar. Bu depoda tüm kullanıcı kayıtlarını saklayan bir Garajım hesabı veya merkezi araç veritabanı tanımlı değildir. Android widget'ı, sürüş servisi ve telefon–saat eşitlemesi için bazı bilgiler Android'in yerel depolama alanlarında da tutulur.
 
-Navigasyon ekranı adres/yer arama, rota seçenekleri, dönüş mesafesi, tahmini varış saati ve sesli yönerge özellikleri içerir. Yeniden rota hesaplama da bulunur. Adres ve rota hizmetleri kodda OpenStreetMap Nominatim ve OSRM'in herkese açık uç noktalarına bağlanır; internet gerektirir ve canlı trafik bilgisi sağlamaz. İstenirse Google Haritalar'da yön tarifi açılabilir.
+- **Manuel JSON yedeği**, desteklenen araç, sürüş, park, ayar ve Studio verilerini dışa aktarabilir. Fotoğraflar yedeğin boyutunu büyütebilir.
+- **Otomatik yerel yedek**, aynı cihazda yalnızca araç listesinin son kopyalarını saklar; tam yedek veya bulut yedeği değildir.
+- PIN, uygulama açılışında ek bir kilit ekranıdır; cihazdaki dosyaları şifrelemez.
+- Adres arama ve internet üzerinden rota hesaplama için Nominatim/OSRM gibi dış servisler kullanılır. Harita katmanları da ilgili sağlayıcılardan yüklenebilir; bu isteklerde ağ sağlayıcıları IP adresini ve istenen konum/harita bilgisini görebilir.
+- Wear OS bağlantısı Android ve Google Play Services eşleştirme altyapısını kullanır.
 
-Park yeri özelliği mevcut konumu kaydederek daha sonra uzaklık/yön bilgisini gösterir ve harita uygulamasında yürüyüş yön tarifi açabilir.
+Yedekleme kapsamı dışa aktarma türüne göre değişir. Telefonu değiştirmeden, uygulama verilerini temizlemeden veya uygulamayı kaldırmadan önce manuel yedek al ve dosyayı cihaz dışında güvenli bir yere kopyala.
 
-### 6. Galaxy Watch / Wear OS
+## Bilmen gerekenler
 
-Wear OS uygulaması, telefon arayüzünün küçük bir kopyası değil, sürüş sırasında hızlı erişim için ayrı bir kontrol ekranıdır. Güncel projede şu işlevler bulunur:
+Garajım araç yönetimi ve sürüş kaydı için yardımcı bir uygulamadır; araç elektronik kontrol ünitesine/OBD-II sistemine bağlanmaz. Hız ve konum değerleri GPS kalitesine, cihaza ve çevre koşullarına bağlıdır. Navigasyon için internet gerekir; canlı trafik bilgisi sunulmaz. Harita ve rota sağlayıcılarının herkese açık uç noktaları hizmet garantisi vermez.
 
-- Telefonda kayıtlı araçları ve plakaları saat ekranından seçme.
-- Saatten sürüş başlatma, duraklatma, devam ettirme ve bitirme isteği gönderme.
-- Kısa sürüş onayını ve sürüş sonu özetini saat ekranında görüntüleme.
-- Uygun akışta özeti kaydetme, silme veya daha sonra karar verme.
-- Anlık hız ve sürüş ölçümlerini gösterme.
-- Hız uyarıları ve titreşim geri bildirimi.
-- Müzik kontrolü ve kayıtlı park yeri için özet bilgi.
-- Mini rota haritası: başlangıç ve mevcut konum farklı işaretlenir; telefon rotasından en fazla 24 örnek nokta aktarılır.
-- Telefon bağlantısı, GPS hazırlığı ve veri güncelliği için durum göstergeleri.
+Arka plan konum takibi Android izinlerine, GPS'in açık olmasına, görünür servis bildirimine ve cihazın pil yönetimine bağlıdır. Telefon uygulamasını zorla durdurmak arka plan servislerini durdurabilir. Bildirim zamanlaması üretici ve Android pil politikalarına göre değişebilir. Sürüş sırasında telefonu veya saati kullanmak yerine işlemleri araç dururken yap.
 
-**Mini harita tam sokak haritası veya navigasyon değildir.** Saatte düşük kaynak kullanımı için çizilen şematik yol dokusu üzerinde gerçek GPS rotasının yaklaşık şekli gösterilir; sokak adı ve kavşak verisi sunmaz.
+## Telefon ve saat APK'sını indir
 
-Telefon ve saat arasında Google Play Services Wearable Data Layer kullanılır. İki cihaz için de **aynı GitHub Actions çalıştırmasından üretilen APK'ları** kullanmak önerilir. Saat komutlarının çalışması için telefon uygulamasının bir kez başlatılması, gerekli konum izinlerinin verilmesi ve sürüş/arka plan servisinin hazırlanması gerekebilir. Android'in pil optimizasyonları, üretici yazılımı, izinler ve uygulamanın zorla durdurulması arka plan davranışını etkileyebilir; her cihazda gerçek test yapılmalıdır.
+1. [Garajım GitHub deposunda Actions sayfasını](https://github.com/xarionawashere/garajim/actions/workflows/build-apk.yml) aç.
+2. En güncel **başarılı** “APK Olustur” çalıştırmasını seç.
+3. Aynı çalıştırmanın **Artifacts** bölümünden iki paketi indir:
+   - **Garajim-Mobil-APK** — Android telefon
+   - **Garajim-WearOS-APK** — Galaxy Watch / uyumlu Wear OS cihazı
+4. ZIP paketlerini açıp ilgili APK'yı doğru cihaza kur. İlk kullanımda telefonda Garajım'ı aç, gerekli izinleri ver ve saati sistemin Wear OS veya Galaxy Wearable uygulamasıyla eşleştir.
 
-### 7. Ana ekran widget'ı ve bildirimler
+Telefon ve saat APK'larını **aynı başarılı Actions çalıştırmasından** indir. Artifacts süreli saklanır; eski derleme paketlerini güncel kaynaklarla karıştırma. Android, Play Store dışından yüklenen uygulamalar için güvenlik onayı isteyebilir. Bu depo bir Google Play indirme bağlantısı sağlamaz.
 
-Android ana ekran widget'ı seçilen aracın plakasını, kilometre bilgisini ve bakım durumunu gösterebilir. Birden fazla araç varsa widget üzerinden seçimi değiştirme desteği bulunur.
-
-Uygulama içi uyarılar, girilmiş tarih ve bakım kilometresi verilerine dayanır. Android sistem bildirimi için kullanıcı izni gerekir; günlük hatırlatma ve bildirim zamanlaması Android/üretici pil politikalarından etkilenebilir. Bildirimlerin her koşulda tam saatinde geleceği garanti edilmez.
-
-### 8. Müzik kontrolü
-
-Telefon tarafındaki yerel medya köprüsü, uygun aktif medya oturumundan parça adı/sanatçı/albüm bilgisini ve albüm kapağını okuyabilir; oynat/duraklat, önceki ve sonraki parça komutlarını iletebilir. Bu özellik için Android'in **Bildirim erişimi** iznini vermek gerekebilir. Erişim izni olmadan parça bilgileri eksik kalabilir; kontrol davranışı aktif medya uygulamasına göre değişir.
-
-### 9. Garajım Studio — Tasarım ve modifikasyon projesi
-
-Studio, eski Asistan sekmesinin yerini alan araç odaklı bir çalışma alanıdır. Kullanıcı iki şekilde başlar:
-
-- Garajım'da zaten kayıtlı olan bir aracı seçer; marka, model, yıl ve fotoğraf gibi kayıtlı bilgiler otomatik kullanılır.
-- Katalogda bulunmayan araç için plaka zorunluluğu olmadan bağımsız profil açar; marka/model/yıl/kasa tipini elle girer ve isterse galeriden/kameradan fotoğraf ekler.
-
-Studio fotoğrafı cihaz içinde sıkıştırıp yerel depoda tutar. Renk laboratuvarında sekiz renkten biri seçildiğinde genel bir SVG otomobil maketi anında değişir. Yüklenen gerçek araç fotoğrafı referans olarak gösterilir; fotoğrafın boyası değiştirilmiş veya araç birebir 3D modellenmiş gibi davranılmaz.
-
-Kullanıcı renk/komponent kombinasyonlarını varyant olarak kaydedip yeniden uygulayabilir. Modifikasyon panosunda jant, süspansiyon, gövde kiti, fren, egzoz ve diğer işler için ürün adı, marka/kod, kullanıcı tarafından girilen fiyat ve planlandı/sipariş edildi/takıldı durumu kaydedilir. Toplam plan, takılan işlerin maliyeti ve kalan plan bütçesi ayrı hesaplanır. Proje günlüğü, notlar, proje özeti paylaşımı ve tekil Studio JSON dışa aktarma da bulunur.
-
-**Kapsam sınırı:** Bu sürümde tüm markaları kapsayan lisanslı araç kataloğu, canlı fiyat sağlayıcısı, gerçek fotoğraf üzerinde kusursuz otomatik boya düzenleme veya otomatik parça uyumluluk veritabanı bulunmaz. “Ben doğruladım” seçeneği kullanıcının kontrol kaydıdır; üretici belgesi veya uzman kontrolünün yerine geçmez.
-
-### 10. Temalar, PIN ve kişiselleştirme
-
-Uygulamada karanlık/açık görünüm tercihi, dört haneli PIN ekranı ve 24 renk paketi bulunur. İlk 12 pakete ek olarak Sisli Turkuaz, Alacakaranlık Lavanta, Yumuşak Arduvaz, Adaçayı, Sıcak Kum, Soluk Gül, Yosun ve Taş, Mürdüm Grisi, Bakır Dumanı, Mavi Saat, Yumuşak Zeytin ve Kâğıt ve Mürekkep gibi daha sakin paletler gelir.
-
-PIN, uygulama açılışında ek bir kilit ekranı sağlar; **uygulama verilerini şifrelemez**. Telefonun kendi ekran kilidini kullanmaya devam et. PIN unutulması veya uygulamanın kaldırılması durumunda veri kurtarma için önceden alınmış dışa aktarılmış yedeğe ihtiyaç duyulabilir.
-
-### 11. Sosyal alan
-
-“Sosyal” bölümünde metin, fotoğraf ve araç etiketiyle paylaşım kartları oluşturma, yerel beğeni sayısını değiştirme ve kartları silme akışları bulunur. **Bu kaynak deposunda global sosyal ağ sunucusu yoktur:** paylaşımlar aynı cihazdaki yerel depoda saklanır; başka kullanıcıların cihazlarına otomatik gönderilmez ve hesaplar arası senkronizasyon yapılmaz.
-
-## Veri, yedekleme ve gizlilik
-
-Garajım'ın araç kayıtları ve arayüz tercihleri ağırlıklı olarak uygulamanın cihaz içindeki WebView `localStorage` alanında tutulur. Bazı Android işlevleri (widget verileri, yerel sürüş durumu, bekleyen kayıtlar ve senkronizasyon) `SharedPreferences` kullanır. Bu projede tüm kullanıcı verilerini tutan merkezi Garajım hesabı veya genel bir bulut veri tabanı bulunmaz.
-
-### Yedekleme türleri
-
-- **Manuel JSON yedeği:** Araçlar, kayıtlı sürüşler, park konumu, sürüş ayarları/ek verileri, güvenli tercihler ve kurtarılabilir sürüş taslağı/bekleyen özet gibi desteklenen verileri içerir. PIN ve eski sürümlerde saklanmış AI API anahtarı özellikle dahil edilmez. Studio projeleri ve proje fotoğrafları dahil edilebilir; büyük fotoğraflar yedek boyutunu artırır.
-- **Otomatik yerel yedek:** Aynı cihazda son yedi kopyaya kadar **yalnızca araç listesini** saklar; tam yedek veya bulut yedeklemesi değildir.
-- **CSV:** Masraf kayıtları için dışa aktarma.
-- **PDF:** Araç raporu ve genel rapor.
-- **GPX:** Sürüş rotası dışa aktarma.
-
-Sosyal akış ve eski sürümlerde kalmış AI sohbet geçmişi manuel JSON yedeğinin parçası değildir. Studio bağımsız projeleri ise bu sürümde yedeğe eklenir. Otomatik yedekler uygulama verisiyle aynı cihazda tutulduğu için uygulama verileri silinirse onlar da kaybolabilir. Önemli bir güncelleme/kaldırma öncesinde JSON yedeğini indirip başka bir konuma kopyala ve gerektiğinde geri yüklemeyi test et.
-
-### Dış servislerle veri paylaşımı
-
-- **Harita/rota:** Harita kareleri OSM/Esri sağlayıcılarından alınabilir. Adres arama ve rota hesaplama istekleri Nominatim/OSRM uç noktalarına gider. Harita/rota kullanımında ağ sağlayıcıları IP adresi ve istenen harita/koordinat bilgilerini görebilir.
-- **Studio fotoğrafları:** Araç fotoğrafları ve proje ayrıntıları varsayılan olarak bu cihazın yerel depolamasında tutulur; kullanıcı yedek dosyasını dışarı aktarırsa Studio projesi fotoğrafı da dosyaya girebilir.
-- **Garajım sunucusu:** Bu kaynakta tüm araç/sürüş kayıtlarını toplayan bir merkezi Garajım sunucusu veya kullanıcı hesabı altyapısı tanımlı değildir.
-
-## İzinler ve pil kullanımı
-
-Özelliklere göre Android aşağıdaki izinleri isteyebilir:
-
-- Konum (yaklaşık/kesin): GPS sürüşü, rota, park konumu ve hız hesapları.
-- Arka plan konumu ve foreground service: desteklenen arka plan sürüş takibi senaryoları.
-- Bildirim izni: sürüş hizmeti ve hatırlatma bildirimleri.
-- Kamera/fotoğraf erişimi: araç fotoğrafı, fiş OCR ve kilometre sayacı okuma.
-- Bildirim erişimi: medya oturumu/parça bilgisini okuyabilmek için kullanıcı tarafından ayrıca etkinleştirilmesi gereken erişim.
-- Wear OS eşleştirmesi ve Google Play Services bağlantısı: telefon ile saat arasında sürüş durumu/komut paylaşımı.
-
-Sürüş kaydı aktif değilken GPS takibinin açık tutulması gerekmez. Sürüş sırasında ekranı sürekli açık bırakmak ile uygulamanın izin verilmiş bir arka plan servisinde çalışması aynı şey değildir. Pil kullanımı GPS sıklığına, ekran parlaklığına, harita katmanına, sinyal durumuna ve üretici güç yönetimine bağlıdır.
-
-## Teknik mimari
-
-Garajım, web arayüzünü Capacitor ile Android uygulamasına dönüştürür; bazı cihaz özellikleri Java ile yazılmış yerel katmanlardan sağlanır. Wear OS arayüzü ayrı bir yerel Android modülüdür.
-
-| Yol | Sorumluluk |
-|---|---|
-| `index.html` | Ana Garajım arayüzü ve iş mantığı: garaj, bakım, yakıt, sürüş, navigasyon, AI ve sosyal yerel akış |
-| `build-web.js` | Üçüncü taraf arayüz kütüphanelerini `www/vendor` içine kopyalar, Tailwind CSS'i derler ve CDN yollarını yerel dosyalara çevirir |
-| `capacitor.config.json` | Capacitor uygulama kimliği/adı ve web çıktı klasörü |
-| `native-android/src/main/java/com/garajim/app/` | Android köprüsü, sürüş foreground servisi, Wear OS senkronizasyonu, medya kontrolü, widget, bildirim ve yeniden başlatma alıcıları |
-| `native-android/src/main/res/` | Widget ve Android kaynakları |
-| `native-wear/` | Wear OS uygulama modülü, saat ekranı, kontroller ve `MiniRouteView` rota çizimi |
-| `scripts/ci-wear-setup.py` | CI sırasında yerel Wear OS modülünü üretilen Capacitor Android projesine kopyalar ve modül ayarlarını yapar |
-| `.github/workflows/build-apk.yml` | Web paketini hazırlar, testleri çalıştırır, telefon ve Wear OS APK'larını derler ve ayrı artifact olarak yükler |
-| `tests/` | Sürüş, widget, yedekleme, navigasyon, medya, Wear OS iletişimi, arka plan servisleri ve mini rota için kontroller |
-
-### Kullanılan ana teknolojiler
-
-- HTML, CSS, JavaScript
-- Capacitor 6 ve Android Java
-- Wear OS yerel Activity ve Google Play Services Wearable Data Layer
-- Tailwind CSS, Font Awesome, Inter
-- Chart.js (grafikler)
-- jsPDF ve jsPDF-AutoTable (raporlar)
-- Leaflet (telefon haritaları)
-- Tesseract.js ve yerel dil dosyaları (OCR)
-- Capacitor Background Geolocation eklentisi
+Güncelleme sırasında imza uyumsuzluğu görürsen uygulamayı kaldırmadan önce dur. Telefon uygulamasını kaldırmak yerel verileri silebilir. Güncelleme rehberleri: [Telefon kurulumu](docs/guides/TELEFONDAN-KURULUM.txt) · [Wear OS kurulumu](docs/guides/SAAT-KURULUM.txt) · [GitHub Actions ile APK üretimi](docs/guides/GITHUB-ACTIONS-TELEFON-WEAROS.txt).
 
 ## Geliştirici kurulumu
 
 ### Gereksinimler
 
-- Node.js 20 (CI'daki sürüm)
-- npm
-- Java 17 (CI'daki sürüm)
-- GitHub Actions ile APK üretmek için GitHub deposu ve Actions izinleri
-- Yerel Android derlemesi için Android SDK/Gradle ortamı ve Wear OS modülünü kuran CI adımlarının uygulanması
+- Node.js 20 ve npm
+- Java 17
+- Yerel Android derlemesi için Android SDK ve Gradle
+- Wear OS testleri için eşleştirilmiş uyumlu bir Android telefon ve Wear OS cihazı
 
-### Web paketini hazırlama ve testler
+### Web paketi ve kaynak kontrolleri
 
-Proje kökünde çalıştır:
+Depo kökünde sırasıyla çalıştır:
 
-```bash
-npm install --no-audit --no-fund
+<pre><code>npm install --no-audit --no-fund
 npm run build:web
-npm test
-```
+npm test</code></pre>
 
-`build-web.js`, `www/` klasörünü yeniden oluşturur. Grafik, PDF, harita arayüzü, ikon fontları, yazı tipleri ve OCR için gereken dosyaları `www/vendor/` altına yerleştirir. Bu yüzden derlenmiş uygulama, bu kütüphaneleri çalışma sırasında CDN'den indirmeye bağımlı olmayacak şekilde hazırlanır. Harita/rota sağlayıcıları ve AI API'leri gibi dış hizmetler yine internet gerektirir.
+GitHub Actions; web bağımlılıklarını kurar, yerel web paketini oluşturur, otomatik kontrolleri çalıştırır ve testler başarılıysa telefon ile Wear OS APK'larını ayrı Artifacts olarak yükler. Başarısız testte APK adımlarına geçilmez. Kaynak testleri telefon veya saatte gerçek GPS, izin, pil davranışı ve ekran kullanımının yerini tutmaz.
 
-`npm test`, `tests/` altındaki test dosyalarını ayrı süreçlerde çalıştırır. Testler kaynak davranışına ve bileşen sözleşmelerine ilişkin otomatik kontrollerdir; gerçek telefon/saat testinin yerini tutmaz.
+### Kaynak yapısı
 
-### APK'ları GitHub Actions ile üretme
+| Alan | İçerik |
+|---|---|
+| index.html, src/js/ | Telefon arayüzü ve garaj, bakım, yedekleme, sürüş, navigasyon, Studio ve başarım özellikleri |
+| native-android/ | Capacitor Android köprüsü, sürüş foreground servisi, medya kontrolü, widget, hatırlatma ve Wear OS bağlantısı |
+| native-wear/ | Wear OS arayüzü, sürüş kontrolleri ve mini rota çizimi |
+| build-web.js | Web kaynaklarını derlemeye ve gerekli arayüz kütüphanelerini yerel pakete koymaya hazırlar |
+| .github/workflows/build-apk.yml | Testleri çalıştırır, Android modüllerini oluşturur, iki APK'yı derler ve ayrı Artifacts olarak saklar |
+| tests/ | Kaynak ve özellik sözleşmelerine yönelik otomatik kontroller |
 
-Önerilen APK üretme yolu depodaki GitHub Actions iş akışıdır:
+Sürümlere göre değişiklikler için [CHANGELOG.md](CHANGELOG.md), kurulum ve geliştirme notları için [belge dizinini](docs/README.md) incele.
 
-1. Kaynak değişikliklerini `main` veya `master` dalına commit/push et; iş akışı otomatik başlar. Alternatif olarak **Actions → APK Olustur → Run workflow** kullan.
-2. Web bağımlılıkları yüklenir, web paketi hazırlanır ve testler çalıştırılır.
-3. Capacitor Android projesi oluşturulur; `native-android` ve `native-wear` kaynakları eklenir.
-4. Telefon ve saat APK'ları derlenir.
-5. Aynı çalıştırmanın **Artifacts** bölümünden iki çıktıyı indir:
-   - `Garajim-Mobil-APK`
-   - `Garajim-WearOS-APK`
+## Proje ve dağıtım
 
-Artifact'lar iş akışında 14 gün saklanacak şekilde ayarlanmıştır. İndirirken telefon ve saat APK'larını aynı Actions çalıştırmasından almak önemlidir.
-
-> `android/`, `www/` ve `node_modules/` klasörleri `.gitignore` içindedir; CI bunları derleme sırasında üretir. Bu nedenle depoda hazır Android Studio projesi veya APK bulunmaması normaldir.
-
-### APK imzalama ve güncelleme
-
-Workflow şu GitHub Actions secrets değerlerinin **tamamı** tanımlıysa release imzası kullanır:
-
-- `KEYSTORE_BASE64`
-- `KEYSTORE_PASSWORD`
-- `KEY_ALIAS`
-- `KEY_PASSWORD`
-
-Eksikse debug APK üretir ve logda imza uyarısı verir. Uzun vadeli güncellemeler için aynı imza anahtarını korumak gerekir. Keystore dosyasını Git deposuna koyma; güvenli ve yedekli bir yerde sakla. İmza anahtarı kaybolursa veya değişirse Android kurulu uygulamanın üzerine güncellemeyi reddedebilir.
-
-### Telefon ve saate yükleme
-
-1. `Garajim-Mobil-APK` artifact'ını aç ve içindeki telefon APK'sını telefona kur.
-2. `Garajim-WearOS-APK` artifact'ını aç ve içindeki saat APK'sını Galaxy Watch/uyumlu Wear OS cihaza kur.
-3. Mevcut telefonu güncellerken, aynı uygulama kimliği ve imza varsa kaldırmadan güncelleme (`install -r`) kullan.
-4. Güncel projede telefon ile Wear OS APK'sı Wearable Data Layer uyumu için `com.garajim.app` applicationId'sini paylaşır; eski saat paketinin kimliği `com.garajim.wear` olan kurulumlar yeni uygulamayla birlikte ayrı görünebilir. Bu eski saat paketinin bir defalık kaldırılması gerekebilir. **Telefon uygulamasını kaldırmakla karıştırma.** Telefon verilerini korumak için önce yedek al.
-
-Örnek ADB komutları (cihaz seri numaralarını kendi `adb devices` çıktına göre değiştir):
-
-```bash
-adb devices -l
-adb -s TELEFON_SERI_NO install -r app-release.apk
-adb -s SAAT_SERI_NO install -r wear-release.apk
-```
-
-APK'nın adı imzalama yapılandırmasına göre `app-release.apk` / `wear-release.apk` veya debug adları olabilir. Dosya adını indirdiğin artifact içinden kontrol et.
-
-## Bilinen sınırlar ve önemli notlar
-
-- **Sosyal alan yereldir:** Bu repoda global akış sunucusu, kullanıcı hesabı veya cihazlar arasında sosyal paylaşım backend'i yoktur.
-- **Mini harita şematiktir:** Saatte gerçek sokak haritası değil, sınırlı sayıda GPS noktasından çizilen rota önizlemesi gösterilir.
-- **Navigasyonda canlı trafik yoktur:** Rota hesabı internet ve kullanılan herkese açık servislerin kullanılabilirliğine bağlıdır.
-- **Hız GPS'e dayanır:** Tünellerde, kapalı alanlarda veya düşük sinyalde ölçüm yanlış/eksik olabilir; resmî araç hız göstergesinin yerine geçmez.
-- **Arka plan davranışı cihazdan etkilenir:** Konum izni, bildirim izni, GPS ayarı ve pil optimizasyonları önemlidir. Android'in uygulamayı zorla durdurması hâlinde arka plan işlemleri garanti edilemez.
-- **PIN şifreleme değildir:** Uygulama içi kilit, yerel veri dosyalarını şifrelemez.
-- **AI anahtarı yerel depolamadadır:** Güvenli sunucu tarafı sır kasası değildir; anahtarın erişilebilir olduğu cihazı koru.
-- **Yedeklerin kapsamı aynı değildir:** Manuel JSON yedeği otomatik yerel yedekten daha kapsamlıdır; ikisi de tüm verileri veya sırları içermez. Yedeğini geri yüklemeyi gerçek bir testle doğrula.
-- **Sürüm bilgisi:** CI telefon APK'sının sürümünü workflow içinde, saat APK'sının sürümünü `native-wear/build.gradle` içinde belirler. `package.json` sürümü bu pakette `1.3.9`; telefon ve Wear OS sürüm değerleri kaynak/CI testleriyle kontrol edilir.
-- **Lisans:** Bu pakette henüz kök dizinde `LICENSE` dosyası bulunmuyor. Yeniden dağıtım ve katkı koşulları yayın öncesi ayrıca belirlenmelidir.
-
-## Güvenli kullanım
-
-Sürüş sırasında telefonu veya saati kurcalamak yerine işlemleri araç dururken yap. GPS kaydı, sürüş skoru ve yakıt tahminleri destekleyici göstergelerdir; güvenlik, bakım ve mevzuat kararlarında tek kaynak olarak kullanılmamalıdır.
-
-## Kısa tanıtım metni
-
-**Garajım — Aracının dijital garajı. Sürüşün bileğinde.**
-
-Araçlarını kaydet, bakım ve sigorta tarihlerini takip et, yakıt fişlerini incele, masraflarını analiz et ve GPS sürüşlerini haritada gör. İstatistiklerini raporla, park yerini kaybetme ve uyumlu Wear OS saatinle sürüşün temel kontrollerini bileğinden yönet. Garajım, araç sahipliğinin günlük ayrıntılarını tek bir yerde toplamayı amaçlayan kişisel araç ve sürüş asistanıdır.
-
----
+Bu depo kaynak kodu sunar. Kök dizinde şu anda bir LICENSE dosyası bulunmadığından, kodu yeniden dağıtma veya ticari kullanım koşullarını otomatik olarak varsayma; kullanım izni ve lisans durumu ayrıca açıklığa kavuşturulmalıdır.
 
 <div align="center">
-  <sub>Garajım · Araç yönetimi, sürüş kaydı ve Wear OS kontrolü tek deneyimde.</sub>
+  <sub>Garajım · Araçlarını düzenle, sürüşlerini kaydet, projelerini planla.</sub>
 </div>
-
-
-## Wear OS kokpit güncellemesi
-
-Saat arayüzü; hız, seçili araç, mesafe, geçen süre, maksimum hız ve GPS rota önizlemesini tek akışta sunar. Telefonun sürüş hizmetinden gelen sınırlı rota örnekleri Wearable Data Layer üzerinden aktarılır; saat, rota çizgisini yerel olarak işler ve gerçek sokak haritası varmış gibi davranmaz. Bağlantı, GPS bekleme ve eski veri durumları ayrıca gösterilir.
-
-Bu tam kaynak paketi `1.4.6` sürümünü kullanır. Rozet koleksiyonu, Sürüş DNA, dört sayfalı Wear OS kokpiti, 24 temalı renk kataloğu ve Garajım Studio proje merkezi dahildir. Studio’nun akışı ve kaynak kontrolleri statik testlerle incelenmiştir; Android APK derlemesi ve gerçek cihaz davranışı ayrıca doğrulanmalıdır.
-
-### 1.3.4 — Senkronizasyon ve kullanım güvenilirliği
-
-- Sürüş telemetrisi aktarımı yavaş bağlantıda eski durumları kuyruğa biriktirmek yerine son bekleyen snapshot'ı korur.
-- Wear OS komutları benzersiz kimlikle gönderilir; telefonun kabul/ret yanıtı saate döner. Yanıt telefonun komutu kesin tamamladığını değil, kabul edip yönlendirdiğini belirtir.
-- Native sürüş devam ederken müzik ve park kısayolları açık WebView'e doğru yönlendirilir; gerekli telefon oturumu yoksa yanlış başarı sinyali verilmez.
-- Telefon arayüzü klavye odağı göstergesini ve işletim sistemi `prefers-reduced-motion` tercihini destekler.
-- Telefon arayüzünde sistem yakınlaştırması kapatılmaz; erişilebilirlik testi, `user-scalable=no` / `maximum-scale=1.0` kısıtlarının eklenmesini yakalar.
-- Güncel kaynak testleri `tests/t12_wear_reliability.js`–`tests/t23_import_render_safety.js` aralığındadır. Tam `npm test` ve APK derlemesi için bağımlılıklar, Android SDK/Gradle ve gerçek cihaz doğrulaması ayrıca gerekir.
-
-### 1.3.5 — Ekran kapalıyken müzik ve park kısayolları
-
-- Müzik komutları açık WebView'de önce uygulama köprüsüne gider; telefon ekranı kapalıyken/arayüz yokken native Android medya denetimine düşer.
-- Park yeri native olarak da kaydedilir. Saat, servis hazır olduğunda park kaydını telefon arayüzü açık olmadan sorabilir; mesafe/yön yalnızca son GPS konumu 2 dakikadan yeniyse verilir.
-- Park kaydı silindiğinde native kopyası da temizlenir; bozuk koordinatlar kabul edilmez.
-- Bu geliştirmeler statik kaynak kontrollerinden geçirilmiştir, ancak gerçek medya oturumu, GPS tazeliği ve saat bağlantısı Galaxy Watch7 üzerinde ayrıca doğrulanmalıdır.
-
-
-## Yayın öncesi doğrulama
-
-1.3.5 ve 1.3.6 listeleri geçmiş iterasyonları kapsar. 1.3.8 kontrol listesi tarihsel teslim içindir; bu kaynak paketi 1.3.9 sürümündedir. Yeni başarım/arayüz kontrolleri `tests/t26_wear_achievement_celebration.js`, `tests/t27_wear_achievement_test_menu.js`, `tests/t28_garage_compact_layout.js` ve `tests/t29_wear_achievement_haptics.js` dosyalarındadır. Statik kontrolleri Android derlemesi veya gerçek cihaz testi yerine sayma.
-
-
-### 1.3.6 — Wear OS kokpit ergonomisi
-
-- Saatte araç seçimi ve sürüş başlat/duraklat/bitir kontrolleri, müzik kartının altından ilk ekrana yakın bölüme taşındı. Sürüş için kritik eylemler artık önce geliyor; rota ve müzik yardımcı alanları aşağıda kalıyor.
-- Araç seçimi, bekleyen sürüş özeti, park ve müzik kontrollerinin dokunma alanları 44 dp seviyesine çıkarıldı; müzik düğmelerine ekran okuyucu açıklamaları eklendi.
-- Komut onayı için kalıcı Data Item yedeği eklendi: saat uyursa bekleyen komut kimliği korunur, yeniden açılınca ACK okunur ve tüketilen kayıt temizlenir.
-- Bu düzen XML ve kaynak regresyon kontrolleriyle doğrulanır; gerçek saat ekranında görünür alan ve parmakla kullanım yine Galaxy Watch7 üzerinde denenmelidir.
-
-
-### 1.3.7 — Saat ACK kurtarma
-
-- Bekleyen Wear OS komut kimliği, ekran uykuya girdiğinde korunur. Ekrana geri dönüldüğünde kalıcı Data Item ACK'sini yakalamak için iki dakikalık kurtarma penceresi başlatılır.
-- Birden fazla bağlı düğüme komut gönderiminde tek düğüm hatası diğer düğümlerin denenmesini engellemez.
-- Bu değişiklik kaynak regresyon testi `tests/t22_wear_ack_resume_grace.js` ile kontrol edilir; fiziksel saat testi ayrıca gereklidir.
-
-### 1.3.8 — Güvenli render ve sürüm teslimi
-
-- İçe aktarılmış veya yerel kayıtlardan gelen araç, bildirim ve sosyal akış metinlerinin önemli bölümleri HTML kaçışından geçirilir; dinamik kimlikler güvenli JS dize argümanlarıyla aktarılır.
-- Araç/fiş/sosyal görsel kaynaklarında desteklenen biçimler base64 PNG/JPEG/GIF/WebP ve HTTPS'tir. Bu, uygulamanın her HTML render noktasının tamamını denetlediğimiz anlamına gelmez; kalan noktalar yol haritasında tutulur.
-- `tests/t23_import_render_safety.js` güvenlik yardımcılarını kötü niyetli metin ve URL örnekleriyle test eder.
-- Bu paket kaynak kod paketidir, hazır APK içermez. Güncel sürüm 1.3.9’dur; tarihsel 1.3.8 checklist’i yalnızca eski teslimi belgelemektedir.
-
-
-### Sürüş DNA 1.4.1
-
-Sürüş DNA artık sekiz profili (Viraj Avcısı, Şehir Akışkanı, Gece Kuşu, Otoyol Makinesi, Sakin Turcu, Uzun Yol Yolcusu, Yumuşak Sürüş ve Rota Kâşifi) ayrı ayrı puanlar. Ana profil; puan, veri yeterliliği, tekrar eden gözlemler ve tekrarlanan nitelikli sürüşlere göre belirlenir. İlk analizlerde kesin bir sürücü etiketi iddia edilmez. Tekrarlanan aynı sürüş ikinci kez sayılmaz ve sürüm alanı eksik olanlar dahil eski DNA kayıtları/kazanılmış profiller korunur. Gece profilinde yeterli GPS örneği; otoyol ve turcu profillerinde yeterli hız örneği aranır. Kâşif hesabı ham GPS izi yerine yaklaşık kilometrelik konum hücreleri kullanır.
-
-Başarım koleksiyonunun gizli test menüsündeki **Sürüş DNA simülatörü**, sekiz senaryo için puan, veri yeterliliği ve nitelik sonucunu gösterir; kalıcı DNA, sürüş veya rozet verisine yazmaz. DNA puanları GPS hız/rota/süre ve uygulamada bulunan sinyallerden türetilen eğilimlerdir; yol sınıfını kesin tanımaz ve araç ECU/OBD verisi değildir.
-
-
-### Navigasyon güvenilirliği 1.4.2
-- GPS doğruluğuna göre rota dışı algılama, rota dışı yeniden hesaplama bekleme süresi ve rota boyunca yeniden eşleme.
-- Navigasyon oturumunu yerel kaydetme ve uygulama yeniden açıldığında açık kullanıcı onayıyla devam etme.
-- Arka plan navigasyonu için ortak konum izleyicisi/ön plan bildirimi yaşam döngüsünü sürüş kaydından ayırmadan yönetme.
-- Nominatim sorgu önbelleği ve hız sınırlama.
-- Standart OSM tile servisinde toplu çevrimdışı indirmeyi kaldırma; açık kaynak atfı ekleme.
-- Açık Dünya ekranındaki harita kontrollerini iki ana buton ve tek bir araçlar sheet'i etrafında sadeleştirme.
-
-
-### Garajım’ı Keşfet 1.4.3
-
-İlk açılışta 6 adımlı animasyonlu tur başlar; kullanıcı herhangi bir adımda Atla seçebilir. Sonraki açılışlarda tek bir kısa “Şunu Dene!” kartı görünür. Ayarlar > Garajım’ı Keşfet üzerinden tur tekrarlanabilir, bir öneri elle açılabilir veya otomatik öneriler kapatılabilir. Tercihler `garaj_discovery_v1` anahtarında saklanır; araç ve rozet durumuna dokunulmaz.
