@@ -33,6 +33,7 @@ public final class MiniRouteView extends View {
     private boolean gpsReady;
     private boolean active;
     private boolean paused;
+    private boolean navigation;
     private final float density;
 
     public MiniRouteView(Context context) { this(context, null); }
@@ -44,7 +45,7 @@ public final class MiniRouteView extends View {
         setWillNotDraw(false);
     }
 
-    public void setRouteJson(String json, boolean gpsReady, boolean active, boolean paused) {
+    public void setRouteJson(String json, boolean gpsReady, boolean active, boolean paused, boolean navigation) {
         List<GeoPoint> parsed = new ArrayList<>();
         try {
             JSONArray arr = new JSONArray(json == null || json.trim().isEmpty() ? "[]" : json);
@@ -63,6 +64,7 @@ public final class MiniRouteView extends View {
         this.gpsReady = gpsReady;
         this.active = active;
         this.paused = paused;
+        this.navigation = navigation;
         invalidate();
     }
 
@@ -185,27 +187,37 @@ public final class MiniRouteView extends View {
         c.drawPath(path, paint);
         paint.setStyle(Paint.Style.FILL);
 
-        // Start marker.
-        paint.setColor(0xFF07111B);
-        c.drawCircle(sx[0], sy[0], dp(5), paint);
-        paint.setColor(0xFF4ADE80);
-        c.drawCircle(sx[0], sy[0], dp(3), paint);
-
-        // Current-position marker.
-        float ex = sx[count - 1], ey = sy[count - 1];
-        paint.setColor(0x4438E7FF);
-        c.drawCircle(ex, ey, dp(9), paint);
-        paint.setColor(0xFF07111B);
-        c.drawCircle(ex, ey, dp(5.8f), paint);
-        paint.setColor(active && !paused ? 0xFF67E8F9 : 0xFFE2E8F0);
-        c.drawCircle(ex, ey, dp(3.6f), paint);
-        if (count >= 2) {
-            float dx = ex - sx[count - 2], dy = ey - sy[count - 2];
-            float len = (float)Math.sqrt(dx * dx + dy * dy);
-            if (len > dp(2)) {
-                paint.setColor(0xFF67E8F9);
-                c.drawLine(ex, ey, ex - dx / len * dp(8), ey - dy / len * dp(8), paint);
+        float sx0 = sx[0], sy0 = sy[0], ex = sx[count - 1], ey = sy[count - 1];
+        if (navigation) {
+            // Active directions run from the current position toward the destination.
+            paint.setColor(0xFF07111B);
+            c.drawCircle(sx0, sy0, dp(7), paint);
+            paint.setColor(0xFF67E8F9);
+            c.drawCircle(sx0, sy0, dp(4), paint);
+            paint.setColor(0xFFFFB86B);
+            c.drawCircle(ex, ey, dp(5), paint);
+            paint.setColor(0xFF07111B);
+            c.drawCircle(ex, ey, dp(2.5f), paint);
+            if (count >= 2) {
+                float dx = sx[1] - sx0, dy = sy[1] - sy0;
+                float len = (float)Math.sqrt(dx * dx + dy * dy);
+                if (len > dp(2)) {
+                    paint.setColor(0xFF67E8F9);
+                    c.drawLine(sx0, sy0, sx0 + dx / len * dp(13), sy0 + dy / len * dp(13), paint);
+                }
             }
+        } else {
+            // Start marker and current-position marker for a recorded ride.
+            paint.setColor(0xFF07111B);
+            c.drawCircle(sx0, sy0, dp(5), paint);
+            paint.setColor(0xFF4ADE80);
+            c.drawCircle(sx0, sy0, dp(3), paint);
+            paint.setColor(0x4438E7FF);
+            c.drawCircle(ex, ey, dp(9), paint);
+            paint.setColor(0xFF07111B);
+            c.drawCircle(ex, ey, dp(5.8f), paint);
+            paint.setColor(active && !paused ? 0xFF67E8F9 : 0xFFE2E8F0);
+            c.drawCircle(ex, ey, dp(3.6f), paint);
         }
     }
 
@@ -232,7 +244,7 @@ public final class MiniRouteView extends View {
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(gpsReady ? 0xFF67E8F9 : 0xFF94A3B8);
         c.drawCircle(x, y, dp(2.5f), paint);
-        drawLabel(c, gpsReady ? "İLK ROTA NOKTASI BEKLENİYOR" : "GPS KONUMU BEKLENİYOR", w, h, 0xFFCBD5E1);
+        drawLabel(c, navigation ? "ROTA TELEFONDAN AKTARILIYOR" : (gpsReady ? "SÜRÜŞ NOKTASI BEKLENİYOR" : "GPS KONUMU BEKLENİYOR"), w, h, 0xFFCBD5E1);
     }
 
     private void drawLabel(Canvas c, String text, float w, float h, int color) {
