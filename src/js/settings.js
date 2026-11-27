@@ -44,7 +44,7 @@ function themePref() { return localStorage.getItem('garaj_theme') || 'dark'; }
     applyBrandLogo();
     try {
       const N = window.GarajimNative;
-      if (N && typeof N.pushWearTheme === 'function') N.pushWearBranding(packPref(), themePref(), id);
+      if (N && typeof N.pushWearBranding === 'function') N.pushWearBranding(packPref(), themePref(), id);
     } catch (e) {}
     toast((BRAND_LOGOS.find(logo => logo.id === id) || {}).name + ' logosu seçildi');
   }
