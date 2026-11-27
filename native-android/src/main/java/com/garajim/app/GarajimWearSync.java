@@ -102,6 +102,12 @@ public final class GarajimWearSync {
             req.getDataMap().putString("mode", o.optString("mode", ""));
             req.getDataMap().putString("track", o.optString("track", ""));
             req.getDataMap().putString("artist", o.optString("artist", ""));
+            req.getDataMap().putString("mediaApp", o.optString("mediaApp", ""));
+            req.getDataMap().putBoolean("mediaAccess", o.optBoolean("mediaAccess", false));
+            req.getDataMap().putBoolean("playing", o.optBoolean("playing", false));
+            req.getDataMap().putLong("mediaPos", o.optLong("mediaPos", 0));
+            req.getDataMap().putLong("mediaDur", o.optLong("mediaDur", 0));
+            req.getDataMap().putString("mediaArt", o.optString("mediaArt", ""));
             req.getDataMap().putString("routeJson", o.optString("routeJson", "[]"));
             req.getDataMap().putBoolean("overLimit", o.optBoolean("overLimit", false));
             req.getDataMap().putString("alert", o.optString("alert", ""));
