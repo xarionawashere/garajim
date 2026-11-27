@@ -73,4 +73,7 @@ const css=fsx.readFileSync(require('path').join(__dirname,'..','www','vendor','t
 w.rideStatsOpen('year'); w.openDetail('v1');
 const toks=new Set(); w.document.querySelectorAll('[class]').forEach(e=>(e.getAttribute('class')||'').split(/\s+/).filter(Boolean).forEach(t=>toks.add(t)));
 const miss=[...toks].filter(t=>{const e=t.replace(/([^a-zA-Z0-9_-])/g,'\\$1');return !t.includes('[')&&!css.includes('.'+e)&&!inl.includes('.'+t)&&!/^(theme-opt|remind-opt|fa-|fas|far|fab|leaflet|ride-|map-|seg|btn|card|status|tab|glass|modal|slide|score|insight|progress|lock|pin|text-accent|bg-accent|border-accent|from-|to-)/.test(t)});
-ok(miss.length===0,'Tailwind kapsama
+ok(miss.length===0,'Tailwind kapsama '+(miss.join(' ')||'tamam'));
+process.exit(process.exitCode||0);
+})();
+
