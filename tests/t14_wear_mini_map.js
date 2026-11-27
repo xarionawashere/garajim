@@ -11,7 +11,7 @@ let fails = 0;
 function check(ok, name) { console.log((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) fails++; }
 check(layout.includes('@+id/wearMiniMap') && layout.includes('com.garajim.wear.MiniRouteView'), 'Saat düzeninde özel mini rota bileşeni var');
 check(wear.includes('miniMap.setRouteJson(routeJson, incomingGpsReady, incomingRunning, incomingPaused)'), 'Saat veri güncellemesinde rota ve GPS durumu haritaya verilir');
-check(ride.includes('buildMiniRouteJson()') && ride.includes('Math.min(24, count)') && ride.includes('outgoing.put("routeJson", buildMiniRouteJson())'), 'Telefon tam geçmiş yerine en fazla 24 rota örneği yollar');
+check(ride.includes('buildMiniRouteJson()') && ride.includes('Math.min(24, count)') && ride.includes('routeJson", navActive ? nav.optString("routeJson", "[]") : buildMiniRouteJson()'), 'Aktif navigasyon rotası, kayıt rotası yoksa sınırlı sürüş izi saate gider');
 check(sync.includes('putString("routeJson", o.optString("routeJson", "[]"))'), 'Rota Wearable Data Layer üzerinden taşınır');
 check(map.includes('drawRoute(Canvas c') && map.includes('Color') && map.includes('drawWaiting(Canvas c'), 'Saat rota çizgisi ve GPS bekleme durumunu çizebilir');
 check(map.includes('lng * cos') && map.includes('points.size() >= 2'), 'GPS enlem/boylamları mini haritada ölçeklenir');
