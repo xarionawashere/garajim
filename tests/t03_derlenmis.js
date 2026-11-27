@@ -43,6 +43,18 @@ ok(!!w.document.getElementById('fuelFull'),'"Depoyu doldurdum" kutusu var');
 // kısmi dolum kaydı
 w.eval("currentId='v1'"); w.openFuelModal(); w.document.getElementById('fuelFull').checked=false; w.document.getElementById('fuelKm').value='1800'; w.document.getElementById('fuelLiters').value='4'; w.document.getElementById('fuelCost').value='160'; w.saveFuel();
 ok(ev("vehicles[0].fuelLogs[vehicles[0].fuelLogs.length-1].full")===false,'kısmi dolum full:false kaydedildi');
+const fuelCount=ev('vehicles[0].fuelLogs.length');
+w.openFuelModal(); w.document.getElementById('fuelKm').value='1900'; w.document.getElementById('fuelLiters').value=''; w.saveFuel();
+ok(ev('vehicles[0].fuelLogs.length')===fuelCount,'litre boşken yakıt kaydı oluşturulmadı');
+w.openFuelModal(); w.document.getElementById('fuelKm').value='1700'; w.document.getElementById('fuelLiters').value='5'; w.saveFuel();
+ok(ev('vehicles[0].fuelLogs.length')===fuelCount,'mevcut kilometreden düşük bugünkü yakıt kaydı reddedildi');
+w.openFuelModal(); w.document.getElementById('fuelKm').value='1900'; w.document.getElementById('fuelLiters').value='5'; w.saveFuel(); w.saveFuel();
+ok(ev('vehicles[0].fuelLogs.length')===fuelCount+1,'hızlı çift dokunuş aynı yakıt kaydını iki kez eklemedi');
+const serviceCount=ev('vehicles[0].history.length');
+w.openServiceModal(); w.document.getElementById('svcCost').value='-1'; w.saveService();
+ok(ev('vehicles[0].history.length')===serviceCount,'negatif bakım maliyeti kaydedilmedi');
+w.openKmModal(); w.document.getElementById('newKm').value='1000'; w.confirm=()=>false; w.saveKm();
+ok(Number(ev('vehicles[0].km'))===1900,'daha düşük KM yanlışlıkla onaylanmadan yazılmadı');
 // tavsiye (tüketim %25 artışı)
 ev("vehicles[0].fuelLogs=[{km:1000,liters:10},{km:1300,liters:12},{km:1600,liters:12},{km:1900,liters:16}]");
 ok(ev("buildAssistantTips().some(t=>t.icon==='fa-gas-pump')"),'tüketim artışında asistan uyarısı');
@@ -70,3 +82,4 @@ console.log('DOM sınıfı:',toks.size,'· CSS karşılığı olmayan (özel olm
 ok(miss.length===0,'tüm Tailwind sınıfları derlenmiş CSS\'te');
 process.exit(process.exitCode||0);
 })();
+
