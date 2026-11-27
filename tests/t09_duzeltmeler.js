@@ -64,4 +64,14 @@ const host=d.createElement('div');host.style.height='200px';d.body.appendChild(h
 ok(layers.length>=6&&layers.length<=7,'300 noktalı rota '+layers.length+' çizgi (önceden 299)');
 // 10-11) özet: tekrar hızı 1x, yedek ekleri
 w.localStorage.setItem('garaj_rides',JSON.stringify([{id:'r1',vehicleId:'v1',date:new Date().toISOString(),dist:9000,time:900,avg:36,max:70,pts}]));
-w.openVehicleRidePreview('v1',0); await sleep(500); ok(d.getElementById('rideReplaySpeed')&&d.getElementById('rideReplaySpeed').value==='1','tekrar hızı varsa
+w.openVehicleRidePreview('v1',0); await sleep(500); ok(d.getElementById('rideReplaySpeed')&&d.getElementById('rideReplaySpeed').value==='1','tekrar hızı varsayılan 1x'); w.rideClosePreview();
+w.localStorage.setItem('garaj_ride_cards',JSON.stringify([{id:'c1',title:'x',body:'y'}])); w.localStorage.setItem('garaj_ride_dna',JSON.stringify({counts:{gece:2}}));
+await w.eval('exportData()'); const b=JSON.parse(Buffer.from(rec.shared.data,'base64').toString('utf8'));
+ok(b.extras&&b.extras.pins&&b.extras.pins.length===1,'yedekte işaretler');
+const k=ev("[RIDE_PIN_KEY,RIDE_CARDS_KEY,RIDE_DNA_KEY]"); console.log('   (anahtarlar: '+k.join(', ')+')');
+ok(!!b.extras.cards||!!b.extras.dna,'yedekte kart/DNA verisi (anahtara göre): cards='+(b.extras.cards&&b.extras.cards.length)+' dna='+!!b.extras.dna);
+const w2=await mk({}); const f=new w2.File([JSON.stringify(b)],'y.json'); w2.importData({target:{files:[f],value:''}}); await sleep(300);
+ok(JSON.parse(w2.localStorage.getItem(w2.eval('RIDE_PIN_KEY'))||'[]').length===1&&JSON.parse(w2.localStorage.getItem('garaj_rides')).length===1,'boş cihaza yükleme: işaret + sürüş geri geldi');
+ok(errors.length===0,'sayfa hatası yok '+errors.join('|'));
+process.exit(process.exitCode||0);})();
+
