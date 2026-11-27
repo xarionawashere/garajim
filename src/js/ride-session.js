@@ -692,12 +692,18 @@ function computeTCO(v) {
       const lim = Number(rideSettings().speedLimit) || 0;
       const kmh = ride.lastSpeedKmh || 0;
       const overLimit = lim > 0 && kmh > lim + 2;
-      let track = '', artist = '';
+      let track = '', artist = '', media = null, mediaArt = '';
       try {
-        const t = document.getElementById('rideMusicTitle');
-        const a = document.getElementById('rideMusicArtist');
-        if (t) track = t.textContent || '';
-        if (a) artist = a.textContent || '';
+        if (typeof mus !== 'undefined' && mus) {
+          media = mus.st || null;
+          mediaArt = String(mus.art || '').replace(/^data:image\\/[^;]+;base64,/, '');
+        }
+        const t = document.getElementById('musTitle');
+        const a = document.getElementById('musArtist');
+        if (media && media.session) {
+          track = String(media.title || (t && t.textContent) || '');
+          artist = String(media.artist || (a && a.textContent) || '');
+        }
       } catch (e) {}
       let parkLat = 0, parkLng = 0, parkDistM = -1, parkDir = '', parkSaved = false;
       try {
@@ -735,6 +741,12 @@ function computeTCO(v) {
         mode: modeEl ? (modeEl.textContent || '') : '',
         track: track,
         artist: artist,
+        mediaApp: media ? String(media.app || '') : '',
+        mediaAccess: !!(media && media.access),
+        playing: !!(media && media.playing),
+        mediaPos: media ? Number(media.pos) || 0 : 0,
+        mediaDur: media ? Number(media.dur) || 0 : 0,
+        mediaArt: mediaArt,
         overLimit: overLimit,
         alert: overLimit ? ('Limit ' + lim + '+') : '',
         parkLat: parkLat,
