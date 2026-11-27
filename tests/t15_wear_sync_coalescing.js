@@ -26,7 +26,7 @@ check(/PATH_STATE/.test(sync) && /routeJson/.test(sync) && /summaryId/.test(sync
 check(/python3 scripts\/ci-version\.py/.test(fs.readFileSync(path.join(root, '.github/workflows/build-apk.yml'), 'utf8'))
   && /versionCode\s+1004007/.test(fs.readFileSync(path.join(root, 'native-wear/build.gradle'), 'utf8'))
   && /major \* 1_000_000 \+ minor \* 1_000 \+ patch/.test(fs.readFileSync(path.join(root, 'scripts/ci-version.py'), 'utf8'))
-  && /"version": "1\\.4\\.7"/.test(fs.readFileSync(path.join(root, 'package.json'), 'utf8')),
+  && /"version": "1\.4\.7"/.test(fs.readFileSync(path.join(root, 'package.json'), 'utf8')),
   'Telefon, saat ve kaynak paket sürümleri 1.4.7 olarak hizalıdır');
 check(/function rideTick\(\)/.test(html), 'Web sürüş döngüsü kaynak pakette korunur');
 process.exit(failures ? 1 : 0);
