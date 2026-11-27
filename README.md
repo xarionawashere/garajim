@@ -92,4 +92,59 @@ Yedekleme kapsamı dışa aktarma türüne göre değişir. Telefonu değiştirm
 
 ## Bilmen gerekenler
 
-Garajım araç yönetimi ve sürüş kaydı için yardımcı bir uygulamadır; araç elektronik kontrol ünitesine/OBD-II sistemine bağlanmaz. Hız ve konum değerleri GPS kalitesine, ciha
+Garajım araç yönetimi ve sürüş kaydı için yardımcı bir uygulamadır; araç elektronik kontrol ünitesine/OBD-II sistemine bağlanmaz. Hız ve konum değerleri GPS kalitesine, cihaza ve çevre koşullarına bağlıdır. Navigasyon için internet gerekir; canlı trafik bilgisi sunulmaz. Harita ve rota sağlayıcılarının herkese açık uç noktaları hizmet garantisi vermez.
+
+Arka plan konum takibi Android izinlerine, GPS'in açık olmasına, görünür servis bildirimine ve cihazın pil yönetimine bağlıdır. Telefon uygulamasını zorla durdurmak arka plan servislerini durdurabilir. Bildirim zamanlaması üretici ve Android pil politikalarına göre değişebilir. Sürüş sırasında telefonu veya saati kullanmak yerine işlemleri araç dururken yap.
+
+## Telefon ve saat APK'sını indir
+
+Yayımlanmış sürümleri [GitHub Releases sayfasında](https://github.com/xarionawashere/garajim/releases) bulabilirsin. Bir sürümün dosyalarında telefon ve saat için ayrı APK ile `SHA256SUMS.txt` özeti yer alır. İndirdiğin APK'yı Android'de açıp sistemin istediği bilinmeyen kaynak yükleme iznini vererek kurabilirsin.
+
+Wear OS APK'sı, telefondaki APK gibi GitHub sayfasına tıklayarak saate kurulmaz. Önce telefonu saatinle Wear OS veya Galaxy Wearable üzerinden eşleştir; sonra APK'yı saate aktaran uyumlu bir kurucu ya da ADB kullan. Bu yöntem teknik adımlar ve ek izin gerektirebilir; Play Store'un uzaktan kurulum rahatlığını sağlamaz. İki APK'yı aynı sürümden indir. Bu depo Google Play indirme bağlantısı sağlamaz.
+
+Henüz bir Release yayımlanmamışsa, geliştiriciler [Actions](https://github.com/xarionawashere/garajim/actions/workflows/build-apk.yml) sayfasındaki en güncel başarılı çalıştırmanın süreli Artifacts dosyalarını kullanabilir. Bunlar genel kullanıcılar için kalıcı sürüm indirme yöntemi değildir.
+
+Güncelleme sırasında imza uyumsuzluğu görürsen uygulamayı kaldırmadan önce dur. Telefon uygulamasını kaldırmak yerel verileri silebilir. Güncelleme rehberleri: [Telefon kurulumu](docs/guides/TELEFONDAN-KURULUM.txt) · [Wear OS kurulumu](docs/guides/SAAT-KURULUM.txt) · [GitHub Actions ile APK üretimi](docs/guides/GITHUB-ACTIONS-TELEFON-WEAROS.txt).
+
+## Geliştirici kurulumu
+
+### Gereksinimler
+
+- Node.js 20 ve npm
+- Java 17
+- Yerel Android derlemesi için Android SDK ve Gradle
+- Wear OS testleri için eşleştirilmiş uyumlu bir Android telefon ve Wear OS cihazı
+
+### Web paketi ve kaynak kontrolleri
+
+Depo kökünde sırasıyla çalıştır:
+
+<pre><code>npm install --no-audit --no-fund
+npm run build:web
+npm test</code></pre>
+
+GitHub Actions bağımlılıkları kurar, yerel web paketini oluşturur ve otomatik kontrolleri çalıştırır. Başarısız testte APK adımlarına geçilmez. Normal derlemeler iki APK'yı süreli Actions Artifacts olarak sunar. `vMAJOR.MINOR.PATCH` etiketi ise testler ve imzalı Android derlemesi başarılı olduktan sonra iki APK'yı SHA-256 özetiyle GitHub Release'e yükler. Telefon ve saat `versionCode`/`versionName` değerleri aynı sürümden üretilir. Kaynak testleri gerçek cihaz GPS'i, izinleri, pil davranışını ve ekran kullanımını doğrulamaz.
+
+### Kaynak yapısı
+
+| Alan | İçerik |
+|---|---|
+| index.html, src/js/ | Telefon arayüzü ve garaj, bakım, yedekleme, sürüş, navigasyon, Studio ve başarım özellikleri |
+| native-android/ | Capacitor Android köprüsü, sürüş foreground servisi, medya kontrolü, widget, hatırlatma ve Wear OS bağlantısı |
+| native-wear/ | Wear OS arayüzü, sürüş kontrolleri ve mini rota çizimi |
+| build-web.js | Web kaynaklarını derlemeye ve gerekli arayüz kütüphanelerini yerel pakete koymaya hazırlar |
+| package.json | Doğrudan uygulama bağımlılıklarını tanımlar |
+| scripts/ci-version.py | Telefon ve Wear OS APK sürüm numaralarını tek kaynaktan üretir |
+| .github/workflows/build-apk.yml | Testleri çalıştırır, telefon ve Wear OS sürümlerini eşitler, iki APK'yı derler ve etiketli sürümlerde GitHub Release yayımlar |
+| tests/ | Kaynak ve özellik sözleşmelerine yönelik otomatik kontroller |
+
+Sürümlere göre değişiklikler için [CHANGELOG.md](CHANGELOG.md), kurulum ve geliştirme notları için [belge dizinini](docs/README.md) incele.
+
+## Proje ve dağıtım
+
+Bu depo kaynak kodu sunar. Kök dizinde şu anda bir LICENSE dosyası bulunmadığından, kodu yeniden dağıtma veya ticari kullanım koşullarını otomatik olarak varsayma; kullanım izni ve lisans durumu ayrıca açıklığa kavuşturulmalıdır.
+
+<div align="center">
+  <sub>Garajım · Araçlarını düzenle, sürüşlerini kaydet, projelerini planla.</sub>
+</div>
+
