@@ -70,7 +70,7 @@ Studio, gerçek fotoğrafı otomatik olarak boyamaz ve parçaların araca uyumlu
 
 - **51 başarım rozeti ve 8 Sürüş DNA profili:** Garaj, bakım, yakıt, kilometre, yedekleme ve sürüş hedeflerindeki ilerlemeni izle.
 - **24 tema paketi:** Koyu/açık görünüm ve Wear OS ile eşitlenen renk seçenekleri.
-- **Garajım widget'ı:** Seçili aracın temel bilgilerine Android ana ekranından bak.
+- **Android ana ekran widget'ları:** Garajım Kartı (araç listesi ve kilometreler), Bakım Takibi, Yakıt & KM, Rozet Koleksiyonu ve hızlı işlem widget'ı.
 - **Hatırlatmalar:** Uygulamaya girilmiş bakım ve belge bilgileri için bildirim akışlarını kullan.
 - **Raporlar:** Araç veya genel PDF raporu; masraflar için CSV; desteklenen veriler için JSON yedeği ve sürüş rotası için GPX.
 - **Garajım'ı Keşfet:** İlk kullanım turu ve uygulama içinden tekrar açılabilen kısa öneriler.
